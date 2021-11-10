@@ -1,0 +1,56 @@
+Food INdustry CoViD Control Tool (FInd CoV Control) version 1.1.3 is
+Copyright (C) 2020-2021 Cornell University.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+ 
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+If this collection of files is unmodified, this license will be in the file
+LICENSE.
+
+This code was written by Christopher Henry, Renata Ivanek, Michelle Wemette, and
+Ece Bulut. Additional work on writing and reviewing documentation, catching
+erroneous output, making suggestions, etc. was done by Sarah I. Murphy,
+Sebastian Llanos-Soto, Claire Zoellner, and Diane Wetherington. Additional
+thanks is due to iFood Decision Systems (iFoodDS), who developed a web
+interface for this model, and who have helped with background information,
+debugging, suggestions and requests for output features, etc.
+
+This model was developed for:
+R version 4.1.1 (2021-08-10) -- "Kick Things"
+Copyright (C) 2021 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+The following package versions were used in development and testing:
+doParallel_1.0.16
+iterators_1.0.13
+foreach_1.5.1
+Rlab_2.15.1      
+Matrix_1.3-4
+
+Some of these may be safe to omit, with light code editing.
+
+Efforts have been made to keep comments and other documentation up to date,
+but it is possible that some comments may be out of date, in accordance with
+the principle that documentation is *always* out of date.
+
+Standard usage:
+source('iFoodDS-wrapper-v1.1.3.R')
+full_run(workers_per_crew, crews_per_supervisor, supervisors,
+         days, employee_housing, social_distancing_shared_housing,
+         community_transmission, social_distancing_work,
+         n_no_symptoms, n_mild, fraction_recovered,
+         fraction_fully_vaccinated,
+         working_directory,
+         folder_name,
+         unique_id)
