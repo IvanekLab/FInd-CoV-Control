@@ -1,4 +1,23 @@
-# NB: A lot fo the following block of text is probably no longer entirely true.
+# double-wrapped-v1.1.3.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 1.1.3.
+# Copyright (C) 2020-2021 Cornell University.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+#NB: The following summary should be reasonably accurate, but may be outdated
+#in some minor details.
 
 ################################################################################
 # Generates parameter sets and, by default, runs the model for each by         #
@@ -12,30 +31,18 @@
 # by first sourcing double-wrapped.R directly, then (after it has finished     #
 # running) sourcing analyze.R, without modifying double-wrapped.R in between.  #
 #                                                                              #
-# To run multiple collections in parallel (e.g., to take full advantage of     #
-# multiple processors), one moderately easy solution is to save for each       #
-# collection:                                                                  #
-# - a modified double-wrapped.R, that will generate the desired collection,    #
-#   with a suitably modified name (e.g., 'double-wrapped-foo.R')               #
-# - a modified analyze.R, with:                                                #
-# - - the line "source('double-wrapped.R')" replaced accordingly               #
-#     (e.g., with "source('double-wrapped-foo.R')")                            #
-# - - the line "set_name = 'baseline'" replaced with a name designating the    #
-#     desired collection (e.g., "set_name = 'foo'")                            #
-# and then:                                                                    #
-# - source the modified double-wrapped.R                                       #
-#   (e.g., "source('double-wrapped-foo.R')")                                   #
-# - source the modified analyze.R (e.g., "source('analyze-foo.R')")            #
+# This is, indeed, what iFoodDS-wrapper.R does, provided that analyze_only ==  #
+# FALSE.                                                                       #
 ################################################################################
 
-double_wrapped_fn = function() { #will it work? the goal is to get more meaningful debug data
+double_wrapped_fn = function() { #the (current) goal is to get more meaningful debug data
 
 double_wrap_isolation_duration = 14
 double_wrap_rational_testing = TRUE
 
 double_wrap_initial_recovered = round(fraction_recovered * N)
 
-#below is kinda kludgey, but should work
+#below is kinda kludgey, but works
 double_wrap_initial_V2 = round(N * fraction_fully_vaccinated)
 double_wrap_initial_V1 = 0 
 if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 > N) {
@@ -43,10 +50,9 @@ if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 >
                n_exposed, '+', n_mild, '+', double_wrap_initial_recovered, '+', double_wrap_initial_V2, '>', N))
 }
 
-#trying to cut down on number of scenarios a *little*
 temperature_thresholds = c(38, 37.5, 37.1) #given an observed specificity of 100% at 38, why lose further sensitivity at 38.5?
 viral_test_rates = c(0.05, 0.3, 1.0)
-vax_rates = c(0.01, 0.04, 0.16) # when introducing rational vaccination, a lower max will likely be sensible
+vax_rates = c(0.01, 0.04, 0.16) 
 R0_reductions = c(0.2, 0.4, 0.8)
 
 k_max = 1 + length(temperature_thresholds) + length(viral_test_rates) + length(vax_rates) + length(R0_reductions)
@@ -137,9 +143,10 @@ if(PARALLEL) {
     library(doParallel)
     registerDoParallel(6)
 } #if not, %dopar% is equivalent to %do% (with a warning)
+  #in the current version, we use %do% explicitly anyway
+  #but this may change in a future version
 
 full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE) %do% {
-    #Rprof(paste0(i, '.out'))
     parameter_set = parameter_sets[i,]
     double_wrap_reduction = parameter_set$double_wrap_reduction
     double_wrap_temp_test = parameter_set$double_wrap_temp_test
@@ -148,17 +155,6 @@ full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE) %do% {
     row_name = row.names[i]
     source('wrapper-v1.1.3.R', local = TRUE)
     full_output_save_name = wrapper_fn() # returns full_output_save_name
-#    if(exists('ANALYZE') && ANALYZE == TRUE) {
-#        interventions.predict[i] = table_name
-#        mean_output_filenames[i] = mean_output_table_name
-#        median_output_filenames[i] = median_output_table_name
-#        q1_output_filenames[i] = q1_output_table_name
-#        q3_output_filenames[i] = q3_output_table_name
-#        infected_sd_output_filenames[i] = infected_sd_output_table_name
-    #full_output_filenames[i] = full_output_save_name
-    #full_output_save_name
-#    }
-    #Rprof(NULL)
     full_output_save_name
 }
 if(!(exists('ANALYZE') && ANALYZE == TRUE)) {

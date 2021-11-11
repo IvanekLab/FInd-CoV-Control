@@ -1,3 +1,21 @@
+# AgentGen-v1.1.3.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 1.1.3.
+# Copyright (C) 2020-2021 Cornell University.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 # create database of all agents and their attributes
 #The default age_probabilities vector is based on finding the MLE 4-parameter
 #beta distribution that best fits age category data on agricultural workers
@@ -19,41 +37,43 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     duration_E = pmax(rlnorm(N, mulog, sdlog) - duration_IP, 0)  #Moghadas et al., 2020 & need for a non-negative duration
     #Create a population of susceptibles 
     agents <- data.frame(ID = 1:N,          #Unique ID number,
-                                            #Allows contact tracing
+                                            #Allows contact tracing (in a future version)
                          state = "S",       #Initially susceptible
+                                            #Will be overwritten later in this
+                                            #function for some employees.
                          infector_ID = 0,    
                          infector_state = '', #state of source of infection (if any)
-                         #Mixing = runif(nPop1,0,1),
                          mixing_propensity = 1, #leaving this in as a trivial
                                                 #property, for easier
                                                 #reintroduction later
                                                 #currently, it is unused
-                         #I'm going to reconceptualize the following as time
-                         #*of* transition, rather than time *since* transition
-                         #Thus, the value of a transition that has not happened
-                         #is infinity, not 0.
-                         time_E = Inf ,  #setup for time in E
-                         time_IA = Inf,  #setup for time in IA
-                         time_IP = Inf,  #setup for time in IP
-                         time_IM = Inf,  #setup for time in IM
-                         time_IS = Inf,  #setup for time in IS
-                         time_IC = Inf,  #setup for time in IC
+                         #The following are conceptualized as time *of*
+                         #transition into the state in question, not time
+                         #*since* transition. Thus, the value for a state that
+                         #has not (yet) been reached (and hence, a transition
+                         #that has not happened (yet) is infinity, not 0.
+                         #This may in the future be changed to NA.
+                         time_E = Inf,  
+                         time_IA = Inf,  
+                         time_IP = Inf,  
+                         time_IM = Inf,
+                         time_IS = Inf,
+                         time_IC = Inf,
                          time_R = Inf,
                          time_V1 = Inf,
                          time_V2 = Inf,
                          time_isolated = Inf,  #setup for time in Isolation
-                         time_tested = -Inf,    #Unlike most times, we want the "last time at which this person was tested," for someone who has never been tested, to be LESS than the last time at which someone was tested who has ever been tested
+                                               #unlike the states listed above,
+                                               #this is not a mutually exclusive
+                                               #state, e.g., someone who can be
+                                               #both IM and isolated.
+                         time_tested = -Inf,    #Unlike most times, we want the "last time at which this person was tested," for someone who has never been tested, to be LESS than the last time at which someone was tested who has ever been tested; hence the use of -Inf instead of Inf.
                          isolated = FALSE, #initially
                          Age_Cat = sample(Age_Categories, N, replace = TRUE,
                                           prob = age_probabilities),
-                         # Some of these require changes, but later
-                         #duration_E   = round(log(rlnorm(N, 5.2, 0.1))- 2.3),
-                         ##lognormal and 2.3 from Moghadas et al 2020 <- This
-                         ##was literally just always 3
-                         #also, removed unnecessary rounding
                          duration_E = duration_E,
-                         duration_IA = rgamma(N, shape=5, scale=1),#round(rgamma(N, shape=1.058, scale=2.174)), # Moghadas et al., 2020
-                         duration_IP = duration_IP, #rgamma(N, shape=1.058, scale=2.174), # Moghadas et al., 2020
+                         duration_IA = rgamma(N, shape=5, scale=1), # Moghadas et al., 2020
+                         duration_IP = duration_IP, # Moghadas et al., 2020
                          duration_IM = rgamma(N, shape=16, scale=0.5), #Michelle based on Kerr et al
                          duration_IS = rgamma(N, shape=34.0278, scale=0.4114),  #Michelle based on Kerr et al
                          duration_IC = rgamma(N, shape=34.0278, scale=0.4114),  #Michelle based on Kerr et al
@@ -61,7 +81,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
 
     #pre-calculating these for clarity and ease of debugging
     #as a bonus, the use of seq_len in this fashion means that guarding the
-    #operations with if statements is not necessary
+    #operations with if statements is not necessary (to avoid the problem where
+    #R interprets "1:0" as "c(1,0)", rather than "numeric(0)").
     index_E = seq_len(E0)
     index_IA = E0 + seq_len(IA0)
     index_IP = E0 + IA0 + seq_len(IP0)
@@ -83,14 +104,14 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     agents$time_IM[index_IM]= -runif(IM0, 0, agents$duration_IM[index_IM])
 
     agents$state[index_R] = 'R'
-    agents$time_R[index_R]= -runif(initial_recovered, 0, 365)
+    agents$time_R[index_R]= -runif(initial_recovered, 0, 365) #adequate for now; may required revision when immune waning is added
 
     agents$state[index_V1] = 'V1'
     agents$time_V1[index_V1] = -runif(initial_V1, 0, 21) #not a perfect model of reality, but good enough
 
     agents$state[index_V2] = 'V2'
-    agents$time_V2[index_V2] = -runif(initial_V2, 0, 21) #even worse, but shouldn't actually matter for anything
-    agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21 #again, not perfect, but whatever
+    agents$time_V2[index_V2] = -runif(initial_V2, 0, 21) #even worse, but adequate for now; may require revision when booster shots are added
+    agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21 #again, not perfect, but doesn't actually matter (currently, and probably ever)
 
     #generating transition times before the most recent
     #maybe not necessary, but seems like a good guard against weird bugs
@@ -104,11 +125,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     #Import text file of disease progression probabilities
     Probability_Matrix <- read.csv('Probability_Matrix.csv')
   
-    #Merge parameters for disease progression (Psymptomatic, Psevere, and Pcritical from table into data frame)
+    #Merge parameters for disease progression (Psymptomatic, Psevere, and Pcritical) from table into data frame
     agents=merge.data.frame(agents, Probability_Matrix, by="Age_Cat", all.x=TRUE)
-
-    #added to better model TBD
-    #agents$early_detectable = rbinom(N, 1, 0.5) #TBD make parameter
 
     #pre-calculating, as with times
     agents$symptomatic = rbinom(N, 1, agents$p_symptomatic) > 0
@@ -116,7 +134,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     agents$critical = rbinom(N, 1, agents$p_critical) > 0
     agents$death = rbinom(N, 1, agents$p_death) > 0
                                                                 
-    agents = agents[sample(nrow(agents)),] ## this is reshuffled database to randomize order of agents but Age_Cat is first column (remember to move if problem)
+    agents = agents[sample(nrow(agents)),] # this is a reshuffled database, to randomize order of agents
+                                           # reminder: Age_Cat is first column
   
   return(agents) 
   

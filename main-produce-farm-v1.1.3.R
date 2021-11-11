@@ -1,8 +1,27 @@
+# main-produce-farm-v1.1.3.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 1.1.3.
+# Copyright (C) 2020-2021 Cornell University.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
 #ABM model
 #individual based
 #each person/agent has properties = parameters, attributes behaviours
 #model each person individually
-main_produce_farm_fn = function() { #will it work? the goal is to get more meaningful debug data
+main_produce_farm_fn = function() { #the goal is to get more meaningful debug data
 library(Rlab)
  
 source("AgentGen-v1.1.3.R")
@@ -22,7 +41,7 @@ source("ABM-v1.1.3.R")
 #These shouldn't vary on a scenario-by-scenario or facility-by-facility basis,
 #with the possible exception of "what if a more human-to-human transmissible
 #strain evolves and becomes dominant"--type scenarios.
-    #2021-07-18 Oh hey, forshadowing
+    #2021-07-18 Oh hey, foreshadowing!
 #Otherwise, modification should occur only in response to updates in knowledge
 #about viral properties.
 #Default values from Moghadas et al. 2020 (gives range of .0575 to .0698 for
@@ -49,14 +68,12 @@ if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
     V1_symptoms = V1_net_symptoms ** V2_exp #haven't seen them separated, so doing the best I can
     V1_susceptibility = V1_net_symptoms / V1_symptoms
 
-#    cat(V2_susceptibility, V2_symptoms, V1_susceptibility, V1_symptoms,'\n')
-
     vaccine_parameters = list(    
     V1_susceptibility = V1_susceptibility,
     V2_susceptibility = V2_susceptibility,
     V1_symptoms = V1_symptoms,
     V2_symptoms = V2_symptoms,
-    vaccination_interval = 21 #changed from 14 days to 21 days based on practice with Pfizer 
+    vaccination_interval = 21 # based on Pfizer 
     )
 } else {
     vaccine_parameters = list(    
@@ -64,7 +81,7 @@ if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
         V2_susceptibility = 1 - .9,
         V1_symptoms = (1 - .88) / (1 - .8), #purely default; if I've seen an estimate of this, I do not recall it
         V2_symptoms = (1 - .94) / (1 - .9),
-        vaccination_interval = 21 #changed from 14 days to 21 days based on practice with Pfizer 
+        vaccination_interval = 21 
     )
 }
 
@@ -118,8 +135,8 @@ scenario_parameters = ScenarioParameters(work_R0 = net_work_R0,
                                          housing_dormitory = TRUE, 
                                          work_testing_rate = work_testing_rate,
                                          isolation_duration = isolation_duration, 
-                                         home_vaccination_rate = vaccination_rate, #to account for two home intervals on Day off 
-                                         lambda = community_foi, #0.012, #0.012 baseline 
+                                         home_vaccination_rate = vaccination_rate, 
+                                         lambda = community_foi, 
                                          crews_by_team = crews_by_team, 
                                          crew_sizes = crew_sizes, 
                                          rates = example_rates,
@@ -163,11 +180,9 @@ step_index = (1:steps) * (1/3) #step_length
 
 
 ###### code to run simulation with num_sims iterations
-#https://stackoverflow.com/questions/20730537/add-new-row-to-matrix-one-by-one/20730711
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
     set.seed(-778276078) #random 32-bit signed integer generated using atmospheric noise
-                         #for reproducible output during development/debugging
-                         #should be commented out for production use
+                         #for reproducible output
 }
 full_output = array(0, c(steps, 23, num_sims))
 
