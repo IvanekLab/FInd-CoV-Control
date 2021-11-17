@@ -71,7 +71,9 @@ unavailable = function(data) {
                                 data[,'IA_isolated',] + data[,'IP_isolated',] +
                                 data[,'IM_isolated',] + data[,'R_isolated',] +
                                 data[,'V1_isolated',] + data[,'V2_isolated',] +
-                                data[,'V1E_isolated',] + data[,'V2E_isolated',]
+                                data[,'V1E_isolated',] + data[,'V2E_isolated',] +
+                                data[,'W_isolated',] + data[,'WE_isolated',] +
+                                data[,'RE_isolated',]
     )
 }
 

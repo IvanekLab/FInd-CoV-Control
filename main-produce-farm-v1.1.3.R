@@ -22,6 +22,7 @@
 #each person/agent has properties = parameters, attributes behaviours
 #model each person individually
 main_produce_farm_fn = function() { #the goal is to get more meaningful debug data
+    #print('main fn')
 library(Rlab)
  
 source("AgentGen-v1.1.3.R")
@@ -178,27 +179,47 @@ testing_rate_list = list(home = 0, work = get('work_testing_rate', scenario_para
 steps = scenario_parameters$nTime1 * 3
 step_index = (1:steps) * (1/3) #step_length
 
+#waning parameter time
+#assuming waning to full susceptibility to infection, but no loss of protection against severe infection conditional upon infection
+#loosely based on https://pubmed.ncbi.nlm.nih.gov/34619098/
+waning_parameters = list(W_susceptibility = 1, 
+                         R_susceptibility = vaccine_parameters$V2_susceptibility,
+                         W_symptoms = vaccine_parameters$V2_symptoms,
+                         R_symptoms = vaccine_parameters$V2_symptoms,
+                         waning_rate = log(.88 / .47) / (4/12 * 365.2425))
+
+#print(waning_parameters)
 
 ###### code to run simulation with num_sims iterations
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
     set.seed(-778276078) #random 32-bit signed integer generated using atmospheric noise
                          #for reproducible output
 }
-full_output = array(0, c(steps, 23, num_sims))
+full_output = array(0, c(steps, 29, num_sims))
 
+#print('main loop')
 sys_time_start = Sys.time()
 for (i in 1:num_sims) {
+    #print('iteration')
     agents <- AgentGen(N, E0 = n_exposed, IA0 = 0, IP0 = 0, IM0 = n_mild, initial_recovered = initial_recovered, initial_V1 = initial_V1, initial_V2 = initial_V2, SEVERE_MULTIPLIER = SEVERE_MULTIPLIER)
-
+#print('agents done')
     agents$V1_symptomatic = agents$symptomatic & rbinom(N, 1, vaccine_parameters$V1_symptoms)
     agents$V2_symptomatic = agents$symptomatic & rbinom(N, 1, vaccine_parameters$V2_symptoms)
-
+    #print('into it')
+    agents$W_symptomatic = agents$symptomatic & rbinom(N, 1, waning_parameters$W_symptoms) #need to add these
+    agents$R_symptomatic = agents$symptomatic & rbinom(N, 1, waning_parameters$R_symptoms) #need to add these
+    #print('half')
+    agents$duration_V2 = rexp(N, waning_parameters$waning_rate)
+    agents$duration_R = rexp(N, waning_parameters$waning_rate)
+                                                
+#print('model')
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
                  virus_parameters, testing_parameters, vaccine_parameters, scenario_parameters,
                  steps = steps, step_length_list = step_length_list,
                  testing_rate_list = testing_rate_list,
-                 vaccination_rate_list = vaccination_rate_list)
+                 vaccination_rate_list = vaccination_rate_list,
+                 waning_parameters = waning_parameters)
     agents = model$agents
     output = model$Out1
 

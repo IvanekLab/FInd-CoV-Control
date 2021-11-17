@@ -146,7 +146,7 @@ if(PARALLEL) {
   #in the current version, we use %do% explicitly anyway
   #but this may change in a future version
 
-full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE) %do% {
+full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE) %dopar% {
     parameter_set = parameter_sets[i,]
     double_wrap_reduction = parameter_set$double_wrap_reduction
     double_wrap_temp_test = parameter_set$double_wrap_temp_test
