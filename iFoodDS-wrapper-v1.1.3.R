@@ -173,28 +173,6 @@ f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
 		summaryRprof(rp_filename)
 	}
 }
-
-#print('before')
-full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'Shared', 'facility-comparable', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
-#print('after')
-#full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '0', '0', working_directory = '.', 'Part3', '2020-all-sus', FALSE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '1')
-
-#full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '0', '0', working_directory = '.', 'Part3', '2020-all-sus', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2')
-
-
-
-
-#default, but with no vaccinated or immune at simulation start
-#full_run(10, 3, 3, 90, 'Shared', 'Intermediate', NULL, 'Intermediate', 1, 0, 0, 0, 'All-Susceptible', 'irr', analyze_only = FALSE)
-
-#default
-
-#full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'Shared', 'one-each', analyze_only = 'TRUE', SEVERE_MULTIPLIER = 1)
-#full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '0', '0', working_directory = '.', 'Shared', 'one-each-all-sus', analyze_only = 'FALSE', SEVERE_MULTIPLIER = 1)
-
-
-#full_run(10, 3, 3, 90, 'Shared', 'Intermediate', 'NULL', 'Intermediate', 1, 0, .2, .4, 'Delta-Shared', '', DELTA = TRUE, analyze_only = TRUE)
-
-#default, but with private hoursing
-#full_run(10, 3, 3, 90, 'Private', NULL, 'Intermediate', 'Intermediate', 1, 0, .2, .4, 'Default-Private', 12345)
+#note that several of these parameters are not actually used
+full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'facility-with-waning', 'comparable', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
 
