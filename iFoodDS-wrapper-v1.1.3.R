@@ -181,4 +181,4 @@ f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
 		summaryRprof(rp_filename)
 	}
 }
-full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '0', '0', working_directory = '.', 'waning-branch', '', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
+full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'waning-branch', 'fixed-parameters', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
