@@ -178,6 +178,16 @@ on_ps_1 = c(1/3, rep(1, 31), rep(0, 31), rep(0, 10), rep(1/3, 10))
 on_ps_2 = c(1/3, rep(0, 31), rep(1, 31), rep(0, 10), rep(1/3, 10))
 on_cs =   c(1/3, rep(0, 31), rep(0, 31), rep(1, 10), rep(1/3, 10))
 
+###
+#working on proper dormitory_contacts parameters
+#treating dormitory as the shift after work (or work shift and shift after work on the weekend)
+#Actually, this really belongs in ContactsGen or its replacement
+#Because it's actually non-trivial . . . except that I see that the dormitory contacts parameter in the core v1.1.4 version has a small flaw (diagonals are not excluded). So that needs to be fixed there; for now, we can do the simple thing here
+###
+#NB: Diagonals are intentionally not excluded here for maximum comparability
+#at_home_ps_1 = rbind(c(1/3, rep(0, 31), rep(0, 31), rep(1/3, 10), rep(1/9, 10)),
+
+
 ####
 #new parameter
 #putting all between-shift floaters at start of day for testing purposes only
