@@ -1,30 +1,13 @@
-# iFoodDS-wrapper-v1.1.3.R is part of Food INdustry CoViD Control Tool
-# (FInd CoV Control), version 1.1.3.
-# Copyright (C) 2020-2021 Cornell University.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-# 
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-
-# Main function to source(...), followed by a call to full_run(...)
+#Usage example, with default values:
+#full_run(10, 3, 3, 90, 'Private', NULL, 'Intermediate', 'Intermediate', 1, 0, .2, .4, 'iFoods-Private')
+#Or for shared housing:
+#full_run(10, 3, 3, 90, 'Shared', 'Intermediate', 'NULL', 'Intermediate', 1, 0, .2, .4, 'iFoods-Public')
 
 #Note: Only one of social_distancing_shared_housing and community_transmission
 #will be used; a good practice is to set the other one to something invalid
 #(e.g., NULL) as a failsafe.
-#Setting analyze_only to TRUE allows one to reanalyze an existing output set
-#with a modified analyze.R; this is not used in production code, but is useful
-#for development.
+#Set analyze_only to TRUE to reanalyze an existing output set with modified
+#analyze.R
 
 safe.integer = function(s) {
     i = strtoi(s)
@@ -50,9 +33,6 @@ safe.logical = function(s) {
     b
 }
 
-#in production use (with the web interface), all of the parameters with
-#default values (DELTA, analyze_only, SEVERE_MULTIPLIER, and PARALLEL are
-#left unchanged.
 full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
                     days, employee_housing, social_distancing_shared_housing,
                     community_transmission, social_distancing_work,
@@ -88,7 +68,7 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
        days == 90 &&
        employee_housing == 'Shared' &&
        social_distancing_shared_housing == 'Intermediate' &&
-       #community_transmission == NULL && #value doesn't matter if employee_housing == 'Shared'
+       #community_transmission == NULL &&
        social_distancing_work == 'Intermediate' &&
        n_no_symptoms == 1 &&
        n_mild == 0 &&
@@ -101,6 +81,8 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
     crew_sizes = rep(workers_per_crew, crews_per_supervisor * supervisors) 
     N = sum(crew_sizes) + length(crew_sizes) + supervisors + 1 
     
+    #days -- done
+
     if((tolower(employee_housing) == 'private') || (tolower(employee_housing) == 'individual')) {
         housing_dormitory = FALSE
         dormitory_R0 = 0 
@@ -137,11 +119,11 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
         stop(paste('Invalid employee_housing:', employee_housing))
     }
 
-    if(tolower(social_distancing_work) == 'high') {
+    if(tolower(social_distancing_work) == 'high') {           #fixed 2021-08-17
         double_wrap_baseline_work_R0 = 2
     } else if(tolower(social_distancing_work) == 'intermediate') {
         double_wrap_baseline_work_R0 = 3
-    } else if(tolower(social_distancing_work) == 'low') {
+    } else if(tolower(social_distancing_work) == 'low') {  #fixed 2021-08-17
         double_wrap_baseline_work_R0 = 4
     } else {
         stop(paste('Invalid social_distancing_work:', social_distancing_work))
@@ -151,11 +133,20 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
         DELTA_VAX = TRUE
     }
 
-    n_exposed = n_no_symptoms # this should ideally be split up into exposed, pre-symptomatic, and asymptomatic, and may be in a future version; the difference is small, though, and this is sufficient for now.
+    n_exposed = n_no_symptoms # done, although this should ideally be split up into exposed, pre-symptomatic, and asymptomatic; the difference is small, though
+    #n_mild -- done
+    #although note that we might consider in the future allowing initial exposed and mild to be drawn from the vaccinated
+    #fraction_recovered -- done
+    #fraction_fully_vaccinated -- done
 
+    #subdirectory = paste(set_name, '-files/', sep = '')
     subdirectory = paste(folder_name, '/', sep = '')
     dir.create(subdirectory)
-    if(analyze_only) {
+    #wd = getwd()
+    #setwd(subdirectory)
+    if(analyze_only) { # these should be saved in a separate file once we start having more complex schedules
+    #    steps = days * 3
+    #    step_index = (1:steps) * (1/3)
     } else {
         source('double-wrapped-v1.1.3.R', local = TRUE)
         double_wrapped_fn()
@@ -164,6 +155,7 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
     step_index = (1:steps) * (1/3)
     source('analyze-v1.1.3.R', local = TRUE)
     analyze_fn()
+    #setwd(wd)
 }
 
 FIXED_SEED = TRUE
@@ -181,4 +173,28 @@ f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
 		summaryRprof(rp_filename)
 	}
 }
-#full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '0', '0', working_directory = '.', 'Shared', '', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2')
+
+#print('before')
+full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'Shared', 'facility-comparable', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
+#print('after')
+#full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '0', '0', working_directory = '.', 'Part3', '2020-all-sus', FALSE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '1')
+
+#full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '0', '0', working_directory = '.', 'Part3', '2020-all-sus', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2')
+
+
+
+
+#default, but with no vaccinated or immune at simulation start
+#full_run(10, 3, 3, 90, 'Shared', 'Intermediate', NULL, 'Intermediate', 1, 0, 0, 0, 'All-Susceptible', 'irr', analyze_only = FALSE)
+
+#default
+
+#full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'Shared', 'one-each', analyze_only = 'TRUE', SEVERE_MULTIPLIER = 1)
+#full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '0', '0', working_directory = '.', 'Shared', 'one-each-all-sus', analyze_only = 'FALSE', SEVERE_MULTIPLIER = 1)
+
+
+#full_run(10, 3, 3, 90, 'Shared', 'Intermediate', 'NULL', 'Intermediate', 1, 0, .2, .4, 'Delta-Shared', '', DELTA = TRUE, analyze_only = TRUE)
+
+#default, but with private hoursing
+#full_run(10, 3, 3, 90, 'Private', NULL, 'Intermediate', 'Intermediate', 1, 0, .2, .4, 'Default-Private', 12345)
+
