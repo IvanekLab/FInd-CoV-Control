@@ -4,6 +4,12 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
     N <-nrow(agents)
 
+    ##
+    #Kludging in a hard-coded handling of special functions for testing purposes
+    ##
+
+    special_mask = c(rep(FALSE,32), TRUE, rep(FALSE, 40), TRUE, rep(FALSE,9), TRUE, rep(FALSE, 19))
+
     Out1 <- data.frame(S = rep(0, steps),
                        E = rep(0, steps),
                        IA = rep(0, steps),
@@ -34,7 +40,9 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                        n_scheduled = rep(0, steps),
                        n_absent = rep(0, steps),
                        W_isolated = rep(0, steps),  #
-                       WE_isolated = rep(0, steps) #
+                       WE_isolated = rep(0, steps), #
+                       n_special_scheduled = rep(0, steps),
+                       n_special_absent = rep(0, steps)
     )
 
     #will be used for visualizing epidemics later
@@ -605,6 +613,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     Out1$W_isolated[k] <- sum(agents$state == "W" & agents$isolated)
     Out1$WE_isolated[k] <-  sum(agents$state == "WE" & agents$isolated)
     Out1$RE_isolated[k] <-  sum(agents$state == "RE" & agents$isolated)
+    Out1$n_special_scheduled[k] = sum(agent_presence & special_mask) #in current kludged form, should always be 1 for work shifts -- check!
+    Out1$n_special_absent[k] = sum((agent_presence & special_mask) * (agents$state %in% c('IS', 'IC', 'D') | agents$isolated))
   }
     #print('ABM completed')
 

@@ -160,7 +160,7 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 1000
+double_wrap_num_sims = 10
 
 f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
 	if(profile_p) {
@@ -174,5 +174,5 @@ f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
 	}
 }
 #note that several of these parameters are not actually used
-full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'facility-with-waning', 'comparable', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
+full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'facility-with-waning-with-special-10x', 'comparable', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
 

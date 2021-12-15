@@ -174,9 +174,9 @@ contacts_list = list(ps_1 = production_shift_1 * scaling_factor,
 ####
 #need to systematize this instead of just kludging it for the demo value
 ####
-on_ps_1 = c(1/3, rep(1, 31), rep(0, 31), rep(0, 10), rep(1/3, 10))
-on_ps_2 = c(1/3, rep(0, 31), rep(1, 31), rep(0, 10), rep(1/3, 10))
-on_cs =   c(1/3, rep(0, 31), rep(0, 31), rep(1, 10), rep(1/3, 10))
+on_ps_1 = c(1/3, rep(1, 41), rep(0, 41), rep(0, 10), rep(1/3, 10))
+on_ps_2 = c(1/3, rep(0, 41), rep(1, 41), rep(0, 10), rep(1/3, 10))
+on_cs =   c(1/3, rep(0, 41), rep(0, 41), rep(1, 10), rep(1/3, 10))
 
 ###
 #working on proper dormitory_contacts parameters
@@ -194,7 +194,7 @@ on_cs =   c(1/3, rep(0, 31), rep(0, 31), rep(1, 10), rep(1/3, 10))
 ####
 agent_presence_list = list(ps_1 = ifelse(ceiling(on_ps_1), TRUE, FALSE),
                            ps_2 = ifelse(floor(on_ps_2), TRUE, FALSE),
-                           cs =   ifelse(floor(on_ps_2), TRUE, FALSE),
+                           cs =   ifelse(floor(on_cs), TRUE, FALSE),
                            weekend_ps_1 = FALSE,
                            weekend_ps_2 = FALSE,
                            weekend_cs = FALSE)
@@ -264,7 +264,7 @@ if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
                          #for reproducible output during development/debugging
                          #should be commented out for production use
 }
-full_output = array(0, c(steps, 31, num_sims))
+full_output = array(0, c(steps, 33, num_sims))
 
 #print('main loop')
 sys_time_start = Sys.time()

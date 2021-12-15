@@ -19,4 +19,6 @@ dev.off()
 #> max(farm/sum(farm))/max(shift_sum/sum(shift_sum))
 #[1] 0.5131786
 
-
+png('facility-heatmap-original-order.png', height = 1000, width = 1000)
+image.plot(shift_sum, col = civ, xaxt = 'n', yaxt = 'n', legend.lab = 'Relative Contact Rate', legend.cex = 4, legend.width = 3, axis.args = list(lwd.ticks = 0, at = c(0, max(shift_sum)), labels = rep('',2)), zlim = c(0,max(shift_sum)))
+dev.off()

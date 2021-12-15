@@ -198,6 +198,26 @@ shiftwise_unavailable_fraction = function(data) {
     data[,'n_absent',] / data[,'n_scheduled',]
 }
 
+shiftwise_short = function(data) {
+    shiftwise_unavailable_fraction(data) > .15
+}
+
+shiftwise_special_unavailable = function(data) {
+    data[,'n_special_absent',]
+}
+
+shiftwise_special_unavailable_fraction = function(data) {
+    data[,'n_special_absent',] / data[,'n_special_scheduled',]
+}
+
+shiftwise_special_short = function(data) {
+    shiftwise_special_unavailable_fraction(data) > .15
+}
+
+shiftwise_any_short = function(data) {
+    shiftwise_short(data) | shiftwise_special_short(data)
+}
+
 end_boxplot = function(filename, outcome_fn, xlab, summation_mode = 'before', work_only = FALSE, average = FALSE, xlim = NULL, percent = FALSE, main_title = NULL) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
     if(work_only) {
@@ -404,6 +424,12 @@ main_title = ''
 
 end_boxplot('Average-Unavailable', unavailable, xlab = paste('Average Absences per Shift (out of ', N, ' workers)'), work_only = TRUE, average = TRUE, main_title = main_title)
 end_boxplot('Fraction-Short', short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
+
+end_boxplot('Shiftwise-Average-Unavailable', shiftwise_unavailable, xlab = paste('Average Absences per Shift (out of ', N, ' workers)'), work_only = TRUE, average = TRUE, main_title = main_title)
+end_boxplot('Shiftwise-Fraction-Short', shiftwise_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
+end_boxplot('Shiftwise-Fraction-Special-Short', shiftwise_special_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
+end_boxplot('Shiftwise-Fraction-Any-Short', shiftwise_any_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
+
 
 #png(paste(set_name, 'first-day-short-paneled.png', sep = '-'), height = 1000, width = 2000)
 #par(mfrow = c(1,2))
