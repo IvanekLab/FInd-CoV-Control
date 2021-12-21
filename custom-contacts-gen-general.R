@@ -1,6 +1,9 @@
 workers_per_line = 10
-n_lines = 3
-#n_production_shifts #1 or 2
+n_lines = 5
+n_shift_floaters = 20
+n_production_shifts = 1 # or 1
+n_cleaners = 40
+n_all_floaters = 40
 
 
 tt = matrix(1, nrow = workers_per_line, ncol = workers_per_line)
@@ -29,29 +32,24 @@ for(i in 1:n_lines) {
     }
 }
 
-team_minus_sup = rbind(cbind(crew, diff_crew, diff_crew),
-                       cbind(diff_crew, crew, diff_crew),
-                       cbind(diff_crew, diff_crew, crew))
+team_minus_sup = team_minus_supervisor
 
-suprow = matrix(11/29, nrow = 1, ncol = 30)
+#possibly, this should just be a static number. but keeping with the current approach for now . . .
+#suprow = matrix(11/29, nrow = 1, ncol = 30)
+suprow = matrix((rowSums(crew)[1] + (n_lines - 1) * rowSums(diff_crew)[1]) / (workers_per_line * n_lines - 1), nrow = 1, ncol = workers_per_line * n_lines)
 supcol = t(suprow)
 
 team = rbind(cbind(0, suprow),
              cbind(supcol, team_minus_sup))
 
-diff_team = matrix(.1, nrow = 31, ncol = 31)
+shift_floaters_contact_rate = rowSums(team)[1] / (workers_per_line * n_lines)
 
-teams = team#rbind(cbind(team, diff_team),
-        #      cbind(diff_team, team))
+shift_floaters = (matrix(1, nrow = n_shift_floaters, ncol = n_shift_floaters) - diag(1, nrow = n_shift_floaters)) * shift_floaters_contact_rate
 
-shift_floaters_contact_rate = rowSums(teams)[1] / 30
-
-shift_floaters = crew * shift_floaters_contact_rate
-
-shift_floater_tall = matrix(shift_floaters_contact_rate, nrow = 31, ncol = 10)
+shift_floater_tall = matrix(shift_floaters_contact_rate, nrow = (workers_per_line * n_lines + 1), ncol = n_shift_floaters)
 shift_floater_wide = t(shift_floater_tall)
 
-production_shift = rbind(cbind(teams, shift_floater_tall),
+production_shift = rbind(cbind(team, shift_floater_tall),
                          cbind(shift_floater_wide, shift_floaters))
 
 #empty_ps = matrix(0, nrow = 72, ncol = 72)
@@ -64,67 +62,110 @@ production_shift = rbind(cbind(teams, shift_floater_tall),
 #production_shift_2 = rbind(cbind(production_shift, other_production_shift),
 #                           cbind(other_production_shift, other_production_shift))
 
-cleaning_shift_contact_rate = rowSums(production_shift)[1] / 9 #19
+cleaning_shift_contact_rate = rowSums(production_shift)[1] / (n_cleaners - 1) #19
 
-cleaning_shift = matrix(cleaning_shift_contact_rate, nrow = 10, ncol = 10) - diag(cleaning_shift_contact_rate, nrow = 10)
+cleaning_shift = matrix(cleaning_shift_contact_rate, nrow = n_cleaners, ncol = n_cleaners) - diag(cleaning_shift_contact_rate, nrow = n_cleaners)
 
+production_shift_size = 1 + workers_per_line * n_lines + n_shift_floaters
 
-all_floaters_contact_rate = rowSums(cleaning_shift)[1] / (41 * 2 + 10 + 3 * (10 - 1 + 1) - (10 + 1)) #+1 because of the manager
-                                                                                          #3* because they encounter each other all 3 shifts
+all_floaters_contact_rate = rowSums(cleaning_shift)[1] / (n_production_shifts * production_shift_size + n_cleaners + (1 + n_production_shifts) * (n_all_floaters) - (n_all_floaters + 1))
 
-all_floaters = all_floaters_contact_rate * crew
-
-
-production_shift_1_minus_manager = rbind(cbind(production_shift,
-                                               matrix(0, nrow = 41, ncol = 41 + 10),
-                                               matrix(all_floaters_contact_rate, nrow = 41, ncol = 10)),
-                                         matrix(0, nrow = 41 + 10, ncol = 2 * 41 + 10 + 10),
-                                         cbind(matrix(all_floaters_contact_rate, nrow = 10, ncol = 41),
-                                               matrix(0, nrow = 10, ncol = 41 + 10),
-                                               all_floaters))
-
-manager_row_1 = cbind(matrix(all_floaters_contact_rate, nrow = 1, ncol = 41),
-                      matrix(0, nrow = 1, ncol = 41 + 10),
-                      matrix(all_floaters_contact_rate, nrow = 1, ncol = 10))
-manager_col_1 = t(manager_row_1)
-
-production_shift_1 = rbind(cbind(0, manager_row_1),                                 
-                           cbind(manager_col_1, production_shift_1_minus_manager))
-
-production_shift_2_minus_manager = rbind(matrix(0, nrow = 41, ncol = 2 * 41 + 10 + 10),
-                                         cbind(matrix(0, nrow = 41, ncol = 41),
-                                               production_shift,
-                                               matrix(0, nrow = 41, ncol = 10),
-                                               matrix(all_floaters_contact_rate, nrow = 41, ncol = 10)),
-                                         matrix(0, nrow = 10, ncol = 2 * 41 + 10 + 10),
-                                         cbind(matrix(0, nrow = 10, ncol = 41),
-                                               matrix(all_floaters_contact_rate, nrow = 10, ncol = 41),
-                                               matrix(0, nrow = 10, ncol = 10),
-                                               all_floaters))
-
-manager_row_2 = cbind(matrix(0, nrow = 1, ncol = 41),
-                      matrix(all_floaters_contact_rate, nrow = 1, ncol = 41),
-                      matrix(0, nrow = 1, ncol = 10),
-                      matrix(all_floaters_contact_rate, nrow = 1, ncol = 10))
-manager_col_2 = t(manager_row_2)
+all_floaters = matrix(all_floaters_contact_rate, nrow = n_all_floaters, ncol = n_all_floaters) - diag(all_floaters_contact_rate, nrow = n_all_floaters)
 
 
-production_shift_2 = rbind(cbind(0, manager_row_2),                                 
-                           cbind(manager_col_2, production_shift_2_minus_manager))
+almost_all_size = production_shift_size * (n_production_shifts) + n_cleaners + n_all_floaters
 
-manager_row_c = cbind(matrix(0, nrow = 1, ncol = 2 * 41), matrix(all_floaters_contact_rate, nrow = 1, ncol = 10 + 10))
-manager_col_c = t(manager_row_c)
 
-cleaning_shift_without_manager = rbind(matrix(0, nrow = 2 * 41, ncol = 2 * 41 + 10 + 10),
-                                       cbind(matrix(0, nrow = 10, ncol = 2 * 41),
-                                             cleaning_shift,
-                                             matrix(all_floaters_contact_rate, nrow = 10, ncol = 10)),
-                                       cbind(matrix(0, nrow = 10, ncol = 2 * 41),
-                                             matrix(all_floaters_contact_rate, nrow = 10, ncol = 10),
-                                             all_floaters))
+ps1_1x1 = production_shift
+ps1_1x2 = matrix(0, nrow = production_shift_size, ncol = production_shift_size * (n_production_shifts > 1))
+ps1_1xC = matrix(0, nrow = production_shift_size, ncol = n_cleaners)
+ps1_1xF = matrix(all_floaters_contact_rate, nrow = production_shift_size, ncol = n_all_floaters)
 
-cleaning_shift_full = rbind(cbind(0, manager_row_c),
-                            cbind(manager_col_c, cleaning_shift_without_manager))
+ps1_1 = cbind(ps1_1x1, ps1_1x2, ps1_1xC, ps1_1xF)
+
+ps1_2 = matrix(0, nrow = production_shift_size * (n_production_shifts > 1), ncol = almost_all_size)
+ps1_C = matrix(0, nrow = n_cleaners, almost_all_size)
+
+ps1_Fx1 = matrix(all_floaters_contact_rate, nrow = n_all_floaters, ncol = production_shift_size)
+ps1_Fx2 = matrix(0, nrow = n_all_floaters, ncol = production_shift_size * (n_production_shifts > 1))
+ps1_FxC = matrix(0, nrow = n_all_floaters, ncol = n_cleaners)
+ps1_FxF = all_floaters
+
+ps1_F = cbind(ps1_Fx1, ps1_Fx2, ps1_FxC, ps1_FxF)
+
+production_shift_1_minus_manager = rbind(ps1_1,
+                                         ps1_2,
+                                         ps1_C,
+                                         ps1_F)
+
+ps1_Mx1 = matrix(all_floaters_contact_rate, nrow = 1, ncol = production_shift_size)
+ps1_Mx2 = matrix(0, nrow = 1, ncol = production_shift_size * (n_production_shifts > 1))
+ps1_MxC = matrix(0, nrow = 1, ncol = n_cleaners)
+ps1_MxF = matrix(all_floaters_contact_rate, nrow = 1, ncol = n_all_floaters)
+
+ps1_M = cbind(ps1_Mx1, ps1_Mx2, ps1_MxC, ps1_MxF)
+
+production_shift_1 = rbind(cbind(0, ps1_M),                                 
+                           cbind(t(ps1_M), production_shift_1_minus_manager))
+
+if(n_production_shifts == 1) {
+    production_shift_2 = matrix(0, nrow = 1 + almost_all_size, ncol =  1 + almost_all_size)
+} else if(n_production_shifts == 2) {
+    ps2_1 = ps1_2
+    ps2_2 = cbind(ps1_1x2, ps1_1x1, ps1_1xC, ps1_1xF) #first two swapped from above
+    ps2_C = ps1_C
+
+    ps2_F = cbind(ps1_Fx2, ps1_Fx1, ps1_FxC, ps1_FxF) #first two swapped from above
+
+    production_shift_2_minus_manager = rbind(ps2_1,
+                                             ps2_2,
+                                             ps2_C,
+                                             ps2_F)
+
+    ps2_Mx1 = ps1_Mx2
+    ps2_Mx2 = ps1_Mx1
+    ps2_MxC = ps1_MxC
+    ps2_MxF = ps1_MxF
+
+    ps2_M = cbind(ps2_Mx1, ps2_Mx2, ps2_MxC, ps2_MxF)
+
+    production_shift_2 = rbind(cbind(0, ps2_M),                                 
+                               cbind(t(ps2_M), production_shift_2_minus_manager))
+} else {
+    stop('n_teams must be 1 or 2')
+}
+
+C_1 = matrix(0, nrow = production_shift_size, ncol = almost_all_size)
+C_2 = ps1_2
+
+C_Cx1 = matrix(0, nrow = n_cleaners, ncol = production_shift_size)
+C_Cx2 = matrix(0, nrow = n_cleaners, ncol = production_shift_size * (n_production_shifts > 1))
+C_CxC = cleaning_shift
+C_CxF = matrix(all_floaters_contact_rate, nrow = n_cleaners, ncol = n_all_floaters)
+
+C_C = cbind(C_Cx1, C_Cx2, C_CxC, C_CxF)
+
+C_Fx1 = matrix(0, nrow = n_all_floaters, ncol = production_shift_size)
+C_Fx2 = ps1_Fx2
+C_FxC = t(C_CxF)
+C_FxF = ps1_FxF
+
+C_F = cbind(C_Fx1, C_Fx2, C_FxC, C_FxF)
+
+cleaning_shift_without_manager = rbind(C_1,
+                                       C_2,
+                                       C_C,
+                                       C_F)
+
+C_Mx1 = matrix(0,nrow = 1, ncol = production_shift_size)
+C_Mx2 = matrix(0,nrow = 1, ncol = production_shift_size * (n_production_shifts > 1))
+C_MxC = matrix(all_floaters_contact_rate, nrow = 1, ncol = n_cleaners)
+C_MxF = matrix(all_floaters_contact_rate, nrow = 1, ncol = n_all_floaters)
+
+C_M = cbind(C_Mx1, C_Mx2, C_MxC, C_MxF)
+
+cleaning_shift_full = rbind(cbind(0, C_M),
+                            cbind(t(C_M), cleaning_shift_without_manager))
 
 shift_sum = production_shift_1 + production_shift_2 + cleaning_shift_full
 #rowSums(shift_sum)

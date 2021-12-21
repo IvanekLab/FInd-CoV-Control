@@ -136,7 +136,7 @@ scenario_parameters = ScenarioParameters(work_R0 = net_work_R0,
 #work_contacts <- ContactsGen(scenario_parameters$crews_by_team, scenario_parameters$crew_sizes,
 #                             scenario_parameters$rates, scenario_parameters$average)
 
-source('custom-contacts-gen-comparable.R')
+source('custom-contacts-gen-general.R')
 N <<- dim(production_shift_1)[1] #little kludgey
 
 ####
