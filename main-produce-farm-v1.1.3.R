@@ -196,6 +196,7 @@ if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
                          #for reproducible output
 }
 full_output = array(0, c(steps, 29, num_sims))
+fuller_output = list()
 
 #print('main loop')
 sys_time_start = Sys.time()
@@ -223,6 +224,9 @@ for (i in 1:num_sims) {
     agents = model$agents
     output = model$Out1
 
+    agentss = model$agentss
+    fuller_output[[i]] = agentss
+
     full_output[,,i] = as.matrix(output) #this works; for whatever reason,
                                          #as.array does not
 } # for (i in 1:num_sims)
@@ -232,4 +236,5 @@ cat(sys_time_end - sys_time_start, 'for', row_name,'\n')
 
 colnames(full_output) = colnames(output)
 saveRDS(full_output, full_output_save_name)
+saveRDS(fuller_output, paste0(full_output_save_name,'-fuller'))
 } #main_produce_farm_fn 

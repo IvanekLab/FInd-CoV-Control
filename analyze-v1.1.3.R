@@ -39,12 +39,18 @@ schedule = rep(week, ceiling(days/7))[1:(3 * days)]
 work_shifts = (schedule == 'work')
 
 #summary plots
-combine = function(data, outcome_fn, summary_fn, summation_mode) {
+combine = function(data, outcome_fn, summary_fn, summation_mode, using_agentss = FALSE) {
     if(!(summation_mode %in% c(FALSE, 'after', 'before'))) {
         stop('Invalid summation mode')
     }
-    dimnames(data) = list(rep(NA, dim(data)[1]), colnames(data), rep(NA, dim(data)[3])) #a bit kludgey, but it works -- at some point in the future, we may explicitly save data with dimnames
+    if(!using_agentss) {
+        dimnames(data) = list(rep(NA, dim(data)[1]), colnames(data), rep(NA, dim(data)[3])) #a bit kludgey, but it works -- at some point in the future, we may explicitly save data with dimnames
+    }
     outcomes = outcome_fn(data)
+    #if(using_agentss) {
+    #    print(outcomes)
+    #    stop()
+    #}
     if(summation_mode == 'before') {
         outcomes = apply(outcomes, 2, cumsum) / (steps / days) #slightly awkward "phrasing", but may guard against future errors better than a simple "3"
     }
@@ -53,12 +59,33 @@ combine = function(data, outcome_fn, summary_fn, summation_mode) {
         print('Are you sure this is a good idea?')
         summarized = cumsum(summarized) / (steps / days) #slightly awkward "phrasing", but may guard against future errors better than a simple "3"
     }
+    #print(summarized)
     summarized
 }
 
 #outcome_fn's
 infected = function(data) {
     data[,'IA',] + data[,'IP',] + data[,'IM',] + data[,'IS',] + data[,'IC',]
+}
+
+fuller_infected_one_agents = function(agents) {
+    #print('Deeper')
+    s = sum(agents$state %in% c('IA', 'IP', 'IM', 'IS', 'IC'))
+    #print(s)
+    s
+}
+
+fuller_infected_one_intervention = function(oi_data) {
+    #print('More')
+    s = sapply(oi_data, fuller_infected_one_agents)
+    #print(s)
+    s
+}
+
+
+fuller_infected = function(data) {
+    #print('A little in')
+    sapply(data, fuller_infected_one_intervention)
 }
 
 hospitalized_dead = function(data) {
@@ -87,7 +114,7 @@ short = function(data) {
 
 #main_title is unused in production code, but is kept for consistency with
 #special-purpose internal versions.
-oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summation_mode = FALSE, work_only = FALSE, main_title = NULL) {
+oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summation_mode = FALSE, work_only = FALSE, main_title = NULL, use_agentss = FALSE) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
     if(work_only) {
         step_index = step_index[work_shifts]
@@ -97,14 +124,29 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
     ys = list()
 
     for (i in 1:length(full_output_filenames)) {
-        full_output = readRDS(full_output_filenames[i])
-        if(work_only) {
-            full_output = full_output[work_shifts,,]
-            if(summation_mode != FALSE){ 
-                full_output = full_output
+        #print('Okay . . .')
+        if(use_agentss) {
+            #print('Yeah')
+            full_output = readRDS(paste0(full_output_filenames[i],'-fuller'))
+            #print('Read')
+            #print(length(full_output))
+            if(work_only) {
+                stop('Combining work_only and use_agentss not yet implemented')
             }
+        } else {
+            full_output = readRDS(full_output_filenames[i])
+            if(work_only) {
+                full_output = full_output[work_shifts,,]
+                if(summation_mode != FALSE){ 
+                    full_output = full_output
+                }
+            }
+
         }
-        ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn, summation_mode)
+        ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn, summation_mode, using_agentss = use_agentss)
+        if(use_agentss) {
+            print(ys[[i]])
+        }
     }
     for(i in 1:length(full_output_filenames)) {
         if(i == 1) {
@@ -297,6 +339,10 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
 
 oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))
 oneplot('Unavailable', unavailable, mean, c(0,0), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), work_only = TRUE)
+
+print('So far . . .')
+oneplot('fuller-Infected', fuller_infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''), use_agentss = TRUE)
+print('Foiled!')
 
 main_title = ''
 

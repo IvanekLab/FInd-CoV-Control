@@ -141,7 +141,7 @@ library(foreach)
 
 if(PARALLEL) {
     library(doParallel)
-    registerDoParallel(6)
+    registerDoParallel(4) #for use on "grenade" only; revert to 6 or 5 for use on "corsair"
 } #if not, %dopar% is equivalent to %do% (with a warning)
   #in the current version, we use %do% explicitly anyway
   #but this may change in a future version

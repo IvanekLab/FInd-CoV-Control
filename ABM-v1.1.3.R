@@ -55,6 +55,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                        WE_isolated = rep(0, steps) #
     )
 
+    agentss = list()
+
     # Dump parameters to local variables -- centralized for easier tweaking
     # and to make it easier to verify consistent use of "get",
     # for easier debugging.
@@ -542,10 +544,12 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     Out1$WE_isolated[k] <-  sum(agents$state == "WE" & agents$isolated)
     Out1$RE_isolated[k] <-  sum(agents$state == "RE" & agents$isolated)
 #print('Out1 completed')
+
+    agentss[[k]] = agents
   }
     #print('ABM completed')
 
-    Out <- list("Out1" = Out1, "agents" = agents) #create a list of objects to return
+    Out <- list("Out1" = Out1, "agents" = agents, agentss = agentss) #create a list of objects to return
     #print(dim(Out1))
   
     return (Out) #return a list of objects
