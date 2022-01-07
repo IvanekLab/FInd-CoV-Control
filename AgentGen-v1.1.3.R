@@ -19,6 +19,11 @@
 # create database of all agents and their attributes
 #The default age_probabilities vector is based on finding the MLE 4-parameter
 #beta distribution that best fits age category data on agricultural workers
+
+#replacing $state with $infection_status (NI rather than S), $immune_status (FS
+#rather than S), $vax_status (currently same as immune status for fully
+#unvaccinated)
+
 AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 0,
                          initial_V1 = 0, initial_V2 = 0,
                        age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
@@ -38,9 +43,12 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     #Create a population of susceptibles 
     agents <- data.frame(ID = 1:N,          #Unique ID number,
                                             #Allows contact tracing (in a future version)
-                         state = "S",       #Initially susceptible
+                         #state = "S",       #Initially susceptible
                                             #Will be overwritten later in this
                                             #function for some employees.
+                         infection_status = 'NI', #not infected
+                         immune_status = 'FS', #fully susceptible
+                         vax_status = 'NV', #not vaccinated
                          infector_ID = 0,    
                          infector_state = '', #state of source of infection (if any)
                          mixing_propensity = 1, #leaving this in as a trivial
@@ -91,25 +99,27 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     index_V2 = E0 + IA0 + IP0 + IM0 + initial_recovered + seq_len(initial_V2)
     index_V1 = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 + seq_len(initial_V1)
 
-    agents$state[index_E]= "E"
+    agents$infection_status[index_E]= "E"
     agents$time_E[index_E]= -runif(E0, 0, agents$duration_E[index_E])
 
-    agents$state[index_IA] = "IA"
+    agents$infection_status[index_IA] = "IA"
     agents$time_IA[index_IA]= -runif(IA0, 0, agents$duration_IA[index_IA])
 
-    agents$state[index_IP]= "IP"
+    agents$infection_status[index_IP]= "IP"
     agents$time_IP[index_IP]= -runif(IP0, 0, agents$duration_IP[index_IP])
 
-    agents$state[index_IM]= "IM"
+    agents$infection_status[index_IM]= "IM"
     agents$time_IM[index_IM]= -runif(IM0, 0, agents$duration_IM[index_IM])
 
-    agents$state[index_R] = 'R'
+    agents$immune_status[index_R] = 'R'
     agents$time_R[index_R]= -runif(initial_recovered, 0, 365) #adequate for now; may required revision when immune waning is added
 
-    agents$state[index_V1] = 'V1'
+    agents$immune_status[index_V1] = 'V1'
+    agents$vax_status[index_V1] = 'V1'
     agents$time_V1[index_V1] = -runif(initial_V1, 0, 21) #not a perfect model of reality, but good enough
 
-    agents$state[index_V2] = 'V2'
+    agents$immune_status[index_V1] = 'V2'
+    agents$vax_status[index_V1] = 'V2'
     agents$time_V2[index_V2] = -runif(initial_V2, 0, 21) #even worse, but adequate for now; may require revision when booster shots are added
     agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21 #again, not perfect, but doesn't actually matter (currently, and probably ever)
 

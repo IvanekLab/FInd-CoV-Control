@@ -141,7 +141,8 @@ library(foreach)
 
 if(PARALLEL) {
     library(doParallel)
-    registerDoParallel(4) #for use on "grenade" only; revert to 6 or 5 for use on "corsair"
+    #cl = makePSOCKcluster(4, outfile = "") #for use on "grenade" only; revert to 6 or 5 for use on "corsair"
+    registerDoParallel(4)#(cl) 
 } #if not, %dopar% is equivalent to %do% (with a warning)
   #in the current version, we use %do% explicitly anyway
   #but this may change in a future version

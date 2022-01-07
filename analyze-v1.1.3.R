@@ -70,7 +70,7 @@ infected = function(data) {
 
 fuller_infected_one_agents = function(agents) {
     #print('Deeper')
-    s = sum(agents$state %in% c('IA', 'IP', 'IM', 'IS', 'IC'))
+    s = sum(agents$infection_status %in% c('IA', 'IP', 'IM', 'IS', 'IC'))
     #print(s)
     s
 }
@@ -144,9 +144,9 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
 
         }
         ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn, summation_mode, using_agentss = use_agentss)
-        if(use_agentss) {
-            print(ys[[i]])
-        }
+        #if(use_agentss) {
+        #    print(ys[[i]])
+        #}
     }
     for(i in 1:length(full_output_filenames)) {
         if(i == 1) {
