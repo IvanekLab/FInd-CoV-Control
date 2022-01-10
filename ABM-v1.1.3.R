@@ -191,8 +191,11 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
             # isolate
             # true positives
-            Ix_to_Isol = ((agents$infection_status %in% c('IA', 'IP', 'IM') & !(agents$isolated)) &
-                          testing_mask & (rbinom(N, 1, 1 - IA_FNR)))
+            Ix_to_Isol = (!(agents$isolated) & testing_mask & (
+                                (agents$infection_status == 'IA' & rbinom(N, 1, 1 - IA_FNR)) |
+                                (agents$infection_status == 'IP' & rbinom(N, 1, 1 - IP_FNR)) |
+                                (agents$infection_status == 'IM' & rbinom(N, 1, 1 - IM_FNR))
+                        ))
             
             # false positives
             # Note that FPR is currently assumed to be constant, but changing
