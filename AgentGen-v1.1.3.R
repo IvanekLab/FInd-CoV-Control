@@ -118,8 +118,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     agents$vax_status[index_V1] = 'V1'
     agents$time_V1[index_V1] = -runif(initial_V1, 0, 21) #not a perfect model of reality, but good enough
 
-    agents$immune_status[index_V1] = 'V2'
-    agents$vax_status[index_V1] = 'V2'
+    agents$immune_status[index_V2] = 'V2'
+    agents$vax_status[index_V2] = 'V2'
     agents$time_V2[index_V2] = -runif(initial_V2, 0, 21) #even worse, but adequate for now; may require revision when booster shots are added
     agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21 #again, not perfect, but doesn't actually matter (currently, and probably ever)
 
