@@ -181,4 +181,4 @@ f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
 		summaryRprof(rp_filename)
 	}
 }
-full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', '../data/waning-branch-2022-01-07', 'state-split--crudely-x100', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
+full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', '../data/waning-branch-2022-01-07', 'state-split--crudely-fixed-grouping-x100', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)

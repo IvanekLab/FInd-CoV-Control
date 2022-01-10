@@ -287,12 +287,13 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #(In fact, none in the current version.)
 
         #TBD (eventually): simplify
-        NI_to_E_community = ((agents$infection_status == 'NI') & !(agents$isolated) &
-                             ((agents$immune_status == 'FS' & rbinom(N, 1, 1 - exp(-lambda)))) |
-                             ((agents$immune_status == 'V1' & rbinom(N, 1, 1 - exp(-lambda * V1_susceptibility)))) |
-                             ((agents$immune_status == 'V2' & rbinom(N, 1, 1 - exp(-lambda * V2_susceptibility)))) |
-                             ((agents$immune_status == 'R' & rbinom(N, 1, 1 - exp(-lambda * R_susceptibility)))) |
-                             ((agents$immune_status == 'W' & rbinom(N, 1, 1 - exp(-lambda * W_susceptibility)))))
+        NI_to_E_community = ((agents$infection_status == 'NI') & !(agents$isolated) & (
+                                (agents$immune_status == 'FS' & rbinom(N, 1, 1 - exp(-lambda))) |
+                                (agents$immune_status == 'V1' & rbinom(N, 1, 1 - exp(-lambda * V1_susceptibility))) |
+                                (agents$immune_status == 'V2' & rbinom(N, 1, 1 - exp(-lambda * V2_susceptibility))) |
+                                (agents$immune_status == 'R' & rbinom(N, 1, 1 - exp(-lambda * R_susceptibility))) |
+                                (agents$immune_status == 'W' & rbinom(N, 1, 1 - exp(-lambda * W_susceptibility)))
+                            ))
 
         #Old contact tracing code that needs to be revised and reactivated.
         #agents$infector_ID[S_to_E_community] = -1
@@ -315,12 +316,13 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         # but that's a matter for another time.
 
         #TBD (eventually): simplify
-        NI_to_E = ((agents$infection_status == 'NI') &
-                   (agents$immune_status == 'FS' & (rbinom(N, 1, p_infection) > 0)) |
-                   (agents$immune_status == 'V1' & (rbinom(N, 1, p_infection_V1) > 0)) |
-                   (agents$immune_status == 'V2' & (rbinom(N, 1, p_infection_V2) > 0)) |
-                   (agents$immune_status == 'R' & (rbinom(N, 1, p_infection_R) > 0)) |
-                   (agents$immune_status == 'W' & (rbinom(N, 1, p_infection_W) > 0)))
+        NI_to_E = ((agents$infection_status == 'NI') & (
+                    (agents$immune_status == 'FS' & (rbinom(N, 1, p_infection) > 0)) |
+                    (agents$immune_status == 'V1' & (rbinom(N, 1, p_infection_V1) > 0)) |
+                    (agents$immune_status == 'V2' & (rbinom(N, 1, p_infection_V2) > 0)) |
+                    (agents$immune_status == 'R' & (rbinom(N, 1, p_infection_R) > 0)) |
+                    (agents$immune_status == 'W' & (rbinom(N, 1, p_infection_W) > 0))
+               ))
 
         if(sum(NI_to_E) > 0) { #necessitated by weird behavior of apply
                               #when given an empty matrix
