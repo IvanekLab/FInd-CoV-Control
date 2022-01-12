@@ -1,9 +1,9 @@
 workers_per_line = 10
-n_lines = 5
-n_shift_floaters = 20
-n_production_shifts = 1 # or 1
-n_cleaners = 40
-n_all_floaters = 40
+n_lines = 3
+n_shift_floaters = 10
+n_production_shifts = 2 # or 1
+n_cleaners = 10
+n_all_floaters = 10
 
 
 tt = matrix(1, nrow = workers_per_line, ncol = workers_per_line)

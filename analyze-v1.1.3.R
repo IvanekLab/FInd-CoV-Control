@@ -79,7 +79,7 @@ short = function(data) {
 #segmented allows carving up discrete shift segments
 #daily_sum adds consecutive trios of shifts (only makes sense for some functions)
 ####
-oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summation_mode = FALSE, work_only = FALSE, main_title = NULL, na.rm = FALSE, segmented = FALSE, daily_sum = FALSE, box_it = FALSE) {
+oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summation_mode = FALSE, work_only = FALSE, main_title = NULL, na.rm = FALSE, segmented = FALSE, daily_sum = FALSE, box_it = FALSE, mask = NA) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
 
     #smear = (1:(length(step_index) / 3)) * 3
@@ -89,8 +89,14 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
     }
     smear = (1:(length(step_index) / 3)) * 3
 
+    if(!is.na(mask)) {
+        step_index = step_index[mask]
+    }
+
+    #TBD: NB: smear and mask not yet implemented
+
     if(daily_sum) {
-        cat('In', filename, '\n')
+        #cat('In', filename, '\n')
         step_index = step_index[smear]
     }
 
@@ -104,6 +110,9 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
             if(summation_mode != FALSE){ # * 3 for "person-days" as work days, rather than 24 person hours of actual missed shift {
                 full_output = full_output #* (steps / days) #this would only be needed for an average, right?
             }
+        }
+        if(!is.na(mask)) {
+            full_output = full_output[mask,,]
         }
         if(daily_sum) {
                 full_output = full_output[smear,,] + full_output[smear - 1,,] + full_output[smear - 2,,]
@@ -218,10 +227,14 @@ shiftwise_any_short = function(data) {
     shiftwise_short(data) | shiftwise_special_short(data)
 }
 
-end_boxplot = function(filename, outcome_fn, xlab, summation_mode = 'before', work_only = FALSE, average = FALSE, xlim = NULL, percent = FALSE, main_title = NULL) {
+end_boxplot = function(filename, outcome_fn, xlab, summation_mode = 'before', work_only = FALSE, average = FALSE, xlim = NULL, percent = FALSE, main_title = NULL, mask = NA) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
     if(work_only) {
         step_index = step_index[work_shifts]
+    }
+
+    if(!is.na(mask)) {
+        step_index = step_index[mask]
     }
 
     means = numeric(length(full_output_filenames))
@@ -229,6 +242,9 @@ end_boxplot = function(filename, outcome_fn, xlab, summation_mode = 'before', wo
         full_output = readRDS(full_output_filenames[i])
         if(work_only) {
             full_output = full_output[work_shifts,,]
+        }
+        if(!is.na(mask)) {
+            full_output = full_output[mask,,]
         }
 
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
@@ -328,7 +344,7 @@ anti_max = function(v) {
     !(max(v))
 }
 
-end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_only = FALSE, default = days + 1, average = FALSE, xlim = NULL, percent = FALSE, anti_this = FALSE) {
+end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_only = FALSE, default = days + 1, average = FALSE, xlim = NULL, percent = FALSE, anti_this = FALSE, mask = NA) {
     if(!is.null(filename)) {
         png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
     }
@@ -336,12 +352,20 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
         step_index = step_index[work_shifts]
     }
     
+    if(!is.na(mask)) {
+        step_index = step_index[mask]
+    }
+
     all_outcomes = numeric(length(full_output_filenames))
     names(all_outcomes) = row.names
     for (i in 1:length(full_output_filenames)) {
         full_output = readRDS(full_output_filenames[i])
         if(work_only) {
             full_output = full_output[work_shifts,,]
+        }
+
+        if(!is.na(mask)) {
+            full_output = full_output[mask,,]
         }
 
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
@@ -380,6 +404,14 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
 oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))#, main_title = 'Delta')
 #m2 = oneplot('Unavailable', unavailable, mean, c(0,0), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), work_only = TRUE)
 oneplot('Unavailable', unavailable, mean, c(0,0), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), work_only = TRUE)#, main_title = 'Delta')
+
+l = length(work_shifts)
+production_shifts = work_shifts & ((1:l) %% 3 != 0)
+cleaning_shifts =  work_shifts & ((1:l) %% 3 == 0)
+
+oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), mask = production_shifts)#, main_title = 'Delta')
+oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), mask = cleaning_shifts)#, main_title = 'Delta')
+
 #oneplot('force-common-infected', infected, mean, c(0,max(m1,m2)), paste('People Infectious (out of ', N, ' total)', sep = ''))
 #oneplot('force-common-unavailable', unavailable, mean, c(0,max(m1,m2)), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), work_only = TRUE)
 #oneplot('force-N-infected', infected, mean, c(0,N), paste('People Infectious (out of ', N, ' total)', sep = ''))
@@ -430,12 +462,20 @@ end_boxplot('Shiftwise-Fraction-Short', shiftwise_short, xlab = 'Percentage of S
 end_boxplot('Shiftwise-Fraction-Special-Short', shiftwise_special_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
 end_boxplot('Shiftwise-Fraction-Any-Short', shiftwise_any_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
 
+end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Shift (out of ', N, ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts)
+end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Shift (out of ', N, ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
+end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
+end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
+
 
 #png(paste(set_name, 'first-day-short-paneled.png', sep = '-'), height = 1000, width = 2000)
 #par(mfrow = c(1,2))
 end_barplot('Ever-Short', short, xlab = 'Ever Short (percentage of runs)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE)
 first_x_boxplot('First-Day-Short', short, xlab = 'First Day Short (among runs that are ever short)', work_only = TRUE, default = NA, xlim = c(1, days))
 #dev.off()
+
+end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
+end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
 
 #png(paste(set_name, 'consecutive-unshort-paneled.png', sep = '-'), height = 1000, width = 2000)
 #par(mfrow = c(1,2))

@@ -174,5 +174,5 @@ f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
 	}
 }
 #note that several of these parameters are not actually used
-full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'facility-with-waning-with-special-10x', 'comparable', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
+full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'facility-now-with-shift-split', 'comparable', TRUE, analyze_only = 'TRUE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
 
