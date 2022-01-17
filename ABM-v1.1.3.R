@@ -1,6 +1,6 @@
 ABM <- function(agents, contacts_list, lambda_list, schedule,
                 virus_parameters, testing_parameters, vaccine_parameters, scenario_parameters,
-                steps, step_length_list, testing_rate_list, vaccination_rate_list, agent_presence_list, waning_parameters) {
+                steps, step_length_list, testing_rate_list, vaccination_rate_list, agent_presence_list, quantitative_presence_list, waning_parameters) {
 
     N <-nrow(agents)
 
@@ -106,6 +106,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #new parameter
         ####
         agent_presence = get(schedule[k], agent_presence_list)
+        quantitative_presence = get(schedule[k], quantitative_presence_list)
 
         start_time = end_time #(k - 1) * step_length
 #print('step_length')
@@ -615,6 +616,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     Out1$RE_isolated[k] <-  sum(agents$state == "RE" & agents$isolated)
     Out1$n_special_scheduled[k] = sum(agent_presence & special_mask) #in current kludged form, should always be 1 for work shifts -- check!
     Out1$n_special_absent[k] = sum((agent_presence & special_mask) * (agents$state %in% c('IS', 'IC', 'D') | agents$isolated))
+    Out1$qn_scheduled[k] = sum(quantitative_presence)
+    Out1$qn_absent[k] = sum(quantitative_presence * (agents$state %in% c('IS', 'IC', 'D') | agents$isolated))
   }
     #print('ABM completed')
 

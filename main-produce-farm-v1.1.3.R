@@ -199,6 +199,13 @@ agent_presence_list = list(ps_1 = ifelse(ceiling(on_ps_1), TRUE, FALSE),
                            weekend_ps_2 = FALSE,
                            weekend_cs = FALSE)
 
+quantitative_presence_list = list(ps_1 = on_ps_1,
+                           ps_2 = on_ps_2,
+                           cs =   on_cs,
+                           weekend_ps_1 = 0,
+                           weekend_ps_2 = 0,
+                           weekend_cs = 0)
+
 ####
 #
 ####
@@ -264,7 +271,7 @@ if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
                          #for reproducible output during development/debugging
                          #should be commented out for production use
 }
-full_output = array(0, c(steps, 33, num_sims))
+full_output = array(0, c(steps, 35, num_sims))
 
 #print('main loop')
 sys_time_start = Sys.time()
@@ -286,6 +293,7 @@ for (i in 1:num_sims) {
                  testing_rate_list = testing_rate_list,
                  vaccination_rate_list = vaccination_rate_list,
                  agent_presence_list = agent_presence_list,
+                 quantitative_presence_list = quantitative_presence_list,
                  waning_parameters = waning_parameters)
     agents = model$agents
     output = model$Out1

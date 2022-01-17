@@ -21,6 +21,21 @@ week = c(rep(workday, 5), rep(day_off, 2))
 schedule = rep(week, ceiling(days/7))[1:(3 * days)]
 work_shifts = (schedule == 'work')
 
+#some more kludgery
+on_ps_1 = c(1/3, rep(1, 41), rep(0, 41), rep(0, 10), rep(1/3, 10))
+on_ps_2 = c(1/3, rep(0, 41), rep(1, 41), rep(0, 10), rep(1/3, 10))
+on_cs =   c(1/3, rep(0, 41), rep(0, 41), rep(1, 10), rep(1/3, 10))
+
+#agent_presence_list = list(ps_1 = ifelse(ceiling(on_ps_1), TRUE, FALSE),
+#                           ps_2 = ifelse(floor(on_ps_2), TRUE, FALSE),
+#                           cs =   ifelse(floor(on_cs), TRUE, FALSE),
+#                           weekend_ps_1 = FALSE,
+#                           weekend_ps_2 = FALSE,
+#                           weekend_cs = FALSE)
+
+production_shift_size = sum(on_ps_1)
+cleaning_shift_size =  sum(on_cs)
+
 ####
 #not the most efficient approach, but it will do
 #note that this probably needs to be modified to work with segmented
@@ -89,7 +104,7 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
     }
     smear = (1:(length(step_index) / 3)) * 3
 
-    if(!is.na(mask)) {
+    if(!is.na(mask)[1]) {
         step_index = step_index[mask]
     }
 
@@ -111,7 +126,7 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
                 full_output = full_output #* (steps / days) #this would only be needed for an average, right?
             }
         }
-        if(!is.na(mask)) {
+        if(!is.na(mask)[1]) {
             full_output = full_output[mask,,]
         }
         if(daily_sum) {
@@ -196,15 +211,15 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
 }
 
 shiftwise_unavailable = function(data) {
-    data[,'n_absent',] 
+    data[,'qn_absent',] 
 }
 
 shiftwise_unavailable_masked = function(data) {
-    ifelse(data[,'n_scheduled',] == 0, NaN, data[,'n_absent',])
+    ifelse(data[,'qn_scheduled',] == 0, NaN, data[,'qn_absent',])
 }
 
 shiftwise_unavailable_fraction = function(data) {
-    data[,'n_absent',] / data[,'n_scheduled',]
+    data[,'qn_absent',] / data[,'qn_scheduled',]
 }
 
 shiftwise_short = function(data) {
@@ -233,7 +248,7 @@ end_boxplot = function(filename, outcome_fn, xlab, summation_mode = 'before', wo
         step_index = step_index[work_shifts]
     }
 
-    if(!is.na(mask)) {
+    if(!is.na(mask)[1]) {
         step_index = step_index[mask]
     }
 
@@ -243,7 +258,7 @@ end_boxplot = function(filename, outcome_fn, xlab, summation_mode = 'before', wo
         if(work_only) {
             full_output = full_output[work_shifts,,]
         }
-        if(!is.na(mask)) {
+        if(!is.na(mask)[1]) {
             full_output = full_output[mask,,]
         }
 
@@ -352,7 +367,7 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
         step_index = step_index[work_shifts]
     }
     
-    if(!is.na(mask)) {
+    if(!is.na(mask)[1]) {
         step_index = step_index[mask]
     }
 
@@ -364,7 +379,7 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
             full_output = full_output[work_shifts,,]
         }
 
-        if(!is.na(mask)) {
+        if(!is.na(mask)[1]) {
             full_output = full_output[mask,,]
         }
 
@@ -403,14 +418,15 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
 #m1 = oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))
 oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))#, main_title = 'Delta')
 #m2 = oneplot('Unavailable', unavailable, mean, c(0,0), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), work_only = TRUE)
-oneplot('Unavailable', unavailable, mean, c(0,0), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), work_only = TRUE)#, main_title = 'Delta')
+#dummied 2022-01-13
+#oneplot('Unavailable', unavailable, mean, c(0,0), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), work_only = TRUE)#, main_title = 'Delta')
 
 l = length(work_shifts)
 production_shifts = work_shifts & ((1:l) %% 3 != 0)
 cleaning_shifts =  work_shifts & ((1:l) %% 3 == 0)
 
-oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), mask = production_shifts)#, main_title = 'Delta')
-oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), mask = cleaning_shifts)#, main_title = 'Delta')
+oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', production_shift_size, ' total)', sep = ''), mask = production_shifts)#, main_title = 'Delta')
+oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)#, main_title = 'Delta')
 
 #oneplot('force-common-infected', infected, mean, c(0,max(m1,m2)), paste('People Infectious (out of ', N, ' total)', sep = ''))
 #oneplot('force-common-unavailable', unavailable, mean, c(0,max(m1,m2)), paste('People Unavailable to Work (out of ', N, ' total)', sep = ''), work_only = TRUE)
@@ -454,28 +470,31 @@ main_title = ''
 #end_boxplot('average-unavailable-titled', unavailable, xlab = paste('Average Absences per Shift (out of ', N, ' workers)'), work_only = TRUE, average = TRUE, main_title = main_title, xlim = c(0,35))
 #end_boxplot('fraction-short-titled', short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), main_title = main_title, percent = TRUE)
 
-end_boxplot('Average-Unavailable', unavailable, xlab = paste('Average Absences per Shift (out of ', N, ' workers)'), work_only = TRUE, average = TRUE, main_title = main_title)
-end_boxplot('Fraction-Short', short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
+#dummied 2022-01-13
+#end_boxplot('Average-Unavailable', unavailable, xlab = paste('Average Absences per Shift (out of ', N, ' workers)'), work_only = TRUE, average = TRUE, main_title = main_title)
+#end_boxplot('Fraction-Short', short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
 
-end_boxplot('Shiftwise-Average-Unavailable', shiftwise_unavailable, xlab = paste('Average Absences per Shift (out of ', N, ' workers)'), work_only = TRUE, average = TRUE, main_title = main_title)
-end_boxplot('Shiftwise-Fraction-Short', shiftwise_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
-end_boxplot('Shiftwise-Fraction-Special-Short', shiftwise_special_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
-end_boxplot('Shiftwise-Fraction-Any-Short', shiftwise_any_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
+#dummied 2022-01-13
+#end_boxplot('Shiftwise-Average-Unavailable', shiftwise_unavailable, xlab = paste('Average Absences per Shift (out of ', N, ' workers)'), work_only = TRUE, average = TRUE, main_title = main_title)
+#end_boxplot('Shiftwise-Fraction-Short', shiftwise_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
+#end_boxplot('Shiftwise-Fraction-Special-Short', shiftwise_special_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
+#end_boxplot('Shiftwise-Fraction-Any-Short', shiftwise_any_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title)
 
-end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Shift (out of ', N, ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts)
-end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Shift (out of ', N, ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
-end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
-end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
+end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', production_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts)
+end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', cleaning_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
+end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
+end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
 
 
 #png(paste(set_name, 'first-day-short-paneled.png', sep = '-'), height = 1000, width = 2000)
 #par(mfrow = c(1,2))
-end_barplot('Ever-Short', short, xlab = 'Ever Short (percentage of runs)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE)
-first_x_boxplot('First-Day-Short', short, xlab = 'First Day Short (among runs that are ever short)', work_only = TRUE, default = NA, xlim = c(1, days))
+#dummied 2022-01-13
+#end_barplot('Ever-Short', short, xlab = 'Ever Short (percentage of runs)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE)
+#first_x_boxplot('First-Day-Short', short, xlab = 'First Day Short (among runs that are ever short)', work_only = TRUE, default = NA, xlim = c(1, days))
 #dev.off()
 
-end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
-end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
+end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
+end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Cleaning Shift Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
 
 #png(paste(set_name, 'consecutive-unshort-paneled.png', sep = '-'), height = 1000, width = 2000)
 #par(mfrow = c(1,2))
