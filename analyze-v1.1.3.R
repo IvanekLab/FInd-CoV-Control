@@ -443,7 +443,7 @@ oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('Peop
 #oneplot('Shiftwise_Unavailable_Masked_Smeared', shiftwise_unavailable_masked, mean, c(0,0), 'Scheduled Workers Unavailable', na.rm = TRUE, daily_sum = TRUE)
 #oneplot('Shiftwise_Unavailable_Masked_Segmented_Smeared', shiftwise_unavailable_masked, mean, c(0,0), 'Scheduled Workers Unavailable', na.rm = TRUE, segmented = TRUE, daily_sum = TRUE)
 #oneplot('Shiftwise_Unavailable_Masked_Smeared_Boxed', shiftwise_unavailable_masked, mean, c(0,0), 'Scheduled Workers Unavailable', na.rm = TRUE, daily_sum = TRUE, box_it = TRUE)
-print('Ending Shiftwise')
+#print('Ending Shiftwise')
 oneplot('Unavailable_with_fixed_weekends', shiftwise_unavailable_masked, mean, c(0,0), 'Scheduled Workers Unavailable', work_only = TRUE, na.rm = TRUE, daily_sum = TRUE, box_it = TRUE)
 #if(DELTA) {
 #     main_title = 'Delta'

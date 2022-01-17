@@ -34,6 +34,7 @@ safe.logical = function(s) {
 }
 
 full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
+                    n_shift_floaters, n_cleaners, n_all_floaters,
                     days, employee_housing, social_distancing_shared_housing,
                     community_transmission, social_distancing_work,
                     n_no_symptoms, n_mild, fraction_recovered,
@@ -50,6 +51,9 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
     workers_per_crew = safe.integer(workers_per_crew)
     crews_per_supervisor = safe.integer(crews_per_supervisor)
     supervisors = safe.integer(supervisors)
+    n_shift_floaters = safe.integer(n_shift_floaters)
+    n_cleaners = safe.integer(n_cleaners)
+    n_all_floaters = safe.integer(n_all_floaters)
     days = safe.integer(days)
     n_no_symptoms = safe.integer(n_no_symptoms)
     n_mild = safe.integer(n_mild)
@@ -160,19 +164,9 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 40#00
+double_wrap_num_sims = 10#00
 
-f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
-	if(profile_p) {
-		rp_filename =paste0(i, '-all-batch-2.Rprof')
-		Rprof(rp_filename)
-	}
-	full_run(i, i, i, '90', 'Shared', 'Low', 'NULL', 'Low', '1', '0', '.116', '.627', working_directory = '.', paste0(i, '-all-batch-2'), paste0(i, '-all-batch-2'), analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', DELTA = TRUE)
-	if(profile_p) {
-		Rprof(NULL)
-		summaryRprof(rp_filename)
-	}
-}
-#note that several of these parameters are not actually used
-full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'facility-now-with-shift-split-quantitative-presence', 'comparable', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
+
+#note that several of these parameters are not actually used (no longer true?)
+full_run('10', '3', '2', '10', '10', '10', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'facility-added-interface', 'comparable', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
 

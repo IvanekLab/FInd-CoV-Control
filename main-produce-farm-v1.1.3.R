@@ -6,7 +6,7 @@ main_produce_farm_fn = function() { #the goal is to get more meaningful debug da
 library(Rlab)
  
 source("AgentGen-v1.1.3.R")
-source("ContactsGen-v1.1.3.R")
+#source("ContactsGen-v1.1.3.R")
 source("ABM-v1.1.3.R")
 
 #General note: foo = get('bar', baz) is similar to foo = baz[['bar']], *except*
@@ -68,11 +68,11 @@ if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
     )
 }
 
-
+#2022-01-16 removed rates
 ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
                               work_testing_rate, isolation_duration,
                               home_vaccination_rate, lambda = 0, crews_by_team,
-                              crew_sizes, rates, virus_params) {
+                              crew_sizes, virus_params) {
     p_trans_IP = get('p_trans_IP', virus_params)
     p_trans_IA = get('p_trans_IA', virus_params)
     p_trans_IM = get('p_trans_IM', virus_params)
@@ -99,7 +99,6 @@ ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
                 nTime1 = days,  #duration of one simulation iteration, in days
                 crews_by_team = crews_by_team,
                 crew_sizes = crew_sizes,
-                rates = rates,
                 dormitory_intensity = dormitory_contacts,
                 housing_dormitory = housing_dormitory,
                 isolation_duration = isolation_duration,
@@ -121,8 +120,7 @@ scenario_parameters = ScenarioParameters(work_R0 = net_work_R0,
                                          home_vaccination_rate = vaccination_rate, #to account for two home intervals on Day off 
                                          lambda = community_foi, #0.012, #0.012 baseline 
                                          crews_by_team = crews_by_team, 
-                                         crew_sizes = crew_sizes, 
-                                         rates = example_rates,
+                                         crew_sizes = crew_sizes,
                                          virus_params = virus_parameters)
 
 
@@ -137,6 +135,15 @@ scenario_parameters = ScenarioParameters(work_R0 = net_work_R0,
 #                             scenario_parameters$rates, scenario_parameters$average)
 
 source('custom-contacts-gen-general.R')
+contacts_matrices = facility_contacts_gen(workers_per_line = workers_per_crew, #keeping old names for analogous parameters in full_run *for now*
+                                          n_lines = crews_per_supervisor,
+                                          n_production_shifts = supervisors,
+                                          n_shift_floaters = n_shift_floaters,
+                                          n_cleaners = n_cleaners,
+                                          n_all_floaters = n_all_floaters)
+production_shift_1 = contacts_matrices[['production_shift_1']]
+production_shift_2 = contacts_matrices[['production_shift_2']]
+cleaning_shift_full = contacts_matrices[['cleaning_shift_full']]
 N <<- dim(production_shift_1)[1] #little kludgey
 
 ####

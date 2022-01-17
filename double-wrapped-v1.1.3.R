@@ -162,7 +162,7 @@ full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE) %dopar% 
     #Rprof(NULL)
     full_output_save_name
 }
-print('off')
+#print('off')
 if(!(exists('ANALYZE') && ANALYZE == TRUE)) {
     loop_time_end = Sys.time()
     print('Total for all interventions:')

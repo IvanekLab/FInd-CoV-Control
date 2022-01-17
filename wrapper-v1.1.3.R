@@ -225,13 +225,13 @@ full_output_save_name = paste(filename_core, '_full-output.rds', sep = '')
 
 #and now let's run the model
 if(!(exists('ANALYZE') && ANALYZE == TRUE)) {
-    print('pre')
+    #print('pre')
     source('main-produce-farm-v1.1.3.R', local = TRUE)
-    print('IN')
+    #print('IN')
     main_produce_farm_fn()
-    print('OUT')
+    #print('OUT')
 } else {
-    print('ooh ahh ahh ahh ahh')
+    #print('ooh ahh ahh ahh ahh')
 }
 
 full_output_save_name
