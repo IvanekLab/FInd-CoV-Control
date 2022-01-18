@@ -83,7 +83,8 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
 
     crews_by_team = rep(crews_per_supervisor, supervisors) 
     crew_sizes = rep(workers_per_crew, crews_per_supervisor * supervisors) 
-    N = sum(crew_sizes) + length(crew_sizes) + supervisors + 1 
+    #N = sum(crew_sizes) + length(crew_sizes) + supervisors + 1 
+    N = 1 + supervisors * (1 + workers_per_crew * crews_per_supervisor + n_shift_floaters) + n_cleaners + n_all_floaters
     
     #days -- done
 
@@ -168,5 +169,5 @@ double_wrap_num_sims = 10#00
 
 
 #note that several of these parameters are not actually used (no longer true?)
-full_run('10', '3', '2', '10', '10', '10', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'facility-added-interface', 'comparable', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
+full_run('15', '4', '1', '20', '10', '30', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'facility-added-interface', 'comparable-switched-up', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
 

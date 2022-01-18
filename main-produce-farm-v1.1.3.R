@@ -144,6 +144,7 @@ contacts_matrices = facility_contacts_gen(workers_per_line = workers_per_crew, #
 production_shift_1 = contacts_matrices[['production_shift_1']]
 production_shift_2 = contacts_matrices[['production_shift_2']]
 cleaning_shift_full = contacts_matrices[['cleaning_shift_full']]
+shift_sum =  contacts_matrices[['shift_sum']]
 N <<- dim(production_shift_1)[1] #little kludgey
 
 ####
@@ -181,9 +182,21 @@ contacts_list = list(ps_1 = production_shift_1 * scaling_factor,
 ####
 #need to systematize this instead of just kludging it for the demo value
 ####
-on_ps_1 = c(1/3, rep(1, 41), rep(0, 41), rep(0, 10), rep(1/3, 10))
-on_ps_2 = c(1/3, rep(0, 41), rep(1, 41), rep(0, 10), rep(1/3, 10))
-on_cs =   c(1/3, rep(0, 41), rep(0, 41), rep(1, 10), rep(1/3, 10))
+psX_only_size = 1 + workers_per_crew * crews_per_supervisor + n_shift_floaters
+if(supervisors > 1) {
+    on_ps_1 = c(1/3, rep(1, psX_only_size), rep(0, psX_only_size), rep(0, n_cleaners), rep(1/3, n_all_floaters))
+    on_ps_2 = c(1/3, rep(0, psX_only_size), rep(1, psX_only_size), rep(0, n_cleaners), rep(1/3, n_all_floaters))
+    on_cs = c(1/3, rep(0, 2 * psX_only_size), rep(1, n_cleaners), rep(1/3, n_all_floaters))
+} else {
+    on_ps_1 = c(1/2, rep(1, psX_only_size), rep(0, n_cleaners), rep(1/2, n_all_floaters))
+    on_ps_2 = rep(0, 1 + psX_only_size + n_cleaners + n_all_floaters)
+    on_cs = c(1/2, rep(0, psX_only_size), rep(1, n_cleaners), rep(1/2, n_all_floaters))
+} 
+
+
+#on_ps_1 = c(1/3, rep(1, 41), rep(0, 41), rep(0, 10), rep(1/3, 10))
+#on_ps_2 = c(1/3, rep(0, 41), rep(1, 41), rep(0, 10), rep(1/3, 10))
+#on_cs =   c(1/3, rep(0, 41), rep(0, 41), rep(1, 10), rep(1/3, 10))
 
 ###
 #working on proper dormitory_contacts parameters

@@ -182,4 +182,8 @@ facility_contacts_gen = function(workers_per_line = 10,
     png('sum.png', height=1000, width=1000) #probably disable this later
     image(shift_sum, main = 'Sum across all shifts')
     dev.off()
+    list(production_shift_1 = production_shift_1,
+         production_shift_2 = production_shift_2,
+         cleaning_shift_full = cleaning_shift_full,
+         shift_sum = shift_sum)
 }

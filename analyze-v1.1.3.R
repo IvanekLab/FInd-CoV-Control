@@ -15,16 +15,29 @@ full_output_filenames = list_[[4]]
 #Crude solution for show full range of options
 ####
 #workday = c('work', 'home', 'sleep')
-workday = c('work', 'work', 'work')
+
+psX_only_size = 1 + workers_per_crew * crews_per_supervisor + n_shift_floaters
+if(supervisors > 1) {
+    on_ps_1 = c(1/3, rep(1, psX_only_size), rep(0, psX_only_size), rep(0, n_cleaners), rep(1/3, n_all_floaters))
+    on_ps_2 = c(1/3, rep(0, psX_only_size), rep(1, psX_only_size), rep(0, n_cleaners), rep(1/3, n_all_floaters))
+    on_cs = c(1/3, rep(0, 2 * psX_only_size), rep(1, n_cleaners), rep(1/3, n_all_floaters))
+    workday = c('work', 'work', 'work')
+} else {
+    on_ps_1 = c(1/2, rep(1, psX_only_size), rep(0, n_cleaners), rep(1/2, n_all_floaters))
+    on_ps_2 = rep(0, 1 + psX_only_size + n_cleaners + n_all_floaters)
+    on_cs = c(1/2, rep(0, psX_only_size), rep(1, n_cleaners), rep(1/2, n_all_floaters))
+    workday = c('work', 'home', 'work')
+} 
 day_off = c('home', 'home', 'sleep')
 week = c(rep(workday, 5), rep(day_off, 2))
 schedule = rep(week, ceiling(days/7))[1:(3 * days)]
 work_shifts = (schedule == 'work')
 
+
 #some more kludgery
-on_ps_1 = c(1/3, rep(1, 41), rep(0, 41), rep(0, 10), rep(1/3, 10))
-on_ps_2 = c(1/3, rep(0, 41), rep(1, 41), rep(0, 10), rep(1/3, 10))
-on_cs =   c(1/3, rep(0, 41), rep(0, 41), rep(1, 10), rep(1/3, 10))
+#on_ps_1 = c(1/3, rep(1, 41), rep(0, 41), rep(0, 10), rep(1/3, 10))
+#on_ps_2 = c(1/3, rep(0, 41), rep(1, 41), rep(0, 10), rep(1/3, 10))
+#on_cs =   c(1/3, rep(0, 41), rep(0, 41), rep(1, 10), rep(1/3, 10))
 
 #agent_presence_list = list(ps_1 = ifelse(ceiling(on_ps_1), TRUE, FALSE),
 #                           ps_2 = ifelse(floor(on_ps_2), TRUE, FALSE),
