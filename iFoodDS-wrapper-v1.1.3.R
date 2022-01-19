@@ -54,16 +54,18 @@ safe.logical = function(s) {
 #default values (DELTA, analyze_only, SEVERE_MULTIPLIER, and PARALLEL are
 #left unchanged.
 full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
+                    fraction_boosted, #TBD: implement
+                    boosting_rate, #.05 arbitrary, probably high
                     days, employee_housing, social_distancing_shared_housing,
                     community_transmission, social_distancing_work,
                     n_no_symptoms, n_mild, fraction_recovered,
-                    fraction_fully_vaccinated,
+                    fraction_fully_vaccinated, # TBD: This is defined FOR NOW as fraction fully vax and NOT boosted
                     working_directory,
                     folder_name,
                     unique_id, 
-                    DELTA = TRUE,
+                    variant = 'Delta',
                     analyze_only = 'FALSE',
-                    SEVERE_MULTIPLIER = '2',
+                    #SEVERE_MULTIPLIER = '2',
                     PARALLEL = 'FALSE') {
     setwd(working_directory)
 
@@ -76,8 +78,20 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
 
     fraction_recovered = safe.numeric(fraction_recovered)
     fraction_fully_vaccinated = safe.numeric(fraction_fully_vaccinated)
-    DELTA = safe.logical(DELTA)
-    SEVERE_MULTIPLIER = safe.numeric(SEVERE_MULTIPLIER)
+
+    variant = tolower(variant)
+    if(variant == 'delta') {
+        #DELTA = safe.logical(DELTA)
+        #SEVERE_MULTIPLIER = safe.numeric(SEVERE_MULTIPLIER)
+        #DELTA = TRUE
+        SEVERE_MULTIPLIER = 2
+    } else if(variant == 'omicron') {
+        SEVERE_MULTIPLIER = 1.5
+    } else if(variant == '2020'){
+        SEVERE_MULTIPLIER = 1
+    } else {
+        stop(paste('Unsupported variant:', variant))
+    }
 
     analyze_only = safe.logical(analyze_only)
     PARALLEL = safe.logical(PARALLEL)
@@ -114,8 +128,10 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
         } else {
             stop(paste('Invalid community_transmission:', community_transmission))
         }
-        if(DELTA) {
+        if(variant == 'delta') {
             double_wrap_community_foi = 2 * double_wrap_community_foi
+        } else if (variant == 'omicron') {
+            double_wrap_community_foi = 4 * double_wrap_community_foi
         }
     } else if(tolower(employee_housing) == 'shared') {
         housing_dormitory = TRUE
@@ -130,8 +146,10 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
         } else {
             stop(paste('Invalid social_distancing_shared_housing:', social_distancing_shared_housing))
         }
-        if(DELTA) {
+        if(variant == 'delta') {
             dormitory_R0 = 2 * dormitory_R0
+        } else if (variant == 'omicron') {
+            dormitory_R0 = 4 * dormitory_R0
         }
     } else {
         stop(paste('Invalid employee_housing:', employee_housing))
@@ -146,9 +164,11 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
     } else {
         stop(paste('Invalid social_distancing_work:', social_distancing_work))
     }
-    if(DELTA) {
+    if(variant == 'delta') {
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 2
-        DELTA_VAX = TRUE
+        #DELTA_VAX = TRUE
+    } else if (variant == 'omicron') {
+            double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
     }
 
     n_exposed = n_no_symptoms # this should ideally be split up into exposed, pre-symptomatic, and asymptomatic, and may be in a future version; the difference is small, though, and this is sufficient for now.

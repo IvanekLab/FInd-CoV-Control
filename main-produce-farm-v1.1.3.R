@@ -60,7 +60,8 @@ VirusParameters = function(p_trans_IP = .0575, relative_trans_IA = .11, relative
 
 virus_parameters = VirusParameters()
 
-if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
+#if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
+if(variant == 'delta')
     V1_net_symptoms = 1 - .37
     V2_susceptibility = 1 - .65
     V2_net_symptoms = 1 - .88
@@ -76,7 +77,13 @@ if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
     V2_symptoms = V2_symptoms,
     vaccination_interval = 21 # based on Pfizer 
     )
-} else {
+} else if(variant == 'omicron') { #lacking better data, do the simplest thing for now
+    V2_susceptiblity = sqrt(1-.7)
+    V2_symptoms = V2_susceptibility
+    V1_net = V2_susceptibility
+    V1_susceptibility = sqrt(V1_net)
+    V1_symptoms = V1_susceptibility
+} else if(variant == '2020') {
     vaccine_parameters = list(    
         V1_susceptibility = 1 - .8,
         V2_susceptibility = 1 - .9,
@@ -84,6 +91,8 @@ if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
         V2_symptoms = (1 - .94) / (1 - .9),
         vaccination_interval = 21 
     )
+} else {
+    stop('Undefined variant.')
 }
 
 
@@ -186,7 +195,9 @@ waning_parameters = list(W_susceptibility = 1,
                          R_susceptibility = vaccine_parameters$V2_susceptibility,
                          W_symptoms = vaccine_parameters$V2_symptoms,
                          R_symptoms = vaccine_parameters$V2_symptoms,
-                         waning_rate = log(.88 / .47) / (4/12 * 365.2425))
+                         #waning_rate = log(.88 / .47) / (4/12 * 365.2425)
+                         waning_rate = log(.7/.45) / (10/52 * 365.2425)
+)
 
 #print(waning_parameters)
 

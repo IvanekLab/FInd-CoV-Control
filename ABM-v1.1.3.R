@@ -16,6 +16,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#TBD: Add fraction_boosted, boosting_probability_per_shift = .05 to actual
+#pass-through
 
 ABM <- function(agents, contacts_list, lambda_list, schedule,
                 virus_parameters, testing_parameters, vaccine_parameters, scenario_parameters,
@@ -142,6 +144,19 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
             agents$immune_status[V1_to_V2] = 'V2'
             agents$vax_status[V1_to_V2] = 'V2'
         }
+
+        #boost
+        #TBD: For now, going to assume no boosting during infection
+        if(sum(boosting_rate) > 0) {
+            V2_to_B = ((agents$infection_status == 'NI' & agents$vax_status == 'V2' & !(agents$isolated)) & (end_time - agents$time_V2 > 152) & #5 months
+                       (rbinom(N, 1, boosting_rate)))
+            agents$time_B[V2_to_B] = runif(sum(V2_to_B), start_time, end_time)
+            agents$immune_status[V2_to_B] = 'B'
+            agents$vax_status[V2_to_B] = 'B'
+        }
+
+        #TBD: Add time_B to AgentGen
+        #TBD: Handling of 
 
         # un-isolate
         #
