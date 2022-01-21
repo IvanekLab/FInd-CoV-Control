@@ -61,7 +61,8 @@ VirusParameters = function(p_trans_IP = .0575, relative_trans_IA = .11, relative
 virus_parameters = VirusParameters()
 
 #if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
-if(variant == 'delta')
+#print('variants')
+if(variant == 'delta') {
     V1_net_symptoms = 1 - .37
     V2_susceptibility = 1 - .65
     V2_net_symptoms = 1 - .88
@@ -76,13 +77,30 @@ if(variant == 'delta')
     V1_symptoms = V1_symptoms,
     V2_symptoms = V2_symptoms,
     vaccination_interval = 21 # based on Pfizer 
+    #need B_susceptibility and B_symptoms
     )
+    stop()
 } else if(variant == 'omicron') { #lacking better data, do the simplest thing for now
-    V2_susceptiblity = sqrt(1-.7)
+#    print('in')
+    V2_susceptibility = sqrt(1-.6)
     V2_symptoms = V2_susceptibility
-    V1_net = V2_susceptibility
+    V1_net = 1#V2_susceptibility #going worst case here, for sanity (shouldn't matter for these figures)
     V1_susceptibility = sqrt(V1_net)
     V1_symptoms = V1_susceptibility
+    B_susceptibility = sqrt(1-.7)
+    B_symptoms = B_susceptibility
+    vaccination_interval = 21
+
+    vaccine_parameters = list(    
+    V1_susceptibility = V1_susceptibility,
+    V2_susceptibility = V2_susceptibility,
+    V1_symptoms = V1_symptoms,
+    V2_symptoms = V2_symptoms,
+    vaccination_interval = 21,
+    B_symptoms = B_symptoms,
+    B_susceptibility = B_susceptibility
+    )
+#    print('out')
 } else if(variant == '2020') {
     vaccine_parameters = list(    
         V1_susceptibility = 1 - .8,
@@ -90,10 +108,13 @@ if(variant == 'delta')
         V1_symptoms = (1 - .88) / (1 - .8), #purely default; if I've seen an estimate of this, I do not recall it
         V2_symptoms = (1 - .94) / (1 - .9),
         vaccination_interval = 21 
+    #need B_susceptibility and B_symptoms
     )
+    stop()
 } else {
     stop('Undefined variant.')
 }
+#print('Done')
 
 
 ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
@@ -193,10 +214,12 @@ step_index = (1:steps) * (1/3) #step_length
 #loosely based on https://pubmed.ncbi.nlm.nih.gov/34619098/
 waning_parameters = list(W_susceptibility = 1, 
                          R_susceptibility = vaccine_parameters$V2_susceptibility,
-                         W_symptoms = vaccine_parameters$V2_symptoms,
-                         R_symptoms = vaccine_parameters$V2_symptoms,
+                         W_symptoms = 1, #vaccine_parameters$V2_symptoms, #worst-case (sort of)
+                         R_symptoms = vaccine_parameters$V2_symptoms
                          #waning_rate = log(.88 / .47) / (4/12 * 365.2425)
-                         waning_rate = log(.7/.45) / (10/52 * 365.2425)
+                         #waning_rate = log(.7/.45) / (10/52 * 365.2425) #not
+                         #directly necessary, if an explicit distribution is
+                         #used
 )
 
 #print(waning_parameters)
@@ -220,9 +243,20 @@ for (i in 1:num_sims) {
     #print('into it')
     agents$W_symptomatic = agents$symptomatic & rbinom(N, 1, waning_parameters$W_symptoms) #need to add these
     agents$R_symptomatic = agents$symptomatic & rbinom(N, 1, waning_parameters$R_symptoms) #need to add these
+    agents$B_symptomatic = agents$symptomatic & rbinom(N, 1, vaccine_parameters$B_symptoms)
     #print('half')
-    agents$duration_V2 = rexp(N, waning_parameters$waning_rate)
-    agents$duration_R = rexp(N, waning_parameters$waning_rate)
+    if(variant == 'omicron') {
+        agents$duration_V2 = runif(N, 0, 19 * 7) #rough approximation from update 33 #rexp(N, waning_parameters$waning_rate)
+        agents$duration_R = runif(N, 0, 19 * 7) #imitating above in absence of better data #rexp(N, waning_parameters$waning_rate)
+    } else if(variant == 'delta') {
+        #below is old delta parameters, for the moment
+        #TBD: what goes here based on update 33?
+        agents$duration_V2 = rexp(N, log(.88 / .47) / (4/12 * 365.2425))#waning_parameters$waning_rate)
+        agents$duration_R =  rexp(N, log(.88 / .47) / (4/12 * 365.2425))#waning_parameters$waning_rate)
+    } else {
+        #TBD: 2020, other
+        stop()
+    }
                                                 
 #print('model')
     model <- ABM(agents, contacts_list = contacts_list,
@@ -231,7 +265,8 @@ for (i in 1:num_sims) {
                  steps = steps, step_length_list = step_length_list,
                  testing_rate_list = testing_rate_list,
                  vaccination_rate_list = vaccination_rate_list,
-                 waning_parameters = waning_parameters)
+                 waning_parameters = waning_parameters,
+                boosting_rate = boosting_rate)
     agents = model$agents
     output = model$Out1
 

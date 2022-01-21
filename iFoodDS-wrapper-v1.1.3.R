@@ -86,7 +86,7 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
         #DELTA = TRUE
         SEVERE_MULTIPLIER = 2
     } else if(variant == 'omicron') {
-        SEVERE_MULTIPLIER = 1.5
+        SEVERE_MULTIPLIER = 1.2
     } else if(variant == '2020'){
         SEVERE_MULTIPLIER = 1
     } else {
@@ -188,7 +188,7 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 100#0
+double_wrap_num_sims = 10#00
 
 f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
 	if(profile_p) {
@@ -201,4 +201,4 @@ f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
 		summaryRprof(rp_filename)
 	}
 }
-full_run('10', '3', '3', '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', '../data/waning-branch-2022-01-07', 'state-split--crudely-fixed-grouping-x100', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
+full_run('10', '3', '3', .737 * .434, 0, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .737 * (1 - .434), working_directory = '.', '../data/waning-branch-omicron-2022-01-21', 'default-x10', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)

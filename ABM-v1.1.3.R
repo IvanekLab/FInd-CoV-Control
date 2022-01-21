@@ -22,7 +22,7 @@
 ABM <- function(agents, contacts_list, lambda_list, schedule,
                 virus_parameters, testing_parameters, vaccine_parameters, scenario_parameters,
                 steps, step_length_list, testing_rate_list, vaccination_rate_list,
-                waning_parameters) {
+                waning_parameters, boosting_rate) {
 
     N <-nrow(agents)
 
@@ -56,7 +56,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                        W_isolated = rep(0, steps),  #
                        WE_isolated = rep(0, steps) #
     )
-
+#print('in ABM')
     agentss = list()
 
     # Dump parameters to local variables -- centralized for easier tweaking
@@ -82,7 +82,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     #as with V1, V2, altered probability of severe disease given infection can be precalculated
     #likewise for waning time
     R_susceptibility = get('R_susceptibility', waning_parameters) # grouping together because they're being added together now (in the "waning" branch first commit
-    waning_rate = get('waning_rate', waning_parameters)
+    B_susceptibility = get('B_susceptibility', vaccine_parameters)
+    #waning_rate = get('waning_rate', waning_parameters)
     #and again for R
 
 
@@ -148,15 +149,18 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #boost
         #TBD: For now, going to assume no boosting during infection
         if(sum(boosting_rate) > 0) {
-            V2_to_B = ((agents$infection_status == 'NI' & agents$vax_status == 'V2' & !(agents$isolated)) & (end_time - agents$time_V2 > 152) & #5 months
+            #time_V2 is only set when receiving second dose
+            #so is still valid in R, or W
+            x_to_B = ((agents$infection_status == 'NI' & agents$vax_status == 'V2' & !(agents$isolated)) & (end_time - agents$time_V2 > 152) & #5 months
                        (rbinom(N, 1, boosting_rate)))
-            agents$time_B[V2_to_B] = runif(sum(V2_to_B), start_time, end_time)
-            agents$immune_status[V2_to_B] = 'B'
-            agents$vax_status[V2_to_B] = 'B'
+            agents$time_B[x_to_B] = runif(sum(x_to_B), start_time, end_time)
+            agents$immune_status[x_to_B] = 'B'
+            agents$vax_status[x_to_B] = 'B'
         }
 
         #TBD: Add time_B to AgentGen
-        #TBD: Handling of 
+        #TBD: Handling of ??
+        #TBD: add waning from B (what is this rate?)
 
         # un-isolate
         #
@@ -250,6 +254,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         p_infection_V2 = 1 - exp(-force_of_infection * V2_susceptibility)
         p_infection_R = 1 - exp(-force_of_infection * R_susceptibility)
         p_infection_W = 1 - exp(-force_of_infection * W_susceptibility)
+        p_infection_B = 1 - exp(-force_of_infection * B_susceptibility)
 
         # Putting the process of infection on hold a moment, to figure out who
         # among the already-infected needs to progress along their course of
@@ -265,7 +270,9 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                               (agents$immune_status == 'V1' & agents$V1_symptomatic) |
                               (agents$immune_status == 'V2' & agents$V2_symptomatic) |
                               (agents$immune_status == 'R' & agents$R_symptomatic) |
-                              (agents$immune_status == 'W' & agents$W_symptomatic))
+                              (agents$immune_status == 'W' & agents$W_symptomatic) |
+                              (agents$immune_status == 'B' & agents$B_symptomatic)
+        )
         xE_to_IA = xE_to_I & !xE_to_IP
 
         IP_to_IM = ((agents$infection_status == 'IP') &
@@ -307,7 +314,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                                 (agents$immune_status == 'V1' & rbinom(N, 1, 1 - exp(-lambda * V1_susceptibility))) |
                                 (agents$immune_status == 'V2' & rbinom(N, 1, 1 - exp(-lambda * V2_susceptibility))) |
                                 (agents$immune_status == 'R' & rbinom(N, 1, 1 - exp(-lambda * R_susceptibility))) |
-                                (agents$immune_status == 'W' & rbinom(N, 1, 1 - exp(-lambda * W_susceptibility)))
+                                (agents$immune_status == 'W' & rbinom(N, 1, 1 - exp(-lambda * W_susceptibility))) |
+                                (agents$immune_status == 'B' & rbinom(N, 1, 1 - exp(-lambda * B_susceptibility)))
                             ))
 
         #Old contact tracing code that needs to be revised and reactivated.
@@ -336,7 +344,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                     (agents$immune_status == 'V1' & (rbinom(N, 1, p_infection_V1) > 0)) |
                     (agents$immune_status == 'V2' & (rbinom(N, 1, p_infection_V2) > 0)) |
                     (agents$immune_status == 'R' & (rbinom(N, 1, p_infection_R) > 0)) |
-                    (agents$immune_status == 'W' & (rbinom(N, 1, p_infection_W) > 0))
+                    (agents$immune_status == 'W' & (rbinom(N, 1, p_infection_W) > 0)) |
+                    (agents$immune_status == 'B' & (rbinom(N, 1, p_infection_B) > 0))
                ))
 
         if(sum(NI_to_E) > 0) { #necessitated by weird behavior of apply
@@ -387,12 +396,15 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                     ((end_time - agents$time_R) > agents$duration_R))
         V2_to_W = ((agents$infection_status == 'NI' & agents$immune_status == 'V2') &
                     ((end_time - agents$time_V2) > agents$duration_V2))
+        B_to_W = ((agents$infection_status == 'NI' & agents$immune_status == 'B') &
+                    ((end_time - agents$time_V2) > agents$duration_V2))
     
-        x_to_W = R_to_W | V2_to_W
+        x_to_W = R_to_W | V2_to_W | B_to_W
 
         agents$immune_status[x_to_W] = 'W'
         agents$time_W[R_to_W] = agents$time_R[R_to_W] + agents$duration_R[R_to_W]
         agents$time_W[V2_to_W] = agents$time_V2[V2_to_W] + agents$duration_V2[V2_to_W]
+        agents$time_W[B_to_W] = agents$time_B[B_to_W] + agents$duration_B[B_to_W]
 
 
         #TBD: We still need to recalculate durations for repeats of the same event (now possible)
