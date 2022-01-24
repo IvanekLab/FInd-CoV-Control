@@ -25,7 +25,7 @@
 #unvaccinated)
 
 AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 0,
-                         initial_V1 = 0, initial_V2 = 0,
+                         initial_V1 = 0, initial_V2 = 0, initial_B = 0,
                        age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
                                              0.01, 0),
                       SEVERE_MULTIPLIER = 1) {
@@ -70,6 +70,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
                          time_R = Inf,
                          time_V1 = Inf,
                          time_V2 = Inf,
+                         time_B = Inf,
                          time_isolated = Inf,  #setup for time in Isolation
                                                #unlike the states listed above,
                                                #this is not a mutually exclusive
@@ -98,6 +99,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     index_R = E0 + IA0 + IP0 + IM0 + seq_len(initial_recovered)
     index_V2 = E0 + IA0 + IP0 + IM0 + initial_recovered + seq_len(initial_V2)
     index_V1 = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 + seq_len(initial_V1)
+    index_B = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 + initial_V1 + seq_len(initial_B)
 
     agents$infection_status[index_E]= "E"
     agents$time_E[index_E]= -runif(E0, 0, agents$duration_E[index_E])
@@ -120,8 +122,28 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
 
     agents$immune_status[index_V2] = 'V2'
     agents$vax_status[index_V2] = 'V2'
-    agents$time_V2[index_V2] = -runif(initial_V2, 0, 21) #even worse, but adequate for now; may require revision when booster shots are added
+    #agents$time_V2[index_V2] = -runif(initial_V2, 0, 21) #even worse, but adequate for now; may require revision when booster shots are added
+    #TBD -- tentatively done: Get a more reasonable time_V2 distribution, because this one does. not. cut. it. not with boosting, nor even with waning
+    #for time_R, at least the split around 6 months is right, even if the rest of the distro isn't
+    #but this is not remotely right
+    #let's try for 50th percentile again -- not wonderful, but tolerable
+    #half-way point is around april 30, 2021 (just under 9 months ago), so a uniform distribution would imply 18 months, but vaccination started around December 13, 2020, not much more than 12 months
+    #but wait, that's total doses anyway
+    #this gives us april 18
+    #okay, you know what? fuck it. this look similar in shape and rough location to the doses limited plot, which suggests a very roughly piecewise solution:
+    #before july 20 (= -188 days, call it 190), but since dec 13 2020 (= -407 days, call it 410) 332 million doses = 62%, call it 60
+    #total 535 million doses
+    agents$time_V2[index_V2] = -ifelse(rbinom(initial_V2,1,0.6),
+                                       runif(initial_V2, 0, 188),
+                                       runif(initial_V2, 188, 410))
     agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21 #again, not perfect, but doesn't actually matter (currently, and probably ever)
+
+    agents$immune_status[index_B] = 'B'
+    agents$vax_status[index_B] = 'B'
+    agents$infection_status[index_B] = 'NI'
+    agents$time_B[index_B] = -runif(initial_B, 0, 92)
+    agents$time_V2[index_B] = agents$time_B[index_B] - 152 #doesn't really matter
+    agents$time_V1[index_B] = agents$time_V2[index_B] - 21
 
     #generating transition times before the most recent
     #maybe not necessary, but seems like a good guard against weird bugs

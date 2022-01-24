@@ -248,6 +248,7 @@ for (i in 1:num_sims) {
     if(variant == 'omicron') {
         agents$duration_V2 = runif(N, 0, 19 * 7) #rough approximation from update 33 #rexp(N, waning_parameters$waning_rate)
         agents$duration_R = runif(N, 0, 19 * 7) #imitating above in absence of better data #rexp(N, waning_parameters$waning_rate)
+        agents$duration_B = runif(N, 0, 28 * 7) #from update 33
     } else if(variant == 'delta') {
         #below is old delta parameters, for the moment
         #TBD: what goes here based on update 33?

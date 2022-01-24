@@ -397,7 +397,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         V2_to_W = ((agents$infection_status == 'NI' & agents$immune_status == 'V2') &
                     ((end_time - agents$time_V2) > agents$duration_V2))
         B_to_W = ((agents$infection_status == 'NI' & agents$immune_status == 'B') &
-                    ((end_time - agents$time_V2) > agents$duration_V2))
+                    ((end_time - agents$time_V2) > agents$duration_B))
     
         x_to_W = R_to_W | V2_to_W | B_to_W
 

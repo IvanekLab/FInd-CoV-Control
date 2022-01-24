@@ -43,11 +43,17 @@ double_wrap_rational_testing = TRUE
 double_wrap_initial_recovered = round(fraction_recovered * N)
 
 #below is kinda kludgey, but works
-double_wrap_initial_V2 = round(N * fraction_fully_vaccinated)
+double_wrap_initial_V2 = round(N * fraction_fully_vaccinated) #TBD: Remember, this needs a fix once things are redefined with swiss-cheese
 double_wrap_initial_V1 = 0 
-if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 > N) {
-    stop(paste('Exposed + mild + recovered + fully vaccinated > Total number of employees:\n',
-               n_exposed, '+', n_mild, '+', double_wrap_initial_recovered, '+', double_wrap_initial_V2, '>', N))
+
+#TBD: Check if swiss-cheese is handling V2 + R individuals correctly, in terms of setting their vax status!
+#TBD: Fix swiss-cheese's handling of vaccination of (NV, V1) + (R, W) individuals, if this is not already correct (since we will be merging, it should be safe to make this note here)
+
+double_wrap_initial_B = round(N * fraction_boosted) #fix in swiss-cheese
+
+if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 + double_wrap_initial_B > N) {
+    stop(paste('Exposed + mild + recovered + fully vaccinated + boosted > Total number of employees:\n',
+               n_exposed, '+', n_mild, '+', double_wrap_initial_recovered, '+', double_wrap_initial_V2, '+', double_wrap_initial_B, '>', N))
 }
 
 temperature_thresholds = c(38, 37.5, 37.1) #given an observed specificity of 100% at 38, why lose further sensitivity at 38.5?

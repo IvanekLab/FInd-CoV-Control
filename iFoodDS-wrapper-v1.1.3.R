@@ -60,7 +60,13 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
                     community_transmission, social_distancing_work,
                     n_no_symptoms, n_mild, fraction_recovered,
                     fraction_fully_vaccinated, # TBD: This is defined FOR NOW as fraction fully vax and NOT boosted
-                    working_directory,
+                                               #this is not ideal; it means that
+                                               # we have to work around a bunch
+                                               # of things. but to try to do it
+                    # the other way *before* blending in the swiss cheese fixes
+                    # is to court madness
+                                               #going to want this to be consistent with 
+                    working_directory,          
                     folder_name,
                     unique_id, 
                     variant = 'Delta',
@@ -201,4 +207,14 @@ f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
 		summaryRprof(rp_filename)
 	}
 }
-full_run('10', '3', '3', .737 * .434, 0, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .737 * (1 - .434), working_directory = '.', '../data/waning-branch-omicron-2022-01-21', 'default-x10', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)
+#full_run('10', '3', '3', .737 * .434, 0, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .737 * (1 - .434), working_directory = '.', '../data/waning-branch-omicron-2022-01-24', 'default-x10', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)
+
+full_run('10', '3', '3', 0, 0, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .737, working_directory = '.', '../data/waning-branch-omicron-2022-01-24', 'no-boosted-x100', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)
+
+full_run('10', '3', '3', 0, .1, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .737, working_directory = '.', '../data/waning-branch-omicron-2022-01-24', 'no-boosted-with-boosting-x100', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)
+
+full_run('10', '3', '3', .737, 0, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .0, working_directory = '.', '../data/waning-branch-omicron-2022-01-24', 'all-boosted-x100', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)
+
+#Not actually TBD: If continuing to use hospitalization data for immunity, take
+#account of SEVERE_MULTIPLIER? (But this doesn't matter because immunity is
+#being compared within strain, not between.)
