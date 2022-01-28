@@ -229,7 +229,7 @@ if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
     set.seed(-778276078) #random 32-bit signed integer generated using atmospheric noise
                          #for reproducible output
 }
-full_output = array(0, c(steps, 29, num_sims))
+full_output = array(0, c(steps, 30, num_sims))
 fuller_output = list()
 
 #print('main loop')

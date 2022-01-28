@@ -54,7 +54,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                        V1E_isolated = rep(0, steps),
                        V2E_isolated = rep(0, steps),
                        W_isolated = rep(0, steps),  #
-                       WE_isolated = rep(0, steps) #
+                       WE_isolated = rep(0, steps), #
+                       new_infections = rep(0, steps)
     )
 #print('in ABM')
     agentss = list()
@@ -444,6 +445,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     Out1$W_isolated[k] <- sum(agents$infection_status == "NI" & agents$immune_status == "W" & agents$isolated)
     Out1$WE_isolated[k] <-  sum(agents$infection_status == "E" & agents$immune_status == "W" & agents$isolated)
     Out1$RE_isolated[k] <-  sum(agents$infection_status == "E" & agents$immune_status == "R" & agents$isolated)
+    Out1$new_infections[k] = sum(NI_to_E_community + NI_to_E)
+
 #print('Out1 completed')
 
     agentss[[k]] = agents

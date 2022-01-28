@@ -352,6 +352,32 @@ end_boxplot('Fraction-Short', short, xlab = 'Percentage of Shifts Short (> 15% o
 end_barplot('Ever-Short', short, xlab = 'Ever Short (percentage of runs)', work_only = TRUE, average = TRUE, xlim = c(0,1), percent = TRUE)
 first_x_boxplot('First-Day-Short', short, xlab = 'First Day Short (among runs that are ever short)', work_only = TRUE, default = NA, xlim = c(1, days))
 
+sample_data = function() {
+    interventions = length(full_output_filenames)
+    for (i in 1:interventions) {
+        full_output = readRDS(full_output_filenames[i])
+
+        if(i == 1) {
+            steps = dim(full_output)[1]
+            reps = dim(full_output)[2]
+            unavailable_array = array(0, c(interventions, steps, reps))
+            total_infections_array = array(0, c(interventions, reps))
+        }
+
+        unavailable_array[i,,] = unavailable(full_output)
+        total_infections_array[i,] = apply(full_output[,'new_infections',], 2, sum)
+    }
+
+    l = list(N = N,
+             days = days,
+             unavailable = unavailable_array,
+             total_infections = total_infections_array,
+             intervention_names = row.names,
+             work_shifts = work_shifts)
+    saveRDS(l, 'sample_data.rds')
+}
+
+sample_data()
 
 ANALYZE = FALSE
 

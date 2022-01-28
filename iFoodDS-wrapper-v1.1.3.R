@@ -209,11 +209,11 @@ f = function(i, profile_p, double_wrap_num_sims = double_wrap_num_sims) {
 }
 #full_run('10', '3', '3', .737 * .434, 0, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .737 * (1 - .434), working_directory = '.', '../data/waning-branch-omicron-2022-01-24', 'default-x10', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)
 
-full_run('10', '3', '3', 0, 0, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .737, working_directory = '.', '../data/waning-branch-omicron-2022-01-24', 'no-boosted-x100', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)
+full_run('10', '3', '3', 0, 0, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .737, working_directory = '.', '../data/waning-branch-omicron-2022-01-24', 'no-boosted-x10', 'omicron', analyze_only = 'TRUE', PARALLEL = TRUE)
 
-full_run('10', '3', '3', 0, .1, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .737, working_directory = '.', '../data/waning-branch-omicron-2022-01-24', 'no-boosted-with-boosting-x100', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)
+#full_run('10', '3', '3', 0, .1, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .737, working_directory = '.', '../data/waning-branch-omicron-2022-01-24', 'no-boosted-with-boosting-x100', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)
 
-full_run('10', '3', '3', .737, 0, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .0, working_directory = '.', '../data/waning-branch-omicron-2022-01-24', 'all-boosted-x100', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)
+#full_run('10', '3', '3', .737, 0, '90', 'Shared', 'Intermediate', 'NULL', 'Intermediate', '1', '0', '.202', .0, working_directory = '.', '../data/waning-branch-omicron-2022-01-24', 'all-boosted-x100', 'omicron', analyze_only = 'FALSE', PARALLEL = TRUE)
 
 #Not actually TBD: If continuing to use hospitalization data for immunity, take
 #account of SEVERE_MULTIPLIER? (But this doesn't matter because immunity is
