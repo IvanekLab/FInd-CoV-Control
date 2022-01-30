@@ -19,6 +19,83 @@
 #TBD: Add fraction_boosted, boosting_probability_per_shift = .05 to actual
 #pass-through
 
+unisolation_fn = function(agents, start_time) {
+    #add full proper parameter list later
+    isolation_duration = 5 #kludge
+    x_un_Isol = ((agents$isolated) & ((start_time - agents$time_isolated) >= isolation_duration) &
+                 agents$infection_status %in% c('NI', 'E', 'IA')) #i.e., if they have had symptoms, they must be recovered. crude, but possibly tolerable
+    #TBD: is there any estimate available on the probability of having recovered
+    #from symptoms (for 24 hours) but not infection
+    agents$isolated[x_un_Isol] = FALSE
+    agents
+}
+
+isolation_fn = function(agents, start_time, rational_testing, testing_rate, fractional_test_carried, N, IA_FNR, IP_FNR, IM_FNR, FPR) {
+    #add proper full parameter list later
+    if(sum(testing_rate) > 0) {
+        
+        # Currently using a flag for whether someone is isolated or not, but
+        # could use new compartments (e.g. state = Isolated_IA, instead of
+        # state = IA and Isolated = True
+
+        if(testing_rate == 1) {
+            testing_mask = rep(TRUE, N) # for exact comparison purposes
+        } else if(rational_testing) {
+            indices = order(agents$time_tested, sample(N)) #second parameter randomizes ties
+            #eligible = ((agents$state %in% c('S', 'E', 'IA', 'IP', 'IM', 'R', 'RE', 'V1', 'V2', 'V1E', 'V2E', 'W', 'WE')) & !(agents$isolated)) #ideally, should need to be on the shift in question, but that's a matter for a later version of the code (when there are multiple shifts)
+            eligible = ((agents$infection_status %in% c('NI', 'E', 'IA', 'IP', 'IM')) & !(agents$isolated)) #ideally, should need to be on the shift in question, but that's a matter for a later version of the code (when there are multiple shifts)
+            # Actually, as I am doing these edits for the first commit on
+            # the waning branch, there are already multiple shifts on the
+            # facility model preliminary code (not incorporated into the
+            # repo yet) Once that is in the repo, it may be worth doing a
+            # "partial merge" (is that a thing? maybe if I split the changes
+            # into two commits) to add that handling to this code, for ease 
+            # of consistent future use. But that is not needed now.
+            indices = indices[eligible[indices]] 
+            theoretical_number_of_tests = testing_rate * N + fractional_test_carried
+            number_of_tests = min(floor(theoretical_number_of_tests), length(indices))
+            fractional_test_carried = theoretical_number_of_tests - number_of_tests
+            testing_mask = (1:N) %in% indices[1:number_of_tests]
+        } else {
+            testing_mask = rbinom(N, 1, testing_rate) == 1
+        }
+
+        agents$time_tested[testing_mask] = start_time
+
+
+        # isolate
+        # true positives
+        Ix_to_Isol = (!(agents$isolated) & testing_mask & (
+                            (agents$infection_status == 'IA' & rbinom(N, 1, 1 - IA_FNR)) |
+                            (agents$infection_status == 'IP' & rbinom(N, 1, 1 - IP_FNR)) |
+                            (agents$infection_status == 'IM' & rbinom(N, 1, 1 - IM_FNR))
+                    ))
+        
+        # false positives
+        # Note that FPR is currently assumed to be constant, but changing
+        # the code for this would not be hard.
+        NI_to_Isol = ((agents$infection_status == 'NI' & !(agents$isolated)) &
+                        testing_mask & (rbinom(N, 1, FPR)))
+        
+        # Right, but for the wrong reason
+        # (Presumably, our odds of detecting the exposed should not be
+        #  be *lower* than our odds of "detecting" susceptibles.)
+        xE_to_Isol = ((agents$infection_status == 'E' & !(agents$isolated)) &
+                        testing_mask & (rbinom(N, 1, FPR)))
+
+        #Actual transfer to isolation
+        x_to_Isol = (Ix_to_Isol | NI_to_Isol | xE_to_Isol)
+
+        agents$isolated[x_to_Isol] = TRUE
+        agents$time_isolated[x_to_Isol] = start_time
+
+        # Assuming for now that isolated do not get exposed.
+        # Something similar to lambda (but smaller) may be appropriate if
+        # isolation (of those (falsely) detected) is imperfect.
+    }
+    list(agents = agents, fractional_test_carried = fractional_test_carried)
+}
+
 ABM <- function(agents, contacts_list, lambda_list, schedule,
                 virus_parameters, testing_parameters, vaccine_parameters, scenario_parameters,
                 steps, step_length_list, testing_rate_list, vaccination_rate_list,
@@ -174,72 +251,12 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         # when someone is unisolated and immediately reisolated, and "merge" the
         # isolations. But that is not necesary at this time.
         #print('deisolation')
-        x_un_Isol = ((agents$isolated) & ((start_time - agents$time_isolated) >= isolation_duration))
-        agents$isolated[x_un_Isol] = FALSE
-
+        agents = unisolation_fn(agents, start_time)
+        ifl = isolation_fn(agents, start_time, rational_testing, testing_rate, fractional_test_carried, N, IA_FNR, IP_FNR, IM_FNR, FPR)
+        agents = ifl[['agents']]
+        fractional_test_carried = ifl[['fractional_test_carried']]
         #print('testing')
-        if(sum(testing_rate) > 0) {
-            
-            # Currently using a flag for whether someone is isolated or not, but
-            # could use new compartments (e.g. state = Isolated_IA, instead of
-            # state = IA and Isolated = True
 
-            if(testing_rate == 1) {
-                testing_mask = rep(TRUE, N) # for exact comparison purposes
-            } else if(rational_testing) {
-                indices = order(agents$time_tested, sample(N)) #second parameter randomizes ties
-                #eligible = ((agents$state %in% c('S', 'E', 'IA', 'IP', 'IM', 'R', 'RE', 'V1', 'V2', 'V1E', 'V2E', 'W', 'WE')) & !(agents$isolated)) #ideally, should need to be on the shift in question, but that's a matter for a later version of the code (when there are multiple shifts)
-                eligible = ((agents$infection_status %in% c('NI', 'E', 'IA', 'IP', 'IM')) & !(agents$isolated)) #ideally, should need to be on the shift in question, but that's a matter for a later version of the code (when there are multiple shifts)
-                # Actually, as I am doing these edits for the first commit on
-                # the waning branch, there are already multiple shifts on the
-                # facility model preliminary code (not incorporated into the
-                # repo yet) Once that is in the repo, it may be worth doing a
-                # "partial merge" (is that a thing? maybe if I split the changes
-                # into two commits) to add that handling to this code, for ease 
-                # of consistent future use. But that is not needed now.
-                indices = indices[eligible[indices]] 
-                theoretical_number_of_tests = testing_rate * N + fractional_test_carried
-                number_of_tests = min(floor(theoretical_number_of_tests), length(indices))
-                fractional_test_carried = theoretical_number_of_tests - number_of_tests
-                testing_mask = (1:N) %in% indices[1:number_of_tests]
-            } else {
-                testing_mask = rbinom(N, 1, testing_rate) == 1
-            }
-
-            agents$time_tested[testing_mask] = start_time
-
-
-            # isolate
-            # true positives
-            Ix_to_Isol = (!(agents$isolated) & testing_mask & (
-                                (agents$infection_status == 'IA' & rbinom(N, 1, 1 - IA_FNR)) |
-                                (agents$infection_status == 'IP' & rbinom(N, 1, 1 - IP_FNR)) |
-                                (agents$infection_status == 'IM' & rbinom(N, 1, 1 - IM_FNR))
-                        ))
-            
-            # false positives
-            # Note that FPR is currently assumed to be constant, but changing
-            # the code for this would not be hard.
-            NI_to_Isol = ((agents$infection_status == 'NI' & !(agents$isolated)) &
-                         testing_mask & (rbinom(N, 1, FPR)))
-            
-            # Right, but for the wrong reason
-            # (Presumably, our odds of detecting the exposed should not be
-            #  be *lower* than our odds of "detecting" susceptibles.)
-            xE_to_Isol = ((agents$infection_status == 'E' & !(agents$isolated)) &
-                         testing_mask & (rbinom(N, 1, FPR)))
-
-            #Actual transfer to isolation
-            x_to_Isol = (Ix_to_Isol | NI_to_Isol | xE_to_Isol)
-
-            agents$isolated[x_to_Isol] = TRUE
-            agents$time_isolated[x_to_Isol] = start_time
-    
-            # Assuming for now that isolated do not get exposed.
-            # Something similar to lambda (but smaller) may be appropriate if
-            # isolation (of those (falsely) detected) is imperfect.
-        }
-    
         #print('infectiousness')
         #TBD (possibly): add "relative contagiousness" and "relative
         #susceptibility" dimensions to agentss and update when updating
@@ -381,6 +398,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
         agents$time_IA[xE_to_IA] = agents$time_E[xE_to_IA] + agents$duration_E[xE_to_IA]
         agents$time_IP[xE_to_IP] = agents$time_E[xE_to_IP] + agents$duration_E[xE_to_IP]
+        agents$time_isolated[xE_to_IP & agents$isolated] = agents$time_IP[xE_to_IP & agents$isolated] #TBD: awkward, and should be in an isolation function
         agents$time_IM[IP_to_IM] = agents$time_IP[IP_to_IM] + agents$duration_IP[IP_to_IM]
         agents$time_IS[IM_to_IS] = agents$time_IM[IM_to_IS] + agents$duration_IM[IM_to_IS]
         agents$time_IC[IS_to_IC] = agents$time_IS[IS_to_IC] + agents$duration_IS[IS_to_IC]
