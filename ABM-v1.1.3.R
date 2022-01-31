@@ -493,14 +493,14 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     #deterministic 1/3 or 1/2, as the case may be
     ####
     Out1$n_scheduled[k] = sum(agent_presence)
-    Out1$n_absent[k] = sum(agent_presence * (agents$state %in% c('IS', 'IC', 'D') | agents$isolated)) #TBD: Fix state vs. status issue
+    Out1$n_absent[k] = sum(agent_presence * (agents$infection_status %in% c('IS', 'IC', 'D') | agents$isolated)) #TBD: Fix state vs. status issue
     Out1$W_isolated[k] <- sum(agents$infection_status == "NI" & agents$immune_status == "W" & agents$isolated)
     Out1$WE_isolated[k] <-  sum(agents$infection_status == "E" & agents$immune_status == "W" & agents$isolated)
     Out1$RE_isolated[k] <-  sum(agents$infection_status == "E" & agents$immune_status == "R" & agents$isolated)
     #Out1$n_special_scheduled[k] = sum(agent_presence & special_mask) #in current kludged form, should always be 1 for work shifts -- check!
     #Out1$n_special_absent[k] = sum((agent_presence & special_mask) * (agents$state %in% c('IS', 'IC', 'D') | agents$isolated))
     Out1$qn_scheduled[k] = sum(quantitative_presence)
-    Out1$qn_absent[k] = sum(quantitative_presence * (agents$state %in% c('IS', 'IC', 'D') | agents$isolated))
+    Out1$qn_absent[k] = sum(quantitative_presence * (agents$infection_status %in% c('IS', 'IC', 'D') | agents$isolated))
     Out1$new_infections[k] = sum(NI_to_E_community + NI_to_E)
 
 #print('Out1 completed')

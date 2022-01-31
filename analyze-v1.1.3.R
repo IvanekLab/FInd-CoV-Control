@@ -480,6 +480,8 @@ end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cl
 end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
 end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Cleaning Shift Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
 
+#TBD: Make this function work correctly with the facility model (i.e., with not
+#everyone being on every work shift)
 sample_data = function() {
     interventions = length(full_output_filenames)
     for (i in 1:interventions) {
@@ -487,11 +489,14 @@ sample_data = function() {
 
         if(i == 1) {
             steps = dim(full_output)[1]
-            reps = dim(full_output)[2]
+            reps = dim(full_output)[3]
             unavailable_array = array(0, c(interventions, steps, reps))
             total_infections_array = array(0, c(interventions, reps))
         }
-
+        print(i)
+        print(dim(full_output))
+        print(dim(unavailable_array))
+        print(dim(unavailable(full_output)))
         unavailable_array[i,,] = unavailable(full_output)
         total_infections_array[i,] = apply(full_output[,'new_infections',], 2, sum)
     }
@@ -502,7 +507,7 @@ sample_data = function() {
              total_infections = total_infections_array,
              intervention_names = row.names,
              work_shifts = work_shifts)
-    saveRDS(l, 'sample_data.rds')
+    saveRDS(l, 'sample_data-new.rds')
 }
 
 sample_data()

@@ -78,7 +78,7 @@ if(variant == 'delta') {
     vaccination_interval = 21 # based on Pfizer 
     #TBD: need B_susceptibility and B_symptoms
     )
-    stop()
+    stop('delta')
 } else if(variant == 'omicron') { #lacking better data, do the simplest thing for now
 #    print('in')
     V2_susceptibility = sqrt(1-.6)
@@ -106,10 +106,12 @@ if(variant == 'delta') {
         V2_susceptibility = 1 - .9,
         V1_symptoms = (1 - .88) / (1 - .8), #purely default; if I've seen an estimate of this, I do not recall it
         V2_symptoms = (1 - .94) / (1 - .9),
-        vaccination_interval = 21 
+        vaccination_interval = 21, 
+        B_susceptibility = 0, #there's not going to be any data on this, so screw it
+        B_symptoms = 0
     #TBD: need B_susceptibility and B_symptoms
 )
-    stop()
+    #stop()
 } else {
     stop('Undefined variant.')
 }
@@ -340,9 +342,10 @@ if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
     set.seed(-778276078) #random 32-bit signed integer generated using atmospheric noise
                          #for reproducible output
 }
-full_output = array(0, c(steps, 35, num_sims)) #TBD: This might not be enough
+#full_output = array(0, c(steps, 35, num_sims)) #TBD: This might not be enough
                                                #TBD: Adjust code to do this on
                                                #run 1
+    #doing this now
 #fuller_output = list()
 
 #print('main loop')
@@ -366,9 +369,13 @@ for (i in 1:num_sims) {
         #TBD: what goes here based on update 33?
         agents$duration_V2 = rexp(N, log(.88 / .47) / (4/12 * 365.2425))#waning_parameters$waning_rate)
         agents$duration_R =  rexp(N, log(.88 / .47) / (4/12 * 365.2425))#waning_parameters$waning_rate)
+    } else if(variant == '2020') {
+        agents$duration_V2 = 10/12 * 365.2425 #TBD: Find better value
+        agents$duration_R = 10/12 * 365.2425
+        agents$duration_B = Inf #Lol, whatever (i.e., good enough until a better waning mechanism is implemented anyway
+        #TBD: fix 2020
     } else {
-        #TBD: 2020, other
-        stop()
+        stop(paste('unimplemented variant:', variant))
     }
                                                 
     model <- ABM(agents, contacts_list = contacts_list,
@@ -386,7 +393,9 @@ for (i in 1:num_sims) {
 
     #agentss = model$agentss
     #fuller_output[[i]] = agentss
-
+    if(i == 1) {
+        full_output = array(0, c(steps, dim(as.matrix(output))[2], num_sims)) #guarantee it gets created with the right number of return variables
+    }
     full_output[,,i] = as.matrix(output) #this works; for whatever reason,
                                          #as.array does not
 } # for (i in 1:num_sims)

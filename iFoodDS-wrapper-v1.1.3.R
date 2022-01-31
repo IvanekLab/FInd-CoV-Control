@@ -235,8 +235,8 @@ full_run(
          working_directory = '.', # TBD: Check if this is actually used
          folder_name = 'facility-added-interface',  # relative to working directory
                                                     # TBD: check whether malicious naming can hack the server
-         unique_id = 'comparable-switched-up',      # TBD: check whether malicious naming can hack the server
-         variant = 'Delta',
+         unique_id = 'post-merge-csu-2020',      # TBD: check whether malicious naming can hack the server
+         variant = '2020',
          analyze_only = 'FALSE',
          PARALLEL = TRUE
 )
