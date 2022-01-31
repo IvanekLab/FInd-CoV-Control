@@ -33,19 +33,39 @@ safe.logical = function(s) {
     b
 }
 
-full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
-                    n_shift_floaters, n_cleaners, n_all_floaters,
-                    days, employee_housing, social_distancing_shared_housing,
-                    community_transmission, social_distancing_work,
-                    n_no_symptoms, n_mild, fraction_recovered,
-                    fraction_fully_vaccinated,
+#removing default values from testing code to ensure that accidental omission doesn't generate stupid results
+full_run = function(
+                    workers_per_crew,
+                    crews_per_supervisor,
+                    supervisors,
+                    n_shift_floaters,
+                    n_cleaners,
+                    n_all_floaters,
+                    days,
+                    employee_housing,
+                    social_distancing_shared_housing,
+                    community_transmission,
+                    social_distancing_work,
+                    n_no_symptoms,
+                    n_mild,
+                    fraction_recovered,
+                    fraction_fully_vaccinated, # TBD: This is defined FOR NOW as fraction fully vax and NOT boosted
+                                               #this is not ideal; it means that
+                                               # we have to work around a bunch
+                                               # of things. but to try to do it
+                    # the other way *before* blending in the swiss cheese fixes
+                    # is to court madness
+                                               #TBD: figure out where the next comment line comes from
+                                               #going to want this to be consistent with 
+                    fraction_boosted, #TBD: finish implementing? (is this done?)
+                    boosting_rate, #.05 arbitrary, probably high
                     working_directory,
                     folder_name,
                     unique_id, 
-                    DELTA = TRUE,
-                    analyze_only = 'FALSE',
-                    SEVERE_MULTIPLIER = '2',
-                    PARALLEL = 'FALSE') {
+                    variant,
+                    analyze_only,
+                    PARALLEL
+) {
     setwd(working_directory)
 
     workers_per_crew = safe.integer(workers_per_crew)
@@ -60,8 +80,20 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
 
     fraction_recovered = safe.numeric(fraction_recovered)
     fraction_fully_vaccinated = safe.numeric(fraction_fully_vaccinated)
-    DELTA = safe.logical(DELTA)
-    SEVERE_MULTIPLIER = safe.numeric(SEVERE_MULTIPLIER)
+
+    variant = tolower(variant)
+    if(variant == 'delta') {
+        #DELTA = safe.logical(DELTA)
+        #SEVERE_MULTIPLIER = safe.numeric(SEVERE_MULTIPLIER)
+        #DELTA = TRUE
+        SEVERE_MULTIPLIER = 2
+    } else if(variant == 'omicron') {
+        SEVERE_MULTIPLIER = 1.2
+    } else if(variant == '2020'){
+        SEVERE_MULTIPLIER = 1
+    } else {
+        stop(paste('Unsupported variant:', variant))
+    }
 
     analyze_only = safe.logical(analyze_only)
     PARALLEL = safe.logical(PARALLEL)
@@ -101,8 +133,10 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
         } else {
             stop(paste('Invalid community_transmission:', community_transmission))
         }
-        if(DELTA) {
+        if(variant == 'delta') {
             double_wrap_community_foi = 2 * double_wrap_community_foi
+        } else if (variant == 'omicron') {
+            double_wrap_community_foi = 4 * double_wrap_community_foi
         }
     } else if(tolower(employee_housing) == 'shared') {
         housing_dormitory = TRUE
@@ -117,8 +151,10 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
         } else {
             stop(paste('Invalid social_distancing_shared_housing:', social_distancing_shared_housing))
         }
-        if(DELTA) {
+        if(variant == 'delta') {
             dormitory_R0 = 2 * dormitory_R0
+        } else if (variant == 'omicron') {
+            dormitory_R0 = 4 * dormitory_R0
         }
     } else {
         stop(paste('Invalid employee_housing:', employee_housing))
@@ -133,9 +169,11 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
     } else {
         stop(paste('Invalid social_distancing_work:', social_distancing_work))
     }
-    if(DELTA) {
+    if(variant == 'delta') {
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 2
-        DELTA_VAX = TRUE
+        #DELTA_VAX = TRUE
+    } else if (variant == 'omicron') {
+            double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
     }
 
     n_exposed = n_no_symptoms # done, although this should ideally be split up into exposed, pre-symptomatic, and asymptomatic; the difference is small, though
@@ -167,7 +205,38 @@ FIXED_SEED = TRUE
 VERSION = '1.1.3'
 double_wrap_num_sims = 10#00
 
-
 #note that several of these parameters are not actually used (no longer true?)
-full_run('15', '4', '1', '20', '10', '30', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'facility-added-interface', 'comparable-switched-up', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
-
+#separating into one variable per line for comments and diffing
+#here using all variable names explicitly, so that errors fail loudly instead of
+#giving weird bugs
+#(note that a word diff ignoring whitespace vs. function definition is now
+#relatively straightforward, if function definition is similarly formatted):
+#copy the relevant signatures to two files, strip out comments, strip out ,s and then run
+#git diff --no-index --word-diff --ignore-all-space  function-signatures.txt calls.txt 
+full_run(
+         workers_per_crew = '15', # FM: workers per line
+         crews_per_supervisor = '4', # FM: / lines per shift
+         supervisors = '1', # FM: shifts
+         n_shift_floaters ='20', # FM only (if combined with farm model, will require NULL/NA)
+         n_cleaners = '10', # FM only (if combined with farm model, will require NULL/NA)
+         n_all_floaters = '30', # FM only (if combined with farm model, will require NULL/NA)
+         days = '90',
+         employee_housing = 'Shared', 
+         social_distancing_shared_housing = 'Intermediate',
+         community_transmission = 'Intermediate',
+         social_distancing_work = 'Intermediate',
+         n_no_symptoms = '1', #i.e., exposed (TBD: not asymp/presymp -- should perhaps alter language?)
+         n_mild = '0',
+         fraction_recovered = '.116', # TBD: Swiss Cheese it
+                                      # TBD: For now, do calculations here by hand
+         fraction_fully_vaccinated = '.627',  #  TBD: (for now: and not boosted? (check))
+         fraction_boosted = 0,
+         boosting_rate = 0,
+         working_directory = '.', # TBD: Check if this is actually used
+         folder_name = 'facility-added-interface',  # relative to working directory
+                                                    # TBD: check whether malicious naming can hack the server
+         unique_id = 'comparable-switched-up',      # TBD: check whether malicious naming can hack the server
+         variant = 'Delta',
+         analyze_only = 'FALSE',
+         PARALLEL = TRUE
+)

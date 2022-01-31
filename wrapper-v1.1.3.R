@@ -1,9 +1,29 @@
+# main-produce-farm-v1.1.3.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 1.1.3.
+# Copyright (C) 2020-2021 Cornell University.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
 #revising the use of double_wrap_* variables to make solo use of wrapper.R less
 #confusing
 
 # behavior of wrapper.R is controlled by other files using several tests for
-# all-caps variables. If running wrapper.R directly, the following should
-# evaluate to FALSE:
+# all-caps variables. Production code has not run wrapper.R directly for some,
+# time now; if it is still possible to run it directly without further
+# modification, then the following should evaluate to FALSE:
 # exists('ANALYZE') && ANALYZE == TRUE
 # exists('DOUBLE_WRAPPED') && DOUBLE_WRAPPED == TRUE
 
@@ -12,6 +32,7 @@
 # of this, they are marked with comments of the form:
 # batch mode: [double_wrapped variable name]
 # These comments can be ignored entirely if not intending to ever use batch mode
+# (assuming that not using batch mode still works).
 
 # Number of individuals initially in various states other than completely
 # susceptible
@@ -20,31 +41,16 @@ wrapper_fn = function() {   #will it work? the goal is to get more meaningful de
 initial_recovered = 0 # batch mode: double_wrap_initial_recovered
 initial_V1 = 0        # batch mode: double_wrap_initial_V1
 initial_V2 = 0        # batch mode: double_wrap_initial_V2
+initial_B = 0         # batch mode: double_wrap_initial_B
 
 ###########################################
 # Flags controlling various interventions #
 ###########################################
 
-# Based on the current approach we're using, I have commented out the flags for
-# "named" social distancing and biosafety interventions, along with one of the
-# two "theoretical" interventions (leaving the other). 
-
-
 # Social distancing interventions
-#spacing_gt_6_ft = FALSE
-#physical_barriers = FALSE
 theoretical_social_distancing_R0_reduction = 0
 
-# Cohorting will go here when it is implemented
-
-#biosafety interventions
-#masks_and_shields = FALSE
-#improved_ventilation = FALSE
-#air_cleaning_filtering = FALSE
-#theoretical_biosafety_R0_reduction = 0
-
-#surveillance -- currently, these cannot both be true, but that limitation will
-#soon be lifted
+#surveillance -- currently, these cannot both be true, but that limitation may at some point be lifted
 temperature_screening = FALSE
 temperature_threshold = 37.1    # batch mode: double_wrap_temp_test
                                 # values currently recognized: 37.1, 37.5, 38,
@@ -52,18 +58,12 @@ temperature_threshold = 37.1    # batch mode: double_wrap_temp_test
                                 # combining other values with
                                 # temperature_testing = TRUE will cause an error
 viral_testing_rate = 0.3        # batch mode: double_wrap_viral_test_rate
-rational_testing = TRUE # TRUE is not currently implemented, but will soon be
+rational_testing = TRUE
 isolation_duration = 14         # batch mode: double_wrap_isolation_duration
 
 #vaccination
 vaccination_rate = 0            # batch mode: double_wrap_vax_rate
-rational_vaccination = FALSE #TRUE is not currently implemented, but will soon be
-
-#General setting parameters
-#baseline_work_R0 = 4   #for a high-risk setting
-                  # batch mode: double_wrap_baseline_R0
-#community_foi = 0 #per shift at home
-                  # batch mode: double_wrap_community_foi 
+rational_vaccination = FALSE    #TRUE is not currently implemented, but may be at some point in the future
 
 
 ##############################
@@ -80,6 +80,8 @@ num_sims = 100 # number of simulations; 100 takes 1-2 minutes (less on a faster 
 ################################################################
 
 if(exists('DOUBLE_WRAPPED') && DOUBLE_WRAPPED == TRUE) {
+    #TBD: Really, this whole setup should be handled by parameters passed into the function
+    #either from double-wrapped.R or elsewhere
     initial_recovered = double_wrap_initial_recovered
     theoretical_social_distancing_R0_reduction = double_wrap_reduction
     temperature_screening = (double_wrap_temp_test != FALSE)
@@ -92,6 +94,7 @@ if(exists('DOUBLE_WRAPPED') && DOUBLE_WRAPPED == TRUE) {
     baseline_work_R0 = double_wrap_baseline_work_R0
     initial_V1 = double_wrap_initial_V1
     initial_V2 = double_wrap_initial_V2
+    initial_B = double_wrap_initial_B
     rational_testing = double_wrap_rational_testing
 }
 
@@ -99,20 +102,14 @@ if(exists('DOUBLE_WRAPPED') && DOUBLE_WRAPPED == TRUE) {
 # Derived values; simple use will not require modification below this point #
 #############################################################################
 
-social_distancing_R0_factor = (#(1 - 0.30 * spacing_gt_6_ft) *
-                               #(1 - 0.20 * physical_barriers) *
+social_distancing_R0_factor = (
                                (1 - theoretical_social_distancing_R0_reduction)
                               )
-#biosafety_R0_factor = ((1 - 0.6 * masks_and_shields) *
-#                       (1 - 0.3 * improved_ventilation) *
-#                       (1 - 0.5 * air_cleaning_filtering) *
-#                       (1 - theoretical_biosafety_R0_reduction)
-#                      )
 
-total_R0_factor = social_distancing_R0_factor #* biosafety_R0_factor
+total_R0_factor = social_distancing_R0_factor
 
 net_work_R0 = total_R0_factor * baseline_work_R0
-#for now, assuming that R0 reductions only apply at work (will discuss further)
+#for now, assuming that R0 reductions only apply at work
 
 if(temperature_screening) {
     if(viral_testing_rate != 0) {
@@ -120,19 +117,15 @@ if(temperature_screening) {
     }
 
     if(temperature_threshold == 37.1) {
- #       print('37.1')
         sensitivity = .63
         specificity = .95
     } else if (temperature_threshold == 37.5) {
- #       print('37.5')
         sensitivity = .32
         specificity = .99
     } else if (temperature_threshold == 38) {
-  #      print('38')
         sensitivity = .18
         specificity = 1.00
     } else if (temperature_threshold == 38.5) {
-   #     print('38.5')
         sensitivity = .08
         specificity = 1.00
     } else {
@@ -219,19 +212,15 @@ if(initial_V1 > 0) {
     filename_core = paste(filename_core, ',initial_V1-', initial_V1, sep = '')
 }
 
+#TBD: Add more specifications
+
 filename_core = paste(filename_core, ',n_sims-', num_sims, sep = '')
-#table_name = paste(filename_core, '.csv', sep = '')
 full_output_save_name = paste(filename_core, '_full-output.rds', sep = '')
 
 #and now let's run the model
 if(!(exists('ANALYZE') && ANALYZE == TRUE)) {
-    #print('pre')
     source('main-produce-farm-v1.1.3.R', local = TRUE)
-    #print('IN')
     main_produce_farm_fn()
-    #print('OUT')
-} else {
-    #print('ooh ahh ahh ahh ahh')
 }
 
 full_output_save_name

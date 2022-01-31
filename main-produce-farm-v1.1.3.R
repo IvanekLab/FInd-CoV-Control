@@ -1,3 +1,22 @@
+# main-produce-farm-v1.1.3.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 1.1.3.
+# Copyright (C) 2020-2021 Cornell University.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
 #ABM model
 #individual based
 #each person/agent has properties = parameters, attributes behaviours
@@ -22,7 +41,7 @@ source("ABM-v1.1.3.R")
 #These shouldn't vary on a scenario-by-scenario or facility-by-facility basis,
 #with the possible exception of "what if a more human-to-human transmissible
 #strain evolves and becomes dominant"--type scenarios.
-    #2021-07-18 Oh hey, forshadowing
+    #2021-07-18 Oh hey, foreshadowing!
 #Otherwise, modification should occur only in response to updates in knowledge
 #about viral properties.
 #Default values from Moghadas et al. 2020 (gives range of .0575 to .0698 for
@@ -40,7 +59,9 @@ VirusParameters = function(p_trans_IP = .0575, relative_trans_IA = .11, relative
 
 virus_parameters = VirusParameters()
 
-if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
+#if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
+#print('variants')
+if(variant == 'delta') {
     V1_net_symptoms = 1 - .37
     V2_susceptibility = 1 - .65
     V2_net_symptoms = 1 - .88
@@ -49,24 +70,50 @@ if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
     V1_symptoms = V1_net_symptoms ** V2_exp #haven't seen them separated, so doing the best I can
     V1_susceptibility = V1_net_symptoms / V1_symptoms
 
-#    cat(V2_susceptibility, V2_symptoms, V1_susceptibility, V1_symptoms,'\n')
+    vaccine_parameters = list(    
+    V1_susceptibility = V1_susceptibility,
+    V2_susceptibility = V2_susceptibility,
+    V1_symptoms = V1_symptoms,
+    V2_symptoms = V2_symptoms,
+    vaccination_interval = 21 # based on Pfizer 
+    #TBD: need B_susceptibility and B_symptoms
+    )
+    stop()
+} else if(variant == 'omicron') { #lacking better data, do the simplest thing for now
+#    print('in')
+    V2_susceptibility = sqrt(1-.6)
+    V2_symptoms = V2_susceptibility
+    V1_net = 1#V2_susceptibility #going worst case here, for sanity (shouldn't matter for these figures)
+    V1_susceptibility = sqrt(V1_net)
+    V1_symptoms = V1_susceptibility
+    B_susceptibility = sqrt(1-.7)
+    B_symptoms = B_susceptibility
+    vaccination_interval = 21
 
     vaccine_parameters = list(    
     V1_susceptibility = V1_susceptibility,
     V2_susceptibility = V2_susceptibility,
     V1_symptoms = V1_symptoms,
     V2_symptoms = V2_symptoms,
-    vaccination_interval = 21 #changed from 14 days to 21 days based on practice with Pfizer 
+    vaccination_interval = 21,
+    B_symptoms = B_symptoms,
+    B_susceptibility = B_susceptibility
     )
-} else {
+#    print('out')
+} else if(variant == '2020') {
     vaccine_parameters = list(    
         V1_susceptibility = 1 - .8,
         V2_susceptibility = 1 - .9,
         V1_symptoms = (1 - .88) / (1 - .8), #purely default; if I've seen an estimate of this, I do not recall it
         V2_symptoms = (1 - .94) / (1 - .9),
-        vaccination_interval = 21 #changed from 14 days to 21 days based on practice with Pfizer 
-    )
+        vaccination_interval = 21 
+    #TBD: need B_susceptibility and B_symptoms
+)
+    stop()
+} else {
+    stop('Undefined variant.')
 }
+#print('Done')
 
 #2022-01-16 removed rates
 ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
@@ -117,8 +164,8 @@ scenario_parameters = ScenarioParameters(work_R0 = net_work_R0,
                                          housing_dormitory = TRUE, 
                                          work_testing_rate = work_testing_rate,
                                          isolation_duration = isolation_duration, 
-                                         home_vaccination_rate = vaccination_rate, #to account for two home intervals on Day off 
-                                         lambda = community_foi, #0.012, #0.012 baseline 
+                                         home_vaccination_rate = vaccination_rate,
+                                         lambda = community_foi,
                                          crews_by_team = crews_by_team, 
                                          crew_sizes = crew_sizes,
                                          virus_params = virus_parameters)
@@ -278,20 +325,25 @@ step_index = (1:steps) * (1/3) #step_length
 #loosely based on https://pubmed.ncbi.nlm.nih.gov/34619098/
 waning_parameters = list(W_susceptibility = 1, 
                          R_susceptibility = vaccine_parameters$V2_susceptibility,
-                         W_symptoms = vaccine_parameters$V2_symptoms,
-                         R_symptoms = vaccine_parameters$V2_symptoms,
-                         waning_rate = log(.88 / .47) / (4/12 * 365.2425))
+                         W_symptoms = 1, #vaccine_parameters$V2_symptoms, #worst-case (sort of)
+                         R_symptoms = vaccine_parameters$V2_symptoms
+                         #waning_rate = log(.88 / .47) / (4/12 * 365.2425)
+                         #waning_rate = log(.7/.45) / (10/52 * 365.2425) #not
+                         #directly necessary, if an explicit distribution is
+                         #used
+)
 
 #print(waning_parameters)
 
 ###### code to run simulation with num_sims iterations
-#https://stackoverflow.com/questions/20730537/add-new-row-to-matrix-one-by-one/20730711
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
     set.seed(-778276078) #random 32-bit signed integer generated using atmospheric noise
-                         #for reproducible output during development/debugging
-                         #should be commented out for production use
+                         #for reproducible output
 }
-full_output = array(0, c(steps, 35, num_sims))
+full_output = array(0, c(steps, 35, num_sims)) #TBD: This might not be enough
+                                               #TBD: Adjust code to do this on
+                                               #run 1
+#fuller_output = list()
 
 #print('main loop')
 sys_time_start = Sys.time()
@@ -303,8 +355,21 @@ for (i in 1:num_sims) {
     agents$V2_symptomatic = agents$symptomatic & rbinom(N, 1, vaccine_parameters$V2_symptoms)
     agents$W_symptomatic = agents$symptomatic & rbinom(N, 1, waning_parameters$W_symptoms) #need to add these
     agents$R_symptomatic = agents$symptomatic & rbinom(N, 1, waning_parameters$R_symptoms) #need to add these
-    agents$duration_V2 = rexp(N, waning_parameters$waning_rate)
-    agents$duration_R = rexp(N, waning_parameters$waning_rate)
+    agents$B_symptomatic = agents$symptomatic & rbinom(N, 1, vaccine_parameters$B_symptoms)
+    #print('half')
+    if(variant == 'omicron') {
+        agents$duration_V2 = runif(N, 0, 19 * 7) #rough approximation from update 33 #rexp(N, waning_parameters$waning_rate)
+        agents$duration_R = runif(N, 0, 19 * 7) #imitating above in absence of better data #rexp(N, waning_parameters$waning_rate)
+        agents$duration_B = runif(N, 0, 28 * 7) #from update 33
+    } else if(variant == 'delta') {
+        #below is old delta parameters, for the moment
+        #TBD: what goes here based on update 33?
+        agents$duration_V2 = rexp(N, log(.88 / .47) / (4/12 * 365.2425))#waning_parameters$waning_rate)
+        agents$duration_R =  rexp(N, log(.88 / .47) / (4/12 * 365.2425))#waning_parameters$waning_rate)
+    } else {
+        #TBD: 2020, other
+        stop()
+    }
                                                 
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
@@ -314,9 +379,13 @@ for (i in 1:num_sims) {
                  vaccination_rate_list = vaccination_rate_list,
                  agent_presence_list = agent_presence_list,
                  quantitative_presence_list = quantitative_presence_list,
-                 waning_parameters = waning_parameters)
+                 waning_parameters = waning_parameters,
+                 boosting_rate = boosting_rate)
     agents = model$agents
     output = model$Out1
+
+    #agentss = model$agentss
+    #fuller_output[[i]] = agentss
 
     full_output[,,i] = as.matrix(output) #this works; for whatever reason,
                                          #as.array does not
@@ -327,4 +396,5 @@ cat(sys_time_end - sys_time_start, 'for', row_name,'\n')
 
 colnames(full_output) = colnames(output)
 saveRDS(full_output, full_output_save_name)
+#saveRDS(fuller_output, paste0(full_output_save_name,'-fuller'))
 } #main_produce_farm_fn 
