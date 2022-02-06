@@ -34,9 +34,6 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate, frac
     #add proper full parameter list later
     if(sum(testing_rate) > 0) {
         
-        # Currently using a flag for whether someone is isolated or not, but
-        # could use new compartments (e.g. state = Isolated_IA, instead of
-        # state = IA and Isolated = True
         if(max(testing_rate) == 1) { #Must use max(testing_rate) because at-work testing can't happen for people not currently at work
                 testing_mask = agent_presence #for exact comparison purposes
         } else if(rational_testing) {
@@ -95,6 +92,180 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate, frac
     list(agents = agents, fractional_test_carried = fractional_test_carried)
 }
 
+vaccinate = function(agents, N, vaccination_rate, vaccination_interval, start_time, end_time, boosting_rate) {
+    #vaccinate
+    if(sum(vaccination_rate) > 0) {
+        ####
+        #modifying for facility model -- never mind, doesn't need modification! all that needs changing is the definition of rates to vectors instead of scalars! neat!
+        #TBD: Check that this is actually implemented correctly
+        ####
+        # We are ignoring immune boosting (or symptom worsening) effects of
+        # vaccination on the already infected for now => only S can
+        # *effectively* be vaccinated.
+
+        #This may be changing when booster doses are added; it fits somewhat
+        #naturally with those.
+        
+        # For some historical scenarios, it might be nice to make
+        # vaccination age-dependent, but this is low priority given our
+        # primary focus on the present and future.
+        #
+        # Note that not including W_to_V[whatever] technically ignores some S -> I -> R -> W [-> V] trajectories
+        # But including it would amount to allowing boosters for S -> V1 -> V2 -> W trajectories (among others)
+        # So we'll leave it out for now
+        # But this is another argument for more cleanly separating multiple aspects of state
+
+        #2021-01-07 For consistency with previous results (for checking that
+        #conversion is done correctly), I am for now keeping vaccination as
+        #something that only occurs in state "S" (= NI + FS + NV)
+        #But this must be fixed to sanely handle boosting!
+        #so TBD: fix that (once conversion has been confirmed to be handled
+        #correctly).
+        S_to_V1 = ((agents$infection_status == 'NI' & agents$immune_status == 'FS' & agents$vax_status == 'NV' & !(agents$isolated)) &
+                    (rbinom(N, 1, vaccination_rate)))
+        # Following line tacitly assumes the times that they could get a 1st
+        # dose & times they could get a 2nd dose are the same.
+        #TBD: again, this should eventually be changed to better handle
+        V1_to_V2 = ((agents$infection_status == 'NI' & agents$immune_status == 'V1' & agents$vax_status == 'V1' & !(agents$isolated)) &
+                    ((end_time - agents$time_V1) > vaccination_interval) &
+                    (vaccination_rate > 0))
+        agents$time_V1[S_to_V1] = runif(sum(S_to_V1), start_time, end_time)
+        agents$time_V2[V1_to_V2] = runif(sum(V1_to_V2), start_time, end_time)
+        agents$immune_status[S_to_V1] = 'V1'
+        agents$vax_status[S_to_V1] = 'V1'
+        agents$immune_status[V1_to_V2] = 'V2'
+        agents$vax_status[V1_to_V2] = 'V2'
+    }
+
+    #boost
+    #TBD: For now, going to assume no boosting during infection
+    if(sum(boosting_rate) > 0) {
+        #time_V2 is only set when receiving second dose
+        #so is still valid in R, or W
+        x_to_B = ((agents$infection_status == 'NI' & agents$vax_status == 'V2' & !(agents$isolated)) & (end_time - agents$time_V2 > 152) & #5 months
+                    (rbinom(N, 1, boosting_rate)))
+        agents$time_B[x_to_B] = runif(sum(x_to_B), start_time, end_time)
+        agents$immune_status[x_to_B] = 'B'
+        agents$vax_status[x_to_B] = 'B'
+    }
+
+    #TBD: Add time_B to AgentGen
+    #TBD: Handling of ??
+    #TBD: add waning from B (what is this rate?)
+    agents
+}
+
+#symptomatic = function(agents) {
+#    (agents$immune_status == 'FS' & agents$symptomatic) |
+#        (agents$immune_status == 'V1' & agents$V1_symptomatic) |
+#        (agents$immune_status == 'V2' & agents$V2_symptomatic) |
+#        (agents$immune_status == 'R' & agents$R_symptomatic) |
+#        (agents$immune_status == 'W' & agents$W_symptomatic) |
+#        (agents$immune_status == 'B' & agents$B_symptomatic)
+#}
+
+V2_decay = function(t) {
+    0.91157392 * exp(-0.08904459 * t)
+}
+
+B_decay = function(t) {
+    0.471669758 * exp(-0.083161719*t) + 0.326600870 *exp(-0.008970573*t)
+}
+
+R_decay = B_decay #although the protection functions are non-identical
+
+V1_protection = function(t) {
+    ifelse(t < 3, .36 * t / 3, .36)
+}
+
+V2_protection = function(t, prev) {
+    ifelse(t < 2, (t / 2) * V2_decay(2) + ((2 - t) / 2) * prev, V2_decay(t))
+}
+
+
+B_protection = function(t, prev) {
+    ifelse(t < 1, 
+        t * .62 + (1 - t) * prev,
+        ifelse(t < 2,
+            (2 - t) * .62 + (t - 1) * B_decay(2), 
+            B_decay(t)
+        )
+    )
+}
+
+R_protection = function(t) {
+    ifelse(t < 2, 1, R_decay(t))
+}
+
+net_symptomatic_protection = function (agents, start_time) {
+    ais = agents$immune_status
+    t = (start_time - agents$time_last_immunity_event) / 7 #relevant data is given in weeks
+    prev = agents$immunity_before_last_immunity_event #names are hard
+    protection = ifelse(ais == 'FS',
+        0,
+        ifelse(ais == 'V1',
+            V1_protection(t),
+            ifelse(ais == 'V2',
+                V2_protection(t, prev),
+                ifelse(ais == 'B',
+                    B_protection(t, prev),
+                    ifelse(ais == 'R',
+                        R_protection(t),
+                        NA
+                    )
+                )
+            )
+        )
+    )
+    if(any(is.na(protection))) {
+        stop('NAs in net_symptomatic_protection') #debugging
+    }
+    protection
+}
+
+infection_protection = function(agents, start_time) {
+    1 - sqrt(1 - net_symptomatic_protection(agents, start_time))
+}
+
+symptom_protection = function(agents, start_time) {
+    nsp = net_symptomatic_protection(agents, start_time)
+    ip = infection_protection(agents, start_time)
+    ifelse(nsp == 1, 1, 1 - (1 - nsp) / (1 - ip))
+}
+
+#debugging check
+#ip = infection_protection(list(immune_status = c(rep('FS', 28), rep('V1', 28), rep('V2', 56), rep('B', 56),rep('R', 28)), time_last_immunity_event = -rep((1:28),7), immunity_before_last_immunity_event = c(rep(0,84), rep(.36, 28), rep(0, 28), rep(.4, 28), rep(.6,28))),0)
+
+progress_infection = function(agents, N, end_time) {
+    xE_to_I = ((agents$infection_status == 'E') &
+                ((end_time - agents$time_E) > agents$duration_E))
+    #TBD (possibly): Again, might want to simplify this
+    xE_to_IP = xE_to_I & agents$symptomatic & rbinom(N, 1, 1 - symptom_protection(agents, start_time))
+    xE_to_IA = xE_to_I & !xE_to_IP
+
+    IP_to_IM = ((agents$infection_status == 'IP') &
+                ((end_time - agents$time_IP) > agents$duration_IP))
+    IA_to_R =  ((agents$infection_status == 'IA') &
+                ((end_time - agents$time_IA) > agents$duration_IA))
+    IM_to_x =  ((agents$infection_status == 'IM') &
+                ((end_time - agents$time_IM) > agents$duration_IM))
+    #TBD (eventually): Account for reduced chance of severe disease
+    #conditional on symptomatic
+    IM_to_IS = IM_to_x & agents$severe
+    IM_to_R =  IM_to_x & !(agents$severe)   #TBD (eventually): account for possibility of greater immunity if infected after vaccination, previous infection, etc.
+    IS_to_x = ((agents$infection_status == 'IS') &
+                ((end_time - agents$time_IS) > agents$duration_IS))
+    IS_to_IC = IS_to_x & agents$critical
+    IS_to_R =  IS_to_x & !(agents$critical)
+    IC_to_x = ((agents$infection_status == 'IC') &
+                ((end_time - agents$time_IC) > agents$duration_IC))
+    IC_to_D = IC_to_x & agents$death
+    IC_to_R = IC_to_x & !(agents$death)
+
+    x_to_R = IA_to_R | IM_to_R | IS_to_R | IC_to_R
+
+    list(agents = agents, xE_to_IA = xE_to_IA, xE_to_IP = xE_to_IP, IP_to_IM = IP_to_IM, IM_to_IS = IM_to_IS, IS_to_IC = IS_to_IC, IC_to_D = IC_to_D, x_to_R = x_to_R)
+}
 
 ABM <- function(agents, contacts_list, lambda_list, schedule,
                 virus_parameters, testing_parameters, vaccine_parameters, scenario_parameters,
@@ -144,7 +315,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                        new_infections = rep(0, steps)
     )
 #print('in ABM')
-    agentss = list()
+    #agentss = list()
 
     #will be used for visualizing epidemics later
     #Out2 <- matrix(data = '', rows = N, columns = steps)
@@ -196,65 +367,9 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
         start_time = end_time 
         end_time = start_time + step_length
-        #vaccinate
-        if(sum(vaccination_rate) > 0) {
-            ####
-            #modifying for facility model -- never mind, doesn't need modification! all that needs changing is the definition of rates to vectors instead of scalars! neat!
-            #TBD: Check that this is actually implemented correctly
-            ####
-            # We are ignoring immune boosting (or symptom worsening) effects of
-            # vaccination on the already infected for now => only S can
-            # *effectively* be vaccinated.
 
-            #This may be changing when booster doses are added; it fits somewhat
-            #naturally with those.
-            
-            # For some historical scenarios, it might be nice to make
-            # vaccination age-dependent, but this is low priority given our
-            # primary focus on the present and future.
-            #
-            # Note that not including W_to_V[whatever] technically ignores some S -> I -> R -> W [-> V] trajectories
-            # But including it would amount to allowing boosters for S -> V1 -> V2 -> W trajectories (among others)
-            # So we'll leave it out for now
-            # But this is another argument for more cleanly separating multiple aspects of state
 
-            #2021-01-07 For consistency with previous results (for checking that
-            #conversion is done correctly), I am for now keeping vaccination as
-            #something that only occurs in state "S" (= NI + FS + NV)
-            #But this must be fixed to sanely handle boosting!
-            #so TBD: fix that (once conversion has been confirmed to be handled
-            #correctly).
-            S_to_V1 = ((agents$infection_status == 'NI' & agents$immune_status == 'FS' & agents$vax_status == 'NV' & !(agents$isolated)) &
-                       (rbinom(N, 1, vaccination_rate)))
-            # Following line tacitly assumes the times that they could get a 1st
-            # dose & times they could get a 2nd dose are the same.
-            #TBD: again, this should eventually be changed to better handle
-            V1_to_V2 = ((agents$infection_status == 'NI' & agents$immune_status == 'V1' & agents$vax_status == 'V1' & !(agents$isolated)) &
-                        ((end_time - agents$time_V1) > vaccination_interval) &
-                        (vaccination_rate > 0))
-            agents$time_V1[S_to_V1] = runif(sum(S_to_V1), start_time, end_time)
-            agents$time_V2[V1_to_V2] = runif(sum(V1_to_V2), start_time, end_time)
-            agents$immune_status[S_to_V1] = 'V1'
-            agents$vax_status[S_to_V1] = 'V1'
-            agents$immune_status[V1_to_V2] = 'V2'
-            agents$vax_status[V1_to_V2] = 'V2'
-        }
-
-        #boost
-        #TBD: For now, going to assume no boosting during infection
-        if(sum(boosting_rate) > 0) {
-            #time_V2 is only set when receiving second dose
-            #so is still valid in R, or W
-            x_to_B = ((agents$infection_status == 'NI' & agents$vax_status == 'V2' & !(agents$isolated)) & (end_time - agents$time_V2 > 152) & #5 months
-                       (rbinom(N, 1, boosting_rate)))
-            agents$time_B[x_to_B] = runif(sum(x_to_B), start_time, end_time)
-            agents$immune_status[x_to_B] = 'B'
-            agents$vax_status[x_to_B] = 'B'
-        }
-
-        #TBD: Add time_B to AgentGen
-        #TBD: Handling of ??
-        #TBD: add waning from B (what is this rate?)
+        agents = vaccinate(agents, N, vaccination_rate, vaccination_interval, start_time, end_time, boosting_rate)
 
         # un-isolate
         #
@@ -295,41 +410,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #
         # Ideally, we probably want to incorporate transitions out of
         # infectiousness into calculation of transmission potentials, but later.
-
-        xE_to_I = ((agents$infection_status == 'E') &
-                  ((end_time - agents$time_E) > agents$duration_E))
-        #TBD (possibly): Again, might want to simplify this
-        xE_to_IP = xE_to_I & ((agents$immune_status == 'FS' & agents$symptomatic) |
-                              (agents$immune_status == 'V1' & agents$V1_symptomatic) |
-                              (agents$immune_status == 'V2' & agents$V2_symptomatic) |
-                              (agents$immune_status == 'R' & agents$R_symptomatic) |
-                              (agents$immune_status == 'W' & agents$W_symptomatic) |
-                              (agents$immune_status == 'B' & agents$B_symptomatic)
-        )
-        xE_to_IA = xE_to_I & !xE_to_IP
-
-        IP_to_IM = ((agents$infection_status == 'IP') &
-                    ((end_time - agents$time_IP) > agents$duration_IP))
-        IA_to_R =  ((agents$infection_status == 'IA') &
-                    ((end_time - agents$time_IA) > agents$duration_IA))
-        IM_to_x =  ((agents$infection_status == 'IM') &
-                    ((end_time - agents$time_IM) > agents$duration_IM))
-        #TBD (eventually): Account for reduced chance of severe disease
-        #conditional on symptomatic
-        IM_to_IS = IM_to_x & agents$severe
-        IM_to_R =  IM_to_x & !(agents$severe)   #TBD (eventually): account for possibility of greater immunity if infected after vaccination, previous infection, etc.
-        IS_to_x = ((agents$infection_status == 'IS') &
-                    ((end_time - agents$time_IS) > agents$duration_IS))
-        IS_to_IC = IS_to_x & agents$critical
-        IS_to_R =  IS_to_x & !(agents$critical)
-        IC_to_x = ((agents$infection_status == 'IC') &
-                    ((end_time - agents$time_IC) > agents$duration_IC))
-        IC_to_D = IC_to_x & agents$death
-        IC_to_R = IC_to_x & !(agents$death)
-
-        x_to_R = IA_to_R | IM_to_R | IS_to_R | IC_to_R
-
-        
+        agents = progress_infection(agents, N, end_time)        
 
         #For simplicity, we'll do community transmission first, i.e.,
         #if someone would be infected from community transmission and from

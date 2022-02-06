@@ -203,7 +203,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 10#00
+double_wrap_num_sims = 5#1000
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -235,8 +235,8 @@ full_run(
          working_directory = '.', # TBD: Check if this is actually used
          folder_name = 'facility-added-interface',  # relative to working directory
                                                     # TBD: check whether malicious naming can hack the server
-         unique_id = 'post-merge-csu-2020',      # TBD: check whether malicious naming can hack the server
-         variant = '2020',
+         unique_id = 'testing',      # TBD: check whether malicious naming can hack the server
+         variant = 'omicron',
          analyze_only = 'FALSE',
          PARALLEL = TRUE
 )

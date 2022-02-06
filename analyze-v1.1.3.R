@@ -493,10 +493,10 @@ sample_data = function() {
             unavailable_array = array(0, c(interventions, steps, reps))
             total_infections_array = array(0, c(interventions, reps))
         }
-        print(i)
-        print(dim(full_output))
-        print(dim(unavailable_array))
-        print(dim(unavailable(full_output)))
+        #print(i)
+        #print(dim(full_output))
+        #print(dim(unavailable_array))
+        #print(dim(unavailable(full_output)))
         unavailable_array[i,,] = unavailable(full_output)
         total_infections_array[i,] = apply(full_output[,'new_infections',], 2, sum)
     }
