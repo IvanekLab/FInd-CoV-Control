@@ -148,7 +148,7 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
 
     #bit of a kludge, but should ensure sane limits
     ys = list()
-print('starting the loop')
+#print('starting the loop')
     for (i in 1:length(full_output_filenames)) {
 #        if(use_agentss) {
 #            full_output = readRDS(paste0(full_output_filenames[i],'-fuller'))
@@ -156,7 +156,7 @@ print('starting the loop')
 #                stop('Combining work_only and use_agentss not yet implemented')
 #            }
 #        } else {
-print(full_output_filenames)
+#print(full_output_filenames)
         full_output = readRDS(full_output_filenames[i])
         if(work_only) {
             full_output = full_output[work_shifts,,]
@@ -455,11 +455,11 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
     }
 }
 
-print('okay')
+#print('okay')
 
 oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))#, main_title = 'Delta')
 
-print('not')
+#print('not')
 
 l = length(work_shifts)
 production_shifts = work_shifts & ((1:l) %% 3 != 0)
