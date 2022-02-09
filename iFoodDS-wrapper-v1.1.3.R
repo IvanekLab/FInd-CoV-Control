@@ -203,7 +203,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 5#1000
+double_wrap_num_sims = 100#0
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -222,9 +222,9 @@ full_run(
          n_all_floaters = '30', # FM only (if combined with farm model, will require NULL/NA)
          days = '90',
          employee_housing = 'Shared', 
-         social_distancing_shared_housing = 'Intermediate',
+         social_distancing_shared_housing = 'Low',
          community_transmission = 'Intermediate',
-         social_distancing_work = 'Intermediate',
+         social_distancing_work = 'Low',
          n_no_symptoms = '1', #i.e., exposed (TBD: not asymp/presymp -- should perhaps alter language?)
          n_mild = '0',
          fraction_recovered = '.116', # TBD: Swiss Cheese it
@@ -232,10 +232,9 @@ full_run(
          fraction_fully_vaccinated = '.627',  #  TBD: (for now: and not boosted? (check))
          fraction_boosted = 0,
          boosting_rate = 0,
-         working_directory = '.', # TBD: Check if this is actually used
+         working_directory = '.',
          folder_name = 'facility-added-interface',  # relative to working directory
-                                                    # TBD: check whether malicious naming can hack the server
-         unique_id = 'testing',      # TBD: check whether malicious naming can hack the server
+         unique_id = 'SLL-100',
          variant = 'omicron',
          analyze_only = 'FALSE',
          PARALLEL = TRUE

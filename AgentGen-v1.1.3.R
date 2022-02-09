@@ -24,6 +24,8 @@
 #rather than S), $vax_status (currently same as immune status for fully
 #unvaccinated)
 
+source('omicron-waning-functions.R')
+
 AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 0,
                          initial_V1 = 0, initial_V2 = 0, initial_B = 0,
                        age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
@@ -77,6 +79,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
                                                #state, e.g., someone who can be
                                                #both IM and isolated.
                          time_tested = -Inf,    #Unlike most times, we want the "last time at which this person was tested," for someone who has never been tested, to be LESS than the last time at which someone was tested who has ever been tested; hence the use of -Inf instead of Inf.
+                         time_last_immunity_event = NA, #using NAs here will trip a debug guard if these are not updated as they should be when individuals change immune_status
+                         previous_immunity = NA,
                          isolated = FALSE, #initially
                          Age_Cat = sample(Age_Categories, N, replace = TRUE,
                                           prob = age_probabilities),
@@ -115,10 +119,15 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
 
     agents$immune_status[index_R] = 'R'
     agents$time_R[index_R]= -runif(initial_recovered, 0, 365) #adequate for now; may required revision when immune waning is added
+    agents$time_last_immunity_event[index_R] = agents$time_R[index_R]
+    agents$previous_immunity[index_R] = 0 #TBD: should definitely be revised once swiss-cheesing is complete
+
 
     agents$immune_status[index_V1] = 'V1'
     agents$vax_status[index_V1] = 'V1'
     agents$time_V1[index_V1] = -runif(initial_V1, 0, 21) #not a perfect model of reality, but good enough
+    agents$time_last_immunity_event[index_V1] = agents$time_V1[index_V1]
+    agents$previous_immunity[index_V1] = 0
 
     agents$immune_status[index_V2] = 'V2'
     agents$vax_status[index_V2] = 'V2'
@@ -136,7 +145,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     agents$time_V2[index_V2] = -ifelse(rbinom(initial_V2,1,0.6),
                                        runif(initial_V2, 0, 188),
                                        runif(initial_V2, 188, 410))
+    agents$time_last_immunity_event[index_V2] = agents$time_V2[index_V2]
     agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21 #again, not perfect, but doesn't actually matter (currently, and probably ever)
+    agents$previous_immunity[index_V2] = V1_protection((agents$time_V2[index_V2] - agents$time_V1[index_V2]) / 7) #TBD de-7 if changing how weeks are handled
 
     agents$immune_status[index_B] = 'B'
     agents$vax_status[index_B] = 'B'
@@ -144,6 +155,11 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     agents$time_B[index_B] = -runif(initial_B, 0, 92)
     agents$time_V2[index_B] = agents$time_B[index_B] - 152 #doesn't really matter
     agents$time_V1[index_B] = agents$time_V2[index_B] - 21
+    agents$time_last_immunity_event[index_B] = agents$time_B[index_B]
+    #print(agents$time_B[index_B])
+    #print(agents$time_V2[index_B])
+    agents$previous_immunity[index_B] = V2_protection((agents$time_B[index_B] - agents$time_V2[index_B]) / 7, 0) #TBD: de-7
+    #TBD: correct technical error / generate standard "on-schedule" previous immunities
 
     #generating transition times before the most recent
     #maybe not necessary, but seems like a good guard against weird bugs

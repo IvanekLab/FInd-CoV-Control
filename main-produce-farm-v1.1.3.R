@@ -325,9 +325,10 @@ step_index = (1:steps) * (1/3) #step_length
 #waning parameter time
 #assuming waning to full susceptibility to infection, but no loss of protection against severe infection conditional upon infection
 #loosely based on https://pubmed.ncbi.nlm.nih.gov/34619098/
-waning_parameters = list(W_susceptibility = 1, 
+waning_parameters = list(
+                         #W_susceptibility = 1, 
                          R_susceptibility = vaccine_parameters$V2_susceptibility,
-                         W_symptoms = 1, #vaccine_parameters$V2_symptoms, #worst-case (sort of)
+                         #W_symptoms = 1, #vaccine_parameters$V2_symptoms, #worst-case (sort of)
                          R_symptoms = vaccine_parameters$V2_symptoms
                          #waning_rate = log(.88 / .47) / (4/12 * 365.2425)
                          #waning_rate = log(.7/.45) / (10/52 * 365.2425) #not
@@ -356,7 +357,7 @@ for (i in 1:num_sims) {
 #print('agents done')
     agents$V1_symptomatic = agents$symptomatic & rbinom(N, 1, vaccine_parameters$V1_symptoms)
     agents$V2_symptomatic = agents$symptomatic & rbinom(N, 1, vaccine_parameters$V2_symptoms)
-    agents$W_symptomatic = agents$symptomatic & rbinom(N, 1, waning_parameters$W_symptoms) #need to add these
+    #agents$W_symptomatic = agents$symptomatic & rbinom(N, 1, waning_parameters$W_symptoms) #need to add these
     agents$R_symptomatic = agents$symptomatic & rbinom(N, 1, waning_parameters$R_symptoms) #need to add these
     agents$B_symptomatic = agents$symptomatic & rbinom(N, 1, vaccine_parameters$B_symptoms)
     #print('half')

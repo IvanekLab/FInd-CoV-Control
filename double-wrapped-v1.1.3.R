@@ -56,7 +56,7 @@ if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 +
                n_exposed, '+', n_mild, '+', double_wrap_initial_recovered, '+', double_wrap_initial_V2, '+', double_wrap_initial_B, '>', N))
 }
 
-temperature_thresholds = c(38, 37.5, 37.1) #given an observed specificity of 100% at 38, why lose further sensitivity at 38.5?
+temperature_thresholds = c(38)#, 37.5, 37.1) #given an observed specificity of 100% at 38, why lose further sensitivity at 38.5?
 viral_test_rates = c(0.05, 0.3, 1.0)
 vax_rates = c(0.01, 0.04, 0.16) 
 R0_reductions = c(0.2, 0.4, 0.8)
@@ -73,8 +73,8 @@ infected_sd_output_filenames = rep('', k_max)
 
 row.names<-c(     "Baseline",
                   "Temperature Screening, 38.0°C",
-                  "Temperature Screening, 37.5°C",
-                  "Temperature Screening, 37.1°C",
+                  #"Temperature Screening, 37.5°C",
+                  #"Temperature Screening, 37.1°C",
                   "Virus Test, p = 0.05 / Working Day",
                   "Virus Test, p = 0.3 / Working Day",
                   "Virus Test, p = 1.0 / Working Day",
@@ -93,8 +93,8 @@ c4 = c('black', 'blue3', 'turquoise1', 'red2', 'yellow2')
 
 colors = c('black',
            c4[2],
-           c4[2],
-           c4[2],
+           #c4[2],
+           #c4[2],
            c4[3],
            c4[3],
            c4[3],
@@ -107,8 +107,8 @@ colors = c('black',
 
 ltys = c(1,
          1,
-         2,
-         3,
+         #2,
+         #3,
          1,
          2,
          3,

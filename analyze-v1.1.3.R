@@ -109,7 +109,7 @@ unavailable = function(data) {
                                 data[,'IM_isolated',] + data[,'R_isolated',] +
                                 data[,'V1_isolated',] + data[,'V2_isolated',] +
                                 data[,'V1E_isolated',] + data[,'V2E_isolated',] +
-                                data[,'W_isolated',] + data[,'WE_isolated',] +
+                                #data[,'W_isolated',] + data[,'WE_isolated',] +
                                 data[,'RE_isolated',]
     )
 }
@@ -148,7 +148,7 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
 
     #bit of a kludge, but should ensure sane limits
     ys = list()
-
+print('starting the loop')
     for (i in 1:length(full_output_filenames)) {
 #        if(use_agentss) {
 #            full_output = readRDS(paste0(full_output_filenames[i],'-fuller'))
@@ -156,6 +156,7 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
 #                stop('Combining work_only and use_agentss not yet implemented')
 #            }
 #        } else {
+print(full_output_filenames)
         full_output = readRDS(full_output_filenames[i])
         if(work_only) {
             full_output = full_output[work_shifts,,]
@@ -259,6 +260,10 @@ shiftwise_unavailable_fraction = function(data) {
 
 shiftwise_short = function(data) {
     shiftwise_unavailable_fraction(data) > .15
+}
+
+new_infections = function(data) {
+    data[,'new_infections',]
 }
 
 #shiftwise_special_unavailable = function(data) {
@@ -450,7 +455,11 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
     }
 }
 
+print('okay')
+
 oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))#, main_title = 'Delta')
+
+print('not')
 
 l = length(work_shifts)
 production_shifts = work_shifts & ((1:l) %% 3 != 0)
@@ -474,6 +483,9 @@ main_title = ''
 
 end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', production_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts)
 end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', cleaning_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
+
+end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
+
 end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
 end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
 
