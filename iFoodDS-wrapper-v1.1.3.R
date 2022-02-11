@@ -219,7 +219,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 100#0
+double_wrap_num_sims = 1000
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -246,18 +246,18 @@ full_run(
          n_no_symptoms = '1', #i.e., exposed (TBD: not asymp/presymp --
                               #should perhaps alter language?)
          n_mild = '0',
-         fraction_recovered = '.116', # TBD: Swiss Cheese it
+         fraction_recovered = .5,#'.116', # TBD: Swiss Cheese it
                                       # TBD: For now,
                                       # do calculations here by hand
-         fraction_fully_vaccinated = '.627',  #  TBD: (for now: and not boosted?
+         fraction_fully_vaccinated = .4,#'.627',  #  TBD: (for now: and not boosted?
                                               #(check))
          fraction_boosted = .5,
          boosting_rate = 0,
          working_directory = '.',
          folder_name = 'facility-added-interface', # relative to working
                                                    # directory
-         unique_id = 'SII-more-reasonable-R0-B-to-R',
+         unique_id = 'Whatever',
          variant = 'omicron',
-         analyze_only = 'FALSE',
+         analyze_only = 'TRUE',
          PARALLEL = TRUE
 )

@@ -165,16 +165,19 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         agents$time_V1[S_to_V1] = runif(sum(S_to_V1), start_time, end_time)
         #TBD(long_term): why not just drop the constant referencing of agents$
         #and just use these as vectors?
-        agents$previous_immunity[S_to_V1] = net_symptomatic_protection(
-                agents[S_to_V1,], agents$time_V1[S_to_V1])
+        agents$previous_immunity[S_to_V1] = immunity_0[S_to_V1] #technically not
+                                                                #ideal, but safe
+                #net_symptomatic_protection(
+                #agents[S_to_V1,], agents$time_V1[S_to_V1])
         agents$time_last_immunity_event[S_to_V1] = agents$time_V1[S_to_V1]
         #because immune_status has not been updated yet, this is still valid
         agents$immune_status[S_to_V1] = 'V1'
         agents$vax_status[S_to_V1] = 'V1'
 
         agents$time_V2[V1_to_V2] = runif(sum(V1_to_V2), start_time, end_time)
-        agents$previous_immunity[V1_to_V2] = net_symptomatic_protection(
-                agents[V1_to_V2,], agents$time_V2[V1_to_V2])
+        agents$previous_immunity[V1_to_V2] = immunity_0[V1_to_V2] #technically...
+                #net_symptomatic_protection(
+                #agents[V1_to_V2,], agents$time_V2[V1_to_V2])
         #because immune_status has not been updated yet, this is still valid
         agents$time_last_immunity_event[V1_to_V2] = agents$time_V2[V1_to_V2]
         agents$immune_status[V1_to_V2] = 'V2'
@@ -217,8 +220,9 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     x_to_B_any = R_to_B_via_V1 | R_to_B_via_V2 | x_to_B_on_time | x_to_B_late
     agents$time_B[x_to_B_any] = runif(sum(x_to_B_any), start_time, end_time)
             #previous line is not perfect, but has advantages
-    agents$previous_immunity[x_to_B_any] = net_symptomatic_protection(
-            agents[x_to_B_any,], agents$time_B[x_to_B_any])
+    agents$previous_immunity[x_to_B_any] = immunity_0[x_to_B_any] #technically...
+            #net_symptomatic_protection(
+            #agents[x_to_B_any,], agents$time_B[x_to_B_any])
             #because immune_status has not been updated yet, this is still valid
     agents$time_last_immunity_event[x_to_B_any] = agents$time_B[x_to_B_any]
     #TBD(long_term): why not just drop the constant referencing of agents$
@@ -232,6 +236,19 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
 
     #TBD: Add time_B to AgentGen
     #TBD: Handling of ??
+    immunity_1 = net_symptomatic_protection(agents, start_time)
+    test_mask = immunity_1 < immunity_0
+    if(any(test_mask)) {
+        print(agents[test_mask,])
+        print('Was:')
+        print(infection_0[test_mask])
+        print(immune_status_0[test_mask])
+        print(vax_status_0[test_mask])
+        print(isolated_0[test_mask])
+        print(immunity_0[test_mask])
+        stop('And here is the failure.')
+    }
+
     agents
 }
 
@@ -407,7 +424,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         agents = vaccinate(agents, N, vaccination_rate, vaccination_interval,
                            start_time, end_time, boosting_rate,
                            infection_0, immune_status_0, vax_status_0,
-                           isolated_0)
+                           isolated_0, immunity_0)
 
         infectiousness = (!isolated_0) * (
             (infection_0 == 'IA') * p_trans_IA +

@@ -65,26 +65,26 @@ if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 +
                    N))
 }
 
-temperature_thresholds = numeric()#c(38)#, 37.5, 37.1)
-viral_test_rates = numeric()#c(0.05, 0.3, 1.0)
+temperature_thresholds = c(38)#, 37.5, 37.1)
+viral_test_rates = c(0.05, 0.3, 1.0)
 vax_rates = c(0.01, 0.04, 0.16) 
-R0_reductions = numeric()#c(0.2, 0.4, 0.8)
+R0_reductions = c(0.2, 0.4, 0.8)
 
 k_max = 1 + length(temperature_thresholds) + length(viral_test_rates) +
     length(vax_rates) + length(R0_reductions) + 2 # +2 is a kludge to allow the
                                                   # final two interventions
 
 row.names<-c(     "Baseline",
-                  #"Temperature Screening, 38.0°C",
-                  #"Virus Test, p = 0.05 / Working Day",
-                  #"Virus Test, p = 0.3 / Working Day",
-                  #"Virus Test, p = 1.0 / Working Day",
+                  "Temperature Screening, 38.0°C",
+                  "Virus Test, p = 0.05 / Working Day",
+                  "Virus Test, p = 0.3 / Working Day",
+                  "Virus Test, p = 1.0 / Working Day",
                   "Vaccination, p = 0.01 / Day",
                   "Vaccination, p = 0.04 / Day",
                   "Vaccination, p = 0.16 / Day",
-                  #"Soc. Dist./Biosafety: -20% R₀",
-                  #"Soc. Dist./Biosafety: -40% R₀",
-                  #"Soc. Dist./Biosafety: -80% R₀",
+                  "Soc. Dist./Biosafety: -20% R₀",
+                  "Soc. Dist./Biosafety: -40% R₀",
+                  "Soc. Dist./Biosafety: -80% R₀",
                   'Boosting, p = 0.04 / day', #kludge
                   'Vax + Boosting, p = 0.04/day' #kludge
 )
@@ -95,30 +95,30 @@ if(length(row.names) != k_max) {
 c4 = c('black', 'blue3', 'turquoise1', 'red2', 'yellow2')
 
 colors = c('black',
-           #c4[2],
-           #c4[3],
-           #c4[3],
-           #c4[3],
+           c4[2],
+           c4[3],
+           c4[3],
+           c4[3],
            c4[4],
            c4[4],
            c4[4],
-           #c4[5],
-           #c4[5],
-           #c4[5],
-'limegreen', #kludge
-'limegreen')
+           c4[5],
+           c4[5],
+           c4[5],
+'darkgreen', #kludge
+'darkgreen')
 
 ltys = c(1,
-         #1,
-         #1,
-         #2,
-         #3,
+         1,
          1,
          2,
          3,
-         #1,
-         #2,
-         #3,
+         1,
+         2,
+         3,
+         1,
+         2,
+         3,
 1, #kludge
 2)
 
@@ -128,22 +128,22 @@ parameter_sets = data.frame(double_wrap_reduction = rep(0, k_max),
                             double_wrap_vax_rate = rep(0, k_max),
                             double_wrap_boosting_rate = rep(0, k_max)) #kludge?
 
-#for(h in 2:(1 + length(temperature_thresholds))) {
-# parameter_sets[h, 'double_wrap_temp_test'] = temperature_thresholds[h - 1]
-#}
+for(h in 2:(1 + length(temperature_thresholds))) {
+ parameter_sets[h, 'double_wrap_temp_test'] = temperature_thresholds[h - 1]
+}
 
-#for(i in (h + 1):(h + length(viral_test_rates))) {
-#    parameter_sets[i, 'double_wrap_viral_test_rate'] = viral_test_rates[i - h]
-#}
-#for(j in (i + 1):(i + length(vax_rates))) {
-i = 1
-for(j in 2:4) {
+for(i in (h + 1):(h + length(viral_test_rates))) {
+    parameter_sets[i, 'double_wrap_viral_test_rate'] = viral_test_rates[i - h]
+}
+for(j in (i + 1):(i + length(vax_rates))) {
+#i = 1
+#for(j in 2:4) {
     parameter_sets[j, 'double_wrap_vax_rate'] = vax_rates[j - i]
 }
-k = j
-#for(k in (j + 1):(j + length(R0_reductions))) {
-#    parameter_sets[k, 'double_wrap_reduction'] = R0_reductions[k - j]
-#}
+#k = j
+for(k in (j + 1):(j + length(R0_reductions))) {
+    parameter_sets[k, 'double_wrap_reduction'] = R0_reductions[k - j]
+}
 
 parameter_sets[k+1,'double_wrap_boosting_rate'] = 0.04
 parameter_sets[k+2,c('double_wrap_vax_rate','double_wrap_boosting_rate')] = 0.04
@@ -159,7 +159,7 @@ library(foreach)
 if(PARALLEL) {
     library(doParallel)
     #for use on "grenade" only; revert to 6 or 5 for use on "corsair"
-    registerDoParallel(3)
+    registerDoParallel(4)
 } #if not, %dopar% is equivalent to %do% (with a warning)
   #in the current version, we use %do% explicitly anyway
   #but this may change in a future version
@@ -169,6 +169,7 @@ full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
 #for(i in c(6:8,12:13)) {
 #full_output_filenames = foreach(i=c(6:8,12:13), .combine = c, .inorder=TRUE,
 #                                .verbose = TRUE) %dopar% {
+#for(i in 4:4) {
     parameter_set = parameter_sets[i,]
     double_wrap_reduction = parameter_set$double_wrap_reduction
     double_wrap_temp_test = parameter_set$double_wrap_temp_test
