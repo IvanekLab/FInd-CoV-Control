@@ -36,7 +36,7 @@
 
 # Number of individuals initially in various states other than completely
 # susceptible
-wrapper_fn = function() {   #will it work? the goal is to get more meaningful debug data
+wrapper_fn = function(index_i) {   #goal: to get more meaningful debug data
 
 initial_recovered = 0 # batch mode: double_wrap_initial_recovered
 initial_V1 = 0        # batch mode: double_wrap_initial_V1
@@ -50,7 +50,8 @@ initial_B = 0         # batch mode: double_wrap_initial_B
 # Social distancing interventions
 theoretical_social_distancing_R0_reduction = 0
 
-#surveillance -- currently, these cannot both be true, but that limitation may at some point be lifted
+#surveillance -- currently, these cannot both be true,
+#but that limitation may at some point be lifted
 temperature_screening = FALSE
 temperature_threshold = 37.1    # batch mode: double_wrap_temp_test
                                 # values currently recognized: 37.1, 37.5, 38,
@@ -63,13 +64,16 @@ isolation_duration = 14         # batch mode: double_wrap_isolation_duration
 
 #vaccination
 vaccination_rate = 0            # batch mode: double_wrap_vax_rate
-rational_vaccination = FALSE    #TRUE is not currently implemented, but may be at some point in the future
+rational_vaccination = FALSE    # TRUE is not currently implemented, but may be
+                                # at some point in the future
 
 
 ##############################
 # Program control parameters #
 ##############################
-num_sims = 100 # number of simulations; 100 takes 1-2 minutes (less on a faster machine); for production use, most likely want 1000+
+num_sims = 100 # number of simulations; 100 takes 1-2 minutes
+               # (less on a faster machine); for production use,
+               # most likely want 1000+
                # batch mode: double_wrap_num_sims
 
 
@@ -80,8 +84,8 @@ num_sims = 100 # number of simulations; 100 takes 1-2 minutes (less on a faster 
 ################################################################
 
 if(exists('DOUBLE_WRAPPED') && DOUBLE_WRAPPED == TRUE) {
-    #TBD: Really, this whole setup should be handled by parameters passed into the function
-    #either from double-wrapped.R or elsewhere
+    #TBD: Really, this whole setup should be handled by parameters passed into
+    #the function either from double-wrapped.R or elsewhere
     initial_recovered = double_wrap_initial_recovered
     theoretical_social_distancing_R0_reduction = double_wrap_reduction
     temperature_screening = (double_wrap_temp_test != FALSE)
@@ -164,15 +168,18 @@ if(temperature_screening) {
 # filename construction #
 #########################
 
-filename_core = paste(subdirectory, unique_id, '_community-', community_foi, ',work_R0-', baseline_work_R0, sep = '')
+filename_core = paste(subdirectory, unique_id, '_community-', community_foi,
+                      ',work_R0-', baseline_work_R0, sep = '')
 
 R0_factor_string = paste()
 if(total_R0_factor != 1) {
-   filename_core = paste(filename_core , 'x(1-', 1 - total_R0_factor, ')', sep = '')
+   filename_core = paste(filename_core , 'x(1-', 1 - total_R0_factor, ')',
+                         sep = '')
 }
 
 if(dormitory_R0 > 0) {
-    filename_core = paste(filename_core, ',dormitory_R0-', dormitory_R0, sep = '')
+    filename_core = paste(filename_core, ',dormitory_R0-', dormitory_R0,
+                          sep = '')
 }
 
 filename_core = paste(filename_core, ',E0-', n_exposed, sep = '')
@@ -182,26 +189,31 @@ if(n_mild > 0) {
 }
 
 if(temperature_screening) {
-    filename_core = paste(filename_core, ',T.test-', temperature_threshold, sep = '')
+    filename_core = paste(filename_core, ',T.test-', temperature_threshold,
+                          sep = '')
 }
 
 if(viral_testing_rate != 0) {
-    filename_core = paste(filename_core, ',v.test-', viral_testing_rate, sep = '')
+    filename_core = paste(filename_core, ',v.test-', viral_testing_rate,
+                          sep = '')
     if(rational_testing) {
         filename_core = paste(filename_core, '-rational', sep = '')
     }
 }
 
 if(vaccination_rate != 0) {
-    filename_core = paste(filename_core, ',vax-rate', vaccination_rate, sep = '')
+    filename_core = paste(filename_core, ',vax-rate', vaccination_rate,
+                          sep = '')
 }
 
 if(isolation_duration != 14) {
-    filename_core = paste(filename_core, ',isol-dur-', isolation_duration, sep = '')
+    filename_core = paste(filename_core, ',isol-dur-', isolation_duration,
+                          sep = '')
 }
 
 if(initial_recovered > 0) {
-    filename_core = paste(filename_core, ',initial_recovered-', initial_recovered, sep = '')
+    filename_core = paste(filename_core, ',initial_recovered-',
+                          initial_recovered, sep = '')
 }
 
 if(initial_V2 > 0) {
@@ -214,7 +226,8 @@ if(initial_V1 > 0) {
 
 #TBD: Add more specifications
 
-filename_core = paste(filename_core, ',n_sims-', num_sims, sep = '')
+filename_core = paste(filename_core, ',n_sims-', num_sims, 'index_i-', index_i,
+                      sep = '')
 full_output_save_name = paste(filename_core, '_full-output.rds', sep = '')
 
 #and now let's run the model

@@ -181,7 +181,10 @@ full_run = function(
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 2
         #DELTA_VAX = TRUE
     } else if (variant == 'omicron') {
-            double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
+            #double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
+        double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 7/3
+        #kludged for sane values aiming for 7; make more precise determination
+        #later
     }
 
     n_exposed = n_no_symptoms # done, although this should ideally be split up
@@ -228,13 +231,13 @@ double_wrap_num_sims = 100#0
 #then run
 #git diff --no-index --word-diff --ignore-all-space a.txt b.txt
 full_run(
-         workers_per_crew = '15', # FM: workers per line
-         crews_per_supervisor = '4', # FM: / lines per shift
-         supervisors = '1', # FM: shifts
-         n_shift_floaters ='20', # FM only (for with farm model,
+         workers_per_crew = '10', # FM: workers per line
+         crews_per_supervisor = '3', # FM: / lines per shift
+         supervisors = '2', # FM: shifts
+         n_shift_floaters ='10', # FM only (for with farm model,
                                  # will require NULL/NA)
          n_cleaners = '10', # FM only (for farm model, will require NULL/NA)
-         n_all_floaters = '30', # FM only (for farm model, will require NULL/NA)
+         n_all_floaters = '10', # FM only (for farm model, will require NULL/NA)
          days = '90',
          employee_housing = 'Shared', 
          social_distancing_shared_housing = 'Intermediate',
@@ -253,7 +256,7 @@ full_run(
          working_directory = '.',
          folder_name = 'facility-added-interface', # relative to working
                                                    # directory
-         unique_id = 'SII-maybe-fixed-susceptibility-100',
+         unique_id = 'SII-more-reasonable-R0-B-to-R',
          variant = 'omicron',
          analyze_only = 'FALSE',
          PARALLEL = TRUE

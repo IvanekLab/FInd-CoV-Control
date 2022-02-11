@@ -35,7 +35,7 @@
 # FALSE.                                                                       #
 ################################################################################
 
-double_wrapped_fn = function() { #the (current) goal is to get more meaningful debug data
+double_wrapped_fn = function() { #goal: to get more meaningful debug data
 
 double_wrap_isolation_duration = 14
 double_wrap_rational_testing = TRUE
@@ -43,40 +43,48 @@ double_wrap_rational_testing = TRUE
 double_wrap_initial_recovered = round(fraction_recovered * N)
 
 #below is kinda kludgey, but works
-double_wrap_initial_V2 = round(N * fraction_fully_vaccinated) #TBD: Remember, this needs a fix once things are redefined with swiss-cheese
+#TBD: Remember, this needs a fix once things are redefined with swiss-cheese
+double_wrap_initial_V2 = round(N * fraction_fully_vaccinated) 
 double_wrap_initial_V1 = 0 
 
-#TBD: Check if swiss-cheese is handling V2 + R individuals correctly, in terms of setting their vax status!
-#TBD: Fix swiss-cheese's handling of vaccination of (NV, V1) + (R, W) individuals, if this is not already correct (since we will be merging, it should be safe to make this note here)
+#TBD: Check if swiss-cheese is handling V2 + R individuals correctly, in terms
+#of setting their vax status!
+#TBD: Fix swiss-cheese's handling of vaccination of (NV, V1) + (R, W)
+#individuals, if this is not already correct (since we will be merging,
+#it should be safe to make this note here)
 
 double_wrap_initial_B = 0#round(N * fraction_boosted) #fix in swiss-cheese
     #TBD: remove this variable entirely OR rework the handling in AgentGen
 
-if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 + double_wrap_initial_B > N) {
-    stop(paste('Exposed + mild + recovered + fully vaccinated + boosted > Total number of employees:\n',
-               n_exposed, '+', n_mild, '+', double_wrap_initial_recovered, '+', double_wrap_initial_V2, '+', double_wrap_initial_B, '>', N))
+if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 +
+   double_wrap_initial_B > N) {
+        stop(paste('Exposed + mild + recovered + fully vaccinated  >',
+                   'Total number of employees:\n',
+                    n_exposed, '+', n_mild, '+', double_wrap_initial_recovered,
+                   '+', double_wrap_initial_V2, '+', double_wrap_initial_B, '>',
+                   N))
 }
 
-temperature_thresholds = c(38)#, 37.5, 37.1) #given an observed specificity of 100% at 38, why lose further sensitivity at 38.5?
-viral_test_rates = c(0.05, 0.3, 1.0)
+temperature_thresholds = numeric()#c(38)#, 37.5, 37.1)
+viral_test_rates = numeric()#c(0.05, 0.3, 1.0)
 vax_rates = c(0.01, 0.04, 0.16) 
-R0_reductions = c(0.2, 0.4, 0.8)
+R0_reductions = numeric()#c(0.2, 0.4, 0.8)
 
-k_max = 1 + length(temperature_thresholds) + length(viral_test_rates) + length(vax_rates) + length(R0_reductions) + 2 #+2 is a kludge to allow the final two interventions
+k_max = 1 + length(temperature_thresholds) + length(viral_test_rates) +
+    length(vax_rates) + length(R0_reductions) + 2 # +2 is a kludge to allow the
+                                                  # final two interventions
 
 row.names<-c(     "Baseline",
-                  "Temperature Screening, 38.0°C",
-                  #"Temperature Screening, 37.5°C",
-                  #"Temperature Screening, 37.1°C",
-                  "Virus Test, p = 0.05 / Working Day",
-                  "Virus Test, p = 0.3 / Working Day",
-                  "Virus Test, p = 1.0 / Working Day",
+                  #"Temperature Screening, 38.0°C",
+                  #"Virus Test, p = 0.05 / Working Day",
+                  #"Virus Test, p = 0.3 / Working Day",
+                  #"Virus Test, p = 1.0 / Working Day",
                   "Vaccination, p = 0.01 / Day",
                   "Vaccination, p = 0.04 / Day",
                   "Vaccination, p = 0.16 / Day",
-                  "Soc. Dist./Biosafety: -20% R₀",
-                  "Soc. Dist./Biosafety: -40% R₀",
-                  "Soc. Dist./Biosafety: -80% R₀",
+                  #"Soc. Dist./Biosafety: -20% R₀",
+                  #"Soc. Dist./Biosafety: -40% R₀",
+                  #"Soc. Dist./Biosafety: -80% R₀",
                   'Boosting, p = 0.04 / day', #kludge
                   'Vax + Boosting, p = 0.04/day' #kludge
 )
@@ -87,34 +95,30 @@ if(length(row.names) != k_max) {
 c4 = c('black', 'blue3', 'turquoise1', 'red2', 'yellow2')
 
 colors = c('black',
-           c4[2],
            #c4[2],
-           #c4[2],
-           c4[3],
-           c4[3],
-           c4[3],
+           #c4[3],
+           #c4[3],
+           #c4[3],
            c4[4],
            c4[4],
            c4[4],
-           c4[5],
-           c4[5],
-           c4[5],
+           #c4[5],
+           #c4[5],
+           #c4[5],
 'limegreen', #kludge
 'limegreen')
 
 ltys = c(1,
-         1,
+         #1,
+         #1,
          #2,
          #3,
          1,
          2,
          3,
-         1,
-         2,
-         3,
-         1,
-         2,
-         3,
+         #1,
+         #2,
+         #3,
 1, #kludge
 2)
 
@@ -124,19 +128,22 @@ parameter_sets = data.frame(double_wrap_reduction = rep(0, k_max),
                             double_wrap_vax_rate = rep(0, k_max),
                             double_wrap_boosting_rate = rep(0, k_max)) #kludge?
 
-for(h in 2:(1 + length(temperature_thresholds))) {
- parameter_sets[h, 'double_wrap_temp_test'] = temperature_thresholds[h - 1]
-}
+#for(h in 2:(1 + length(temperature_thresholds))) {
+# parameter_sets[h, 'double_wrap_temp_test'] = temperature_thresholds[h - 1]
+#}
 
-for(i in (h + 1):(h + length(viral_test_rates))) {
-    parameter_sets[i, 'double_wrap_viral_test_rate'] = viral_test_rates[i - h]
-}
-for(j in (i + 1):(i + length(vax_rates))) {
+#for(i in (h + 1):(h + length(viral_test_rates))) {
+#    parameter_sets[i, 'double_wrap_viral_test_rate'] = viral_test_rates[i - h]
+#}
+#for(j in (i + 1):(i + length(vax_rates))) {
+i = 1
+for(j in 2:4) {
     parameter_sets[j, 'double_wrap_vax_rate'] = vax_rates[j - i]
 }
-for(k in (j + 1):(j + length(R0_reductions))) {
-    parameter_sets[k, 'double_wrap_reduction'] = R0_reductions[k - j]
-}
+k = j
+#for(k in (j + 1):(j + length(R0_reductions))) {
+#    parameter_sets[k, 'double_wrap_reduction'] = R0_reductions[k - j]
+#}
 
 parameter_sets[k+1,'double_wrap_boosting_rate'] = 0.04
 parameter_sets[k+2,c('double_wrap_vax_rate','double_wrap_boosting_rate')] = 0.04
@@ -151,15 +158,17 @@ library(foreach)
 
 if(PARALLEL) {
     library(doParallel)
-    #cl = makePSOCKcluster(4, outfile = "") #for use on "grenade" only; revert to 6 or 5 for use on "corsair"
-    registerDoParallel(3)#(cl) 
+    #for use on "grenade" only; revert to 6 or 5 for use on "corsair"
+    registerDoParallel(3)
 } #if not, %dopar% is equivalent to %do% (with a warning)
   #in the current version, we use %do% explicitly anyway
   #but this may change in a future version
 
-full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE, .verbose = TRUE) %dopar% {
+full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
+                                .verbose = TRUE) %dopar% {
 #for(i in c(6:8,12:13)) {
-#full_output_filenames = foreach(i=c(6:8,12:13), .combine = c, .inorder=TRUE, .verbose = TRUE) %dopar% {
+#full_output_filenames = foreach(i=c(6:8,12:13), .combine = c, .inorder=TRUE,
+#                                .verbose = TRUE) %dopar% {
     parameter_set = parameter_sets[i,]
     double_wrap_reduction = parameter_set$double_wrap_reduction
     double_wrap_temp_test = parameter_set$double_wrap_temp_test
@@ -169,7 +178,8 @@ full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE, .verbose
         boosting_rate = double_wrap_boosting_rate #kludgey as hell
     row_name = row.names[i]
     source('wrapper-v1.1.3.R', local = TRUE)
-    full_output_save_name = wrapper_fn() # returns full_output_save_name
+    full_output_save_name = wrapper_fn(i) # returns full_output_save_name
+                                          # use of i here is a temporary kludge
     full_output_save_name
 }
 if(!(exists('ANALYZE') && ANALYZE == TRUE)) {

@@ -33,14 +33,19 @@ full_output_filenames = list_[[4]]
 
 psX_only_size = 1 + workers_per_crew * crews_per_supervisor + n_shift_floaters
 if(supervisors > 1) {
-    on_ps_1 = c(1/3, rep(1, psX_only_size), rep(0, psX_only_size), rep(0, n_cleaners), rep(1/3, n_all_floaters))
-    on_ps_2 = c(1/3, rep(0, psX_only_size), rep(1, psX_only_size), rep(0, n_cleaners), rep(1/3, n_all_floaters))
-    on_cs = c(1/3, rep(0, 2 * psX_only_size), rep(1, n_cleaners), rep(1/3, n_all_floaters))
+    on_ps_1 = c(1/3, rep(1, psX_only_size), rep(0, psX_only_size),
+                rep(0, n_cleaners), rep(1/3, n_all_floaters))
+    on_ps_2 = c(1/3, rep(0, psX_only_size), rep(1, psX_only_size),
+                rep(0, n_cleaners), rep(1/3, n_all_floaters))
+    on_cs = c(1/3, rep(0, 2 * psX_only_size), rep(1, n_cleaners),
+              rep(1/3, n_all_floaters))
     workday = c('work', 'work', 'work')
 } else {
-    on_ps_1 = c(1/2, rep(1, psX_only_size), rep(0, n_cleaners), rep(1/2, n_all_floaters))
+    on_ps_1 = c(1/2, rep(1, psX_only_size), rep(0, n_cleaners),
+                rep(1/2, n_all_floaters))
     on_ps_2 = rep(0, 1 + psX_only_size + n_cleaners + n_all_floaters)
-    on_cs = c(1/2, rep(0, psX_only_size), rep(1, n_cleaners), rep(1/2, n_all_floaters))
+    on_cs = c(1/2, rep(0, psX_only_size), rep(1, n_cleaners),
+              rep(1/2, n_all_floaters))
     workday = c('work', 'home', 'work')
 } 
 day_off = c('home', 'home', 'sleep')
@@ -56,24 +61,33 @@ cleaning_shift_size =  sum(on_cs)
 #note that this probably needs to be modified to work with segmented
 ####
 #boxes = lapply(1:ceiling(days/7), function(i) c(5 + (7 * (i - 1)), -10, 7 * i, 60))
-boxes = lapply(1:ceiling(days/7), function(i) c(5.5 + (7 * (i - 1)), -10, 7 * i + 0.5, 140))
+boxes = lapply(1:ceiling(days/7),
+               function(i) c(5.5 + (7 * (i - 1)), -10, 7 * i + 0.5, 140))
 
 #summary plots
-combine = function(data, outcome_fn, summary_fn, summation_mode) { #, using_agentss = FALSE) {
+combine = function(data, outcome_fn, summary_fn, summation_mode) { 
     if(!(summation_mode %in% c(FALSE, 'after', 'before'))) {
         stop('Invalid summation mode')
     }
     #if(!using_agentss) {
-        dimnames(data) = list(rep(NA, dim(data)[1]), colnames(data), rep(NA, dim(data)[3])) #a bit kludgey, but it works -- at some point in the future, we may explicitly save data with dimnames
+        dimnames(data) = list(rep(NA, dim(data)[1]), colnames(data),
+                              rep(NA, dim(data)[3]))
+        #above is a bit kludgey, but it works -- at some point in the future,
+        #we may explicitly save data with dimnames
     #}
     outcomes = outcome_fn(data)
     if(summation_mode == 'before') {
-        outcomes = apply(outcomes, 2, cumsum) / (steps / days) #slightly awkward "phrasing", but may guard against future errors better than a simple "3"
+        outcomes = apply(outcomes, 2, cumsum) / (steps / days)
+        #slightly awkward "phrasing", but may guard against future errors better
+        #than a simple "3"
     }
     summarized = apply(outcomes, 1, summary_fn)
-    if(summation_mode == 'after') { #unlikely to be a good idea (and will not occur if the code is run unmodified)
+    if(summation_mode == 'after') { #unlikely to be a good idea (and will not
+                                    #occur if the code is run unmodified)
         print('Are you sure this is a good idea?')
-        summarized = cumsum(summarized) / (steps / days) #slightly awkward "phrasing", but may guard against future errors better than a simple "3"
+        summarized = cumsum(summarized) / (steps / days)
+        #slightly awkward "phrasing", but may guard against future errors better
+        #than a simple "3"
     }
     summarized
 }
@@ -104,13 +118,11 @@ hospitalized_dead = function(data) {
 
 
 unavailable = function(data) {
-    (hospitalized_dead(data) + data[,'S_isolated',] + data[,'E_isolated',] +
-                                data[,'IA_isolated',] + data[,'IP_isolated',] +
-                                data[,'IM_isolated',] + data[,'R_isolated',] +
-                                data[,'V1_isolated',] + data[,'V2_isolated',] +
-                                data[,'V1E_isolated',] + data[,'V2E_isolated',] +
-                                #data[,'W_isolated',] + data[,'WE_isolated',] +
-                                data[,'RE_isolated',]
+    (
+        hospitalized_dead(data) + data[,'S_isolated',] + data[,'E_isolated',] +
+        data[,'IA_isolated',] + data[,'IP_isolated',] + data[,'IM_isolated',] +
+        data[,'R_isolated',] + data[,'V1_isolated',] + data[,'V2_isolated',] +
+        data[,'V1E_isolated',] + data[,'V2E_isolated',] + data[,'RE_isolated',]
     )
 }
 
@@ -127,9 +139,16 @@ short = function(data) {
 #segmented allows carving up discrete shift segments
 #daily_sum adds consecutive trios of shifts (only makes sense for some functions)
 ####
-#oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summation_mode = FALSE, work_only = FALSE, main_title = NULL, use_agentss = FALSE) {
-oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summation_mode = FALSE, work_only = FALSE, main_title = NULL, na.rm = FALSE, segmented = FALSE, daily_sum = FALSE, box_it = FALSE, mask = NA) {
-    png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
+#oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
+#                   summation_mode = FALSE, work_only = FALSE,
+#                   main_title = NULL, use_agentss = FALSE) {
+oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
+                   summation_mode = FALSE, work_only = FALSE, main_title = NULL,
+                   na.rm = FALSE, segmented = FALSE, daily_sum = FALSE,
+                   box_it = FALSE, mask = NA) {
+    png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png',
+              sep = ''),
+        height = 1000, width = 1000)
 
     if(work_only) {
         step_index = step_index[work_shifts]
@@ -168,9 +187,12 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
             full_output = full_output[mask,,]
         }
         if(daily_sum) {
-                full_output = full_output[smear,,] + full_output[smear - 1,,] + full_output[smear - 2,,]
+                full_output = full_output[smear,,] +
+                              full_output[smear - 1,,] +
+                              full_output[smear - 2,,]
         }
-        ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn, summation_mode)#, using_agentss = use_agentss)
+        ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn,
+                          summation_mode)#, using_agentss = use_agentss)
     }
     for(i in 1:length(full_output_filenames)) {
         if(i == 1) {
@@ -186,7 +208,6 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
                 #cat('i = 1\n-----\nys:', ys[[i]],'\n')
                 for(j in 1:length(step_index)) {
                     if(j == 1) {
-                        #cat(c('1:', c(0, step_index[1]), ':', rep(ys[[i]][1], 2), '\n'))
                         plot(c(0, step_index[1]), rep(ys[[i]][1], 2), type = 'l', col = colors[i],
                              ylim = c(min(ylim[1], min(sapply(ys, function(x) min(x, na.rm = na.rm)))),
                                       max(ylim[2], max(sapply(ys, function(x) max(x, na.rm = na.rm))))),
@@ -194,13 +215,11 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab, summati
                              xlab = "Day", ylab = ylab, cex.axis = 1.5, cex.lab = 1.5,
                              lty = ltys[i])
                     } else {
-                        #cat(c(j, ':', step_index[(j-1):j], ':', rep(ys[[i]][j], 2), '\n'))
-                        #cat('points(c(', step_index[(j-1)], ',', step_index[j], '),c(', ys[[i]][j], ',', ys[[i]][j], '), col = "black", lwd = 4, type = "l", lty = 1)\n')
-                        points(step_index[(j-1):j], rep(ys[[i]][j], 2), col = colors[i], lwd = 4, type = 'l', lty = ltys[i])
+                        points(step_index[(j-1):j], rep(ys[[i]][j], 2),
+                               col = colors[i], lwd = 4, type = 'l',
+                               lty = ltys[i])
                     }
                 }
-                #dev.off()
-                #stop('LOL')
             } else {
                 plot(step_index, ys[[i]], type = 'l', col = colors[i],
                      ylim = c(min(ylim[1], min(sapply(ys, function(x) min(x, na.rm = na.rm)))),

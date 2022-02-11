@@ -124,7 +124,8 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
 
 vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                      start_time, end_time, boosting_rate,
-                     infection_0, immune_status_0, vax_status_0, isolated_0) {
+                     infection_0, immune_status_0, vax_status_0, isolated_0,
+                     immunity_0) {
     #vaccinate
     if(sum(vaccination_rate) > 0) {
         ####
@@ -408,7 +409,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                            infection_0, immune_status_0, vax_status_0,
                            isolated_0)
 
-        infectiousness = isolated_0 * (
+        infectiousness = (!isolated_0) * (
             (infection_0 == 'IA') * p_trans_IA +
             (infection_0 == 'IP') * p_trans_IP +
             (infection_0 == 'IM') * p_trans_IM
@@ -509,15 +510,17 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
         #TBD (eventually): simplify
         #TBD: fix below block using susceptibility
-        NI_to_E = ((agents$infection_status == 'NI') & (
-                    rbinom(N, 1, p_infection) #now redefined
+        NI_to_E = (
+            (agents$infection_status == 'NI') & #now redefined
+            rbinom(N, 1, p_infection) &
+            !isolated_0 #TBD: Is this really new!?!?!?
                     #TBD:delete below block once this is confirmed working
                     #(agents$immune_status == 'FS' & (rbinom(N, 1, p_infection) > 0)) |
                     #(agents$immune_status == 'V1' & (rbinom(N, 1, p_infection_V1) > 0)) |
                     #(agents$immune_status == 'V2' & (rbinom(N, 1, p_infection_V2) > 0)) |
                     #(agents$immune_status == 'R' & (rbinom(N, 1, p_infection_R) > 0)) |
                     #(agents$immune_status == 'B' & (rbinom(N, 1, p_infection_B) > 0))
-               ))
+        )
 
         if(sum(NI_to_E) > 0) { #necessitated by weird behavior of apply
                               #when given an empty matrix

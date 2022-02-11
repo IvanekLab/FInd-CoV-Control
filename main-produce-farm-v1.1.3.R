@@ -348,8 +348,8 @@ step_index = (1:steps) * (1/3) #step_length
 
 ###### code to run simulation with num_sims iterations
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
-    set.seed(-778276078) #random 32-bit signed integer generated using atmospheric noise
-                         #for reproducible output
+    set.seed(-778276078) #random 32-bit signed integer generated using
+                         #atmospheric noise for reproducible output
 }
 
 sys_time_start = Sys.time()
