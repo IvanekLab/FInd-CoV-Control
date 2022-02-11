@@ -49,7 +49,8 @@ double_wrap_initial_V1 = 0
 #TBD: Check if swiss-cheese is handling V2 + R individuals correctly, in terms of setting their vax status!
 #TBD: Fix swiss-cheese's handling of vaccination of (NV, V1) + (R, W) individuals, if this is not already correct (since we will be merging, it should be safe to make this note here)
 
-double_wrap_initial_B = round(N * fraction_boosted) #fix in swiss-cheese
+double_wrap_initial_B = 0#round(N * fraction_boosted) #fix in swiss-cheese
+    #TBD: remove this variable entirely OR rework the handling in AgentGen
 
 if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 + double_wrap_initial_B > N) {
     stop(paste('Exposed + mild + recovered + fully vaccinated + boosted > Total number of employees:\n',
@@ -61,15 +62,7 @@ viral_test_rates = c(0.05, 0.3, 1.0)
 vax_rates = c(0.01, 0.04, 0.16) 
 R0_reductions = c(0.2, 0.4, 0.8)
 
-k_max = 1 + length(temperature_thresholds) + length(viral_test_rates) + length(vax_rates) + length(R0_reductions)
-interventions.predict = rep('', k_max)
-mean_output_filenames = rep('', k_max)
-median_output_filenames = rep('', k_max)
-full_output_filenames = rep('', k_max)
-q1_output_filenames = rep('', k_max)
-q3_output_filenames = rep('', k_max)
-infected_sd_output_filenames = rep('', k_max)
-
+k_max = 1 + length(temperature_thresholds) + length(viral_test_rates) + length(vax_rates) + length(R0_reductions) + 2 #+2 is a kludge to allow the final two interventions
 
 row.names<-c(     "Baseline",
                   "Temperature Screening, 38.0°C",
@@ -83,7 +76,9 @@ row.names<-c(     "Baseline",
                   "Vaccination, p = 0.16 / Day",
                   "Soc. Dist./Biosafety: -20% R₀",
                   "Soc. Dist./Biosafety: -40% R₀",
-                  "Soc. Dist./Biosafety: -80% R₀"
+                  "Soc. Dist./Biosafety: -80% R₀",
+                  'Boosting, p = 0.04 / day', #kludge
+                  'Vax + Boosting, p = 0.04/day' #kludge
 )
 if(length(row.names) != k_max) {
     stop('Row names does not have the right length')
@@ -103,7 +98,9 @@ colors = c('black',
            c4[4],
            c4[5],
            c4[5],
-           c4[5])
+           c4[5],
+'limegreen', #kludge
+'limegreen')
 
 ltys = c(1,
          1,
@@ -117,12 +114,15 @@ ltys = c(1,
          3,
          1,
          2,
-         3)
+         3,
+1, #kludge
+2)
 
 parameter_sets = data.frame(double_wrap_reduction = rep(0, k_max),
                             double_wrap_temp_test = rep(FALSE, k_max),
                             double_wrap_viral_test_rate = rep(0, k_max),
-                            double_wrap_vax_rate = rep(0, k_max))
+                            double_wrap_vax_rate = rep(0, k_max),
+                            double_wrap_boosting_rate = rep(0, k_max)) #kludge?
 
 for(h in 2:(1 + length(temperature_thresholds))) {
  parameter_sets[h, 'double_wrap_temp_test'] = temperature_thresholds[h - 1]
@@ -137,6 +137,10 @@ for(j in (i + 1):(i + length(vax_rates))) {
 for(k in (j + 1):(j + length(R0_reductions))) {
     parameter_sets[k, 'double_wrap_reduction'] = R0_reductions[k - j]
 }
+
+parameter_sets[k+1,'double_wrap_boosting_rate'] = 0.04
+parameter_sets[k+2,c('double_wrap_vax_rate','double_wrap_boosting_rate')] = 0.04
+
 
 DOUBLE_WRAPPED = TRUE
 if(!(exists('ANALYZE') && ANALYZE == TRUE)) {
@@ -160,6 +164,8 @@ full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE, .verbose
     double_wrap_temp_test = parameter_set$double_wrap_temp_test
     double_wrap_viral_test_rate = parameter_set$double_wrap_viral_test_rate
     double_wrap_vax_rate = parameter_set$double_wrap_vax_rate
+    double_wrap_boosting_rate = parameter_set$double_wrap_boosting_rate
+        boosting_rate = double_wrap_boosting_rate #kludgey as hell
     row_name = row.names[i]
     source('wrapper-v1.1.3.R', local = TRUE)
     full_output_save_name = wrapper_fn() # returns full_output_save_name

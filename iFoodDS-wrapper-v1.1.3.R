@@ -222,19 +222,19 @@ full_run(
          n_all_floaters = '30', # FM only (if combined with farm model, will require NULL/NA)
          days = '90',
          employee_housing = 'Shared', 
-         social_distancing_shared_housing = 'Low',
+         social_distancing_shared_housing = 'Intermediate',
          community_transmission = 'Intermediate',
-         social_distancing_work = 'Low',
+         social_distancing_work = 'Intermediate',
          n_no_symptoms = '1', #i.e., exposed (TBD: not asymp/presymp -- should perhaps alter language?)
          n_mild = '0',
          fraction_recovered = '.116', # TBD: Swiss Cheese it
                                       # TBD: For now, do calculations here by hand
          fraction_fully_vaccinated = '.627',  #  TBD: (for now: and not boosted? (check))
-         fraction_boosted = 0,
+         fraction_boosted = .5,
          boosting_rate = 0,
          working_directory = '.',
          folder_name = 'facility-added-interface',  # relative to working directory
-         unique_id = 'SLL-100',
+         unique_id = 'SII-maybe-fixed-susceptibility-100',
          variant = 'omicron',
          analyze_only = 'FALSE',
          PARALLEL = TRUE

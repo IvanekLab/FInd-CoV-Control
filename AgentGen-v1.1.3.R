@@ -30,7 +30,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
                          initial_V1 = 0, initial_V2 = 0, initial_B = 0,
                        age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
                                              0.01, 0),
-                      SEVERE_MULTIPLIER = 1) {
+                      SEVERE_MULTIPLIER = 1,
+                      boosting_on_time_probability = 0) {
     Age_Categories = c("10-19", "20-29", "30-39", "40-49", "50-59", "60-69",
                        "70-79", "80+")
 
@@ -73,6 +74,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
                          time_V1 = Inf,
                          time_V2 = Inf,
                          time_B = Inf,
+                         boosting_on_time = rbinom(N, 1, boosting_on_time_probability), #TBD: harmonize this with method use for setting up initial boostedness
                          time_isolated = Inf,  #setup for time in Isolation
                                                #unlike the states listed above,
                                                #this is not a mutually exclusive
@@ -103,7 +105,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     index_R = E0 + IA0 + IP0 + IM0 + seq_len(initial_recovered)
     index_V2 = E0 + IA0 + IP0 + IM0 + initial_recovered + seq_len(initial_V2)
     index_V1 = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 + seq_len(initial_V1)
-    index_B = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 + initial_V1 + seq_len(initial_B)
+    #index_B = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 + initial_V1 + seq_len(initial_B) #TBD: reconcile this with boosted_on_time_probability
 
     agents$infection_status[index_E]= "E"
     agents$time_E[index_E]= -runif(E0, 0, agents$duration_E[index_E])
@@ -149,12 +151,14 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0, initial_recovered = 
     agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21 #again, not perfect, but doesn't actually matter (currently, and probably ever)
     agents$previous_immunity[index_V2] = V1_protection((agents$time_V2[index_V2] - agents$time_V1[index_V2]) / 7) #TBD de-7 if changing how weeks are handled
 
+    index_B = (agents$vax_status == 'V2' & agents$time_V2 < -152)
     agents$immune_status[index_B] = 'B'
     agents$vax_status[index_B] = 'B'
     agents$infection_status[index_B] = 'NI'
-    agents$time_B[index_B] = -runif(initial_B, 0, 92)
-    agents$time_V2[index_B] = agents$time_B[index_B] - 152 #doesn't really matter
-    agents$time_V1[index_B] = agents$time_V2[index_B] - 21
+    #agents$time_B[index_B] = -runif(initial_B, 0, 92)
+    agents$time_B[index_B] = pmax(agents$time_V2[index_B] + 152, -92) #TBD: Fix lower bound
+    #agents$time_V2[index_B] = agents$time_B[index_B] - 152 #doesn't really matter
+    #agents$time_V1[index_B] = agents$time_V2[index_B] - 21
     agents$time_last_immunity_event[index_B] = agents$time_B[index_B]
     #print(agents$time_B[index_B])
     #print(agents$time_V2[index_B])
