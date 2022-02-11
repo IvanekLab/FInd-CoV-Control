@@ -1,7 +1,5 @@
 #Usage example, with default values:
-#full_run(10, 3, 3, 90, 'Private', NULL, 'Intermediate', 'Intermediate', 1, 0, .2, .4, 'iFoods-Private')
-#Or for shared housing:
-#full_run(10, 3, 3, 90, 'Shared', 'Intermediate', 'NULL', 'Intermediate', 1, 0, .2, .4, 'iFoods-Public')
+#TBD: fill in
 
 #Note: Only one of social_distancing_shared_housing and community_transmission
 #will be used; a good practice is to set the other one to something invalid
@@ -33,7 +31,8 @@ safe.logical = function(s) {
     b
 }
 
-#removing default values from testing code to ensure that accidental omission doesn't generate stupid results
+#removing default values from testing code to ensure that accidental omission
+#doesn't generate stupid results
 full_run = function(
                     workers_per_crew,
                     crews_per_supervisor,
@@ -49,14 +48,18 @@ full_run = function(
                     n_no_symptoms,
                     n_mild,
                     fraction_recovered,
-                    fraction_fully_vaccinated, # TBD: This is defined FOR NOW as fraction fully vax and NOT boosted
+                    fraction_fully_vaccinated, # TBD: This is defined FOR NOW as
+                                               # fraction fully vax
+                                               #and NOT boosted
                                                #this is not ideal; it means that
                                                # we have to work around a bunch
                                                # of things. but to try to do it
                     # the other way *before* blending in the swiss cheese fixes
                     # is to court madness
-                                               #TBD: figure out where the next comment line comes from
-                                               #going to want this to be consistent with 
+                                               #TBD: figure out where the next
+                                               #comment line comes from
+                                               #going to want this to be
+                                               #consistent with 
                     fraction_boosted, #TBD: finish implementing? (is this done?)
                     boosting_rate, #.05 arbitrary, probably high
                     working_directory,
@@ -116,11 +119,14 @@ full_run = function(
     crews_by_team = rep(crews_per_supervisor, supervisors) 
     crew_sizes = rep(workers_per_crew, crews_per_supervisor * supervisors) 
     #N = sum(crew_sizes) + length(crew_sizes) + supervisors + 1 
-    N = 1 + supervisors * (1 + workers_per_crew * crews_per_supervisor + n_shift_floaters) + n_cleaners + n_all_floaters
+    N = 1 + supervisors * (1 + workers_per_crew * crews_per_supervisor +
+                           n_shift_floaters) +
+                    n_cleaners + n_all_floaters
     
     #days -- done
 
-    if((tolower(employee_housing) == 'private') || (tolower(employee_housing) == 'individual')) {
+    if((tolower(employee_housing) == 'private') ||
+       (tolower(employee_housing) == 'individual')) {
         housing_dormitory = FALSE
         dormitory_R0 = 0 
 
@@ -131,7 +137,8 @@ full_run = function(
         } else if(tolower(community_transmission) == 'high'){
             double_wrap_community_foi = 0.002
         } else {
-            stop(paste('Invalid community_transmission:', community_transmission))
+            stop(paste('Invalid community_transmission:',
+                       community_transmission))
         }
         if(variant == 'delta') {
             double_wrap_community_foi = 2 * double_wrap_community_foi
@@ -149,7 +156,8 @@ full_run = function(
         } else if(tolower(social_distancing_shared_housing) == 'low') {
             dormitory_R0 = 2 
         } else {
-            stop(paste('Invalid social_distancing_shared_housing:', social_distancing_shared_housing))
+            stop(paste('Invalid social_distancing_shared_housing:',
+                       social_distancing_shared_housing))
         }
         if(variant == 'delta') {
             dormitory_R0 = 2 * dormitory_R0
@@ -160,11 +168,11 @@ full_run = function(
         stop(paste('Invalid employee_housing:', employee_housing))
     }
 
-    if(tolower(social_distancing_work) == 'high') {           #fixed 2021-08-17
+    if(tolower(social_distancing_work) == 'high') {           
         double_wrap_baseline_work_R0 = 2
     } else if(tolower(social_distancing_work) == 'intermediate') {
         double_wrap_baseline_work_R0 = 3
-    } else if(tolower(social_distancing_work) == 'low') {  #fixed 2021-08-17
+    } else if(tolower(social_distancing_work) == 'low') {  
         double_wrap_baseline_work_R0 = 4
     } else {
         stop(paste('Invalid social_distancing_work:', social_distancing_work))
@@ -176,9 +184,13 @@ full_run = function(
             double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
     }
 
-    n_exposed = n_no_symptoms # done, although this should ideally be split up into exposed, pre-symptomatic, and asymptomatic; the difference is small, though
+    n_exposed = n_no_symptoms # done, although this should ideally be split up
+                              # into exposed, pre-symptomatic, and asymptomatic;
+                              # the difference is small, though
     #n_mild -- done
-    #although note that we might consider in the future allowing initial exposed and mild to be drawn from the vaccinated
+    #although note that we might consider in the future allowing initial exposed
+    #and mild to be drawn from the vaccinated
+    #TBD: change the above once swiss-cheesing is fully fixed
     #fraction_recovered -- done
     #fraction_fully_vaccinated -- done
 
@@ -187,7 +199,8 @@ full_run = function(
     dir.create(subdirectory)
     #wd = getwd()
     #setwd(subdirectory)
-    if(analyze_only) { # these should be saved in a separate file once we start having more complex schedules
+    if(analyze_only) { # these should be saved in a separate file
+                       # once we start having more complex schedules
     #    steps = days * 3
     #    step_index = (1:steps) * (1/3)
     } else {
@@ -211,29 +224,35 @@ double_wrap_num_sims = 100#0
 #giving weird bugs
 #(note that a word diff ignoring whitespace vs. function definition is now
 #relatively straightforward, if function definition is similarly formatted):
-#copy the relevant signatures to two files, strip out comments, strip out ,s and then run
-#git diff --no-index --word-diff --ignore-all-space  function-signatures.txt calls.txt 
+#copy the relevant signatures to two files, strip out comments, strip out ,s and
+#then run
+#git diff --no-index --word-diff --ignore-all-space a.txt b.txt
 full_run(
          workers_per_crew = '15', # FM: workers per line
          crews_per_supervisor = '4', # FM: / lines per shift
          supervisors = '1', # FM: shifts
-         n_shift_floaters ='20', # FM only (if combined with farm model, will require NULL/NA)
-         n_cleaners = '10', # FM only (if combined with farm model, will require NULL/NA)
-         n_all_floaters = '30', # FM only (if combined with farm model, will require NULL/NA)
+         n_shift_floaters ='20', # FM only (for with farm model,
+                                 # will require NULL/NA)
+         n_cleaners = '10', # FM only (for farm model, will require NULL/NA)
+         n_all_floaters = '30', # FM only (for farm model, will require NULL/NA)
          days = '90',
          employee_housing = 'Shared', 
          social_distancing_shared_housing = 'Intermediate',
          community_transmission = 'Intermediate',
          social_distancing_work = 'Intermediate',
-         n_no_symptoms = '1', #i.e., exposed (TBD: not asymp/presymp -- should perhaps alter language?)
+         n_no_symptoms = '1', #i.e., exposed (TBD: not asymp/presymp --
+                              #should perhaps alter language?)
          n_mild = '0',
          fraction_recovered = '.116', # TBD: Swiss Cheese it
-                                      # TBD: For now, do calculations here by hand
-         fraction_fully_vaccinated = '.627',  #  TBD: (for now: and not boosted? (check))
+                                      # TBD: For now,
+                                      # do calculations here by hand
+         fraction_fully_vaccinated = '.627',  #  TBD: (for now: and not boosted?
+                                              #(check))
          fraction_boosted = .5,
          boosting_rate = 0,
          working_directory = '.',
-         folder_name = 'facility-added-interface',  # relative to working directory
+         folder_name = 'facility-added-interface', # relative to working
+                                                   # directory
          unique_id = 'SII-maybe-fixed-susceptibility-100',
          variant = 'omicron',
          analyze_only = 'FALSE',

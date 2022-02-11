@@ -152,13 +152,14 @@ library(foreach)
 if(PARALLEL) {
     library(doParallel)
     #cl = makePSOCKcluster(4, outfile = "") #for use on "grenade" only; revert to 6 or 5 for use on "corsair"
-    registerDoParallel(4)#(cl) 
+    registerDoParallel(3)#(cl) 
 } #if not, %dopar% is equivalent to %do% (with a warning)
   #in the current version, we use %do% explicitly anyway
   #but this may change in a future version
 
 full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE, .verbose = TRUE) %dopar% {
-#for(i in 1:k_max) {
+#for(i in c(6:8,12:13)) {
+#full_output_filenames = foreach(i=c(6:8,12:13), .combine = c, .inorder=TRUE, .verbose = TRUE) %dopar% {
     parameter_set = parameter_sets[i,]
     double_wrap_reduction = parameter_set$double_wrap_reduction
     double_wrap_temp_test = parameter_set$double_wrap_temp_test

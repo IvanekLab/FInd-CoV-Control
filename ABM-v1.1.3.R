@@ -27,13 +27,16 @@ source('omicron-waning-functions.R')
 unisolation_fn = function(agents, start_time) {
     #add full proper parameter list later
     isolation_duration = 5 #kludge
-    x_un_Isol = ((agents$isolated) &
-            ((start_time - agents$time_isolated) >= isolation_duration) &
-                 agents$infection_status %in% c('NI', 'E', 'IA'))
-    #i.e., if they have had symptoms, they must be recovered.
+
+    x_un_Isol = (
+        agents$isolated &
+        start_time - agents$time_isolated >= isolation_duration &
+        agents$infection_status %in% c('NI', 'E', 'IA')
+    )
+    #this implies that if they have had symptoms, they must be recovered.
     #crude, but possibly tolerable
-    #TBD: is there any estimate available on the probability of having recovered
-    #from symptoms (for 24 hours) but not infection?
+    #TBD (eventually): is there any estimate available on the probability of
+    #having recovered from symptoms (for 24 hours) but not infection?
     agents$isolated[x_un_Isol] = FALSE
     agents
 }
@@ -41,19 +44,29 @@ unisolation_fn = function(agents, start_time) {
 isolation_fn = function(agents, start_time, rational_testing, testing_rate,
                         fractional_test_carried, N, IA_FNR, IP_FNR, IM_FNR, FPR,
                         agent_presence) {
+    #convenience and efficiency
+    isolated = agents$isolated
+    infection_status = agents$infection_status
+
     if(sum(testing_rate) > 0) {        
         if(max(testing_rate) == 1) { #Must use max(testing_rate) because at-work
                                      #testing can't happen for people not
                                      #currently at work
                 testing_mask = agent_presence #for exact comparison purposes
         } else if(rational_testing) {
+            #TBD: Look at this carefully, to be sure it's doing what it's
+            #supposed to
+            #In particular, should the ordering be done this way? Or should
+            #ordering be done only among those who are actually present?
             indices = order(agents$time_tested, sample(N)) #second parameter
                                                            #randomizes ties
-            eligible = ((agents$infection_status %in%
-                    c('NI', 'E', 'IA', 'IP', 'IM')) & !(agents$isolated) &
-                    agent_presence) #NB: Note that this assumes at-work
-                                    #testing, not at-home testing upon feeling
-                                    #sick
+            eligible = (
+                infection_status %in% c('NI', 'E', 'IA', 'IP', 'IM') &
+                !isolated &
+                agent_presence
+            ) #NB: Note that this tacitly assumes at-work testing,
+              #not at-home testing upon feeling sick
+              #This may be redundant with how testing_rate is defined?
             indices = indices[eligible[indices]] 
             theoretical_number_of_tests = testing_rate * sum(agent_presence) +
                     fractional_test_carried
@@ -73,25 +86,27 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
 
         # isolate
         # true positives
-        Ix_to_Isol = (!(agents$isolated) & testing_mask & (
-                            (agents$infection_status == 'IA' &
+        #TBD: !isolated here and following should be redundant
+        #should it be eliminated?
+        Ix_to_Isol = (!isolated & testing_mask & (
+                            (infection_status == 'IA' &
                                     rbinom(N, 1, 1 - IA_FNR)) |
-                            (agents$infection_status == 'IP' &
+                            (infection_status == 'IP' &
                                     rbinom(N, 1, 1 - IP_FNR)) |
-                            (agents$infection_status == 'IM' &
+                            (infection_status == 'IM' &
                                     rbinom(N, 1, 1 - IM_FNR))
                     ))
         
         # false positives
         # Note that FPR is currently assumed to be constant, but changing
         # the code for this would not be hard.
-        NI_to_Isol = ((agents$infection_status == 'NI' & !(agents$isolated)) &
+        NI_to_Isol = ((infection_status == 'NI' & !isolated) &
                         testing_mask & (rbinom(N, 1, FPR)))
         
         # Right, but for the wrong reason
         # (Presumably, our odds of detecting the exposed should not be
         #  be *lower* than our odds of "detecting" susceptibles.)
-        xE_to_Isol = ((agents$infection_status == 'E' & !(agents$isolated)) &
+        xE_to_Isol = ((infection_status == 'E' & !isolated) &
                         testing_mask & (rbinom(N, 1, FPR)))
 
         #Actual transfer to isolation
@@ -108,7 +123,8 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
 }
 
 vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
-                     start_time, end_time, boosting_rate) {
+                     start_time, end_time, boosting_rate,
+                     infection_0, immune_status_0, vax_status_0, isolated_0) {
     #vaccinate
     if(sum(vaccination_rate) > 0) {
         ####
@@ -129,9 +145,9 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         # primary focus on the present and future.
         #
 
-        S_to_V1 = ((agents$infection_status == 'NI' &
-                        agents$immune_status == 'FS' &
-                        agents$vax_status == 'NV' & !(agents$isolated)) &
+        S_to_V1 = ((infection_0 == 'NI' &
+                        immune_status_0 == 'FS' &
+                        vax_status_0 == 'NV' & !isolated_0) &
                     (rbinom(N, 1, vaccination_rate)))
         # Following line tacitly assumes the times that they could get a 1st
         # dose & times they could get a 2nd dose are the same.
@@ -139,37 +155,38 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         #people starting the run in V1 (when that becomes possible) and needing
         #to advance to V2, even if there isn't a vaccination intervention.
         #But that is not necessary now.
-        V1_to_V2 = ((agents$infection_status == 'NI' &
-                        agents$immune_status == 'V1' &
-                        agents$vax_status == 'V1' & !(agents$isolated)) &
+        V1_to_V2 = ((infection_0 == 'NI' &
+                        immune_status_0 == 'V1' &
+                        vax_status_0 == 'V1' & !isolated_0) &
                     ((end_time - agents$time_V1) > vaccination_interval) &
                     (vaccination_rate > 0))
 
         agents$time_V1[S_to_V1] = runif(sum(S_to_V1), start_time, end_time)
-        agents$time_last_immunity_event[S_to_V1] = agents$time_V1[S_to_V1]
         #TBD(long_term): why not just drop the constant referencing of agents$
         #and just use these as vectors?
         agents$previous_immunity[S_to_V1] = net_symptomatic_protection(
                 agents[S_to_V1,], agents$time_V1[S_to_V1])
+        agents$time_last_immunity_event[S_to_V1] = agents$time_V1[S_to_V1]
         #because immune_status has not been updated yet, this is still valid
         agents$immune_status[S_to_V1] = 'V1'
         agents$vax_status[S_to_V1] = 'V1'
 
         agents$time_V2[V1_to_V2] = runif(sum(V1_to_V2), start_time, end_time)
-        agents$time_last_immunity_event[V1_to_V2] = agents$time_V2[V1_to_V2]
         agents$previous_immunity[V1_to_V2] = net_symptomatic_protection(
                 agents[V1_to_V2,], agents$time_V2[V1_to_V2])
         #because immune_status has not been updated yet, this is still valid
+        agents$time_last_immunity_event[V1_to_V2] = agents$time_V2[V1_to_V2]
         agents$immune_status[V1_to_V2] = 'V2'
         agents$vax_status[V1_to_V2] = 'V2'
 
+
         #boosting via shots earlier than boosters
-        R_to_B_via_V1 = ((agents$infection_status == 'NI' &
-                agents$immune_status == 'R' & agents$vax_status == 'NV' &
-                !(agents$isolated)) & (rbinom(N, 1, vaccination_rate)))
-        R_to_B_via_V2 = ((agents$infection_status == 'NI' &
-                agents$immune_status == 'R' & agents$vax_status == 'V1' &
-                !(agents$isolated)) & (
+        R_to_B_via_V1 = ((infection_0 == 'NI' &
+                immune_status_0 == 'R' & vax_status_0 == 'NV' &
+                !isolated_0) & (rbinom(N, 1, vaccination_rate)))
+        R_to_B_via_V2 = ((infection_0 == 'NI' &
+                immune_status_0 == 'R' & vax_status_0 == 'V1' &
+                !isolated_0) & (
                 (end_time - agents$time_V1) > vaccination_interval) &
                         (vaccination_rate > 0))
     } else {
@@ -177,8 +194,8 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         R_to_B_via_V2 = FALSE
     }
 
-    x_to_B_on_time = ((agents$infection_status == 'NI' &
-            agents$vax_status == 'V2' & !(agents$isolated)) &
+    x_to_B_on_time = ((infection_0 == 'NI' &
+            vax_status_0 == 'V2' & !isolated_0) &
             (end_time - agents$time_V2 > 152) & agents$boosting_on_time)
 
     #boost
@@ -188,8 +205,8 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     if(sum(boosting_rate) > 0) {
         #time_V2 is only set when receiving second dose
         #so is still valid in R or B (from R + V1 or V2)
-        x_to_B_late = ((agents$infection_status == 'NI' &
-                agents$vax_status == 'V2' & !(agents$isolated)) &
+        x_to_B_late = ((infection_0 == 'NI' &
+                vax_status_0 == 'V2' & !isolated_0) &
                 (end_time - agents$time_V2 > 152 + 1) & #5 months
                 (rbinom(N, 1, boosting_rate)))
     } else {
@@ -217,13 +234,13 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     agents
 }
 
-
-progress_infection = function(agents, N, start_time, end_time) {
+#TBD: arguably, infection_0 should *not* be used here
+#Figure this out
+progress_infection = function(agents, N, start_time, end_time, symptoms_0) {
     xE_to_I = ((agents$infection_status == 'E') &
                 ((end_time - agents$time_E) > agents$duration_E))
     #TBD (possibly): Again, might want to simplify this
-    xE_to_IP = xE_to_I & agents$symptomatic &
-            rbinom(N, 1, 1 - symptom_protection(agents, start_time))
+    xE_to_IP = xE_to_I & agents$symptomatic & rbinom(N, 1, symptoms_0)
     xE_to_IA = xE_to_I & !xE_to_IP
 
     IP_to_IM = ((agents$infection_status == 'IP') &
@@ -340,9 +357,6 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         end_time = start_time + step_length
 
 
-        agents = vaccinate(agents, N, vaccination_rate, vaccination_interval,
-                           start_time, end_time, boosting_rate)
-
         # un-isolate
         #
         # Placed before isolation so that a positive test will kick them
@@ -355,18 +369,50 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         # isolations. But that is not necesary at this time.
         #print('deisolation')
         agents = unisolation_fn(agents, start_time)
+        #and now, (re)isolate
         ifl = isolation_fn(agents, start_time, rational_testing, testing_rate,
                            fractional_test_carried, N, IA_FNR, IP_FNR, IM_FNR, 
                            FPR, agent_presence)
+
         agents = ifl[['agents']]
         fractional_test_carried = ifl[['fractional_test_carried']]
+
+        #2022-02-10: pulling out repeated calls that are intended to resolve on
+        #the status of agent properties at the *start* of a step
+        #Many of these ideally should be adjusted over the course of a step,
+        #e.g., people infected during a step should ideally affect the
+        #probability of subsequent infections. But in the current state of the
+        #model, this is impractical. But pulling things out this way not only
+        #should speed up processing a bit; it should also help to ensure
+        #consistency (i.e., not generating side effects by accident).
+        #This goes after deisolation and isolation because it's isolation status
+        #*after* those processes that we want to use here.
+        #These may be more than we need, but should at least be adequate
+        infection_0 = agents$infection_status
+        isolated_0 = agents$isolated
+        immune_status_0 = agents$immune_status
+        time_last_immunity_event_0 = agents$time_last_immunity_event
+        previous_immunity_0 = agents$previous_immunity
+        immunity_0 = net_symptomatic_protection(agents, start_time)
+        susceptibility_0 = 1 - infection_protection(agents, start_time)
+        symptoms_0 = 1 - symptom_protection(agents, start_time)
+        vax_status_0 = agents$vax_status #TBD: Make sure I don't use this incorrectly!
         
-        infectiousness = ((agents$infection_status == 'IA' & !(agents$isolated))
-                                * p_trans_IA +
-                          (agents$infection_status == 'IP' & !(agents$isolated))
-                                * p_trans_IP +
-                          (agents$infection_status == 'IM' & !(agents$isolated))
-                                * p_trans_IM)
+        #TBD: Theoretically, check that recovery and vaccination in the same
+        #step don't generate ridiculous results
+        #in practice, I'm pretty sure this is impossible, with the way that
+        #progress_infection is currently coded
+
+        agents = vaccinate(agents, N, vaccination_rate, vaccination_interval,
+                           start_time, end_time, boosting_rate,
+                           infection_0, immune_status_0, vax_status_0,
+                           isolated_0)
+
+        infectiousness = isolated_0 * (
+            (infection_0 == 'IA') * p_trans_IA +
+            (infection_0 == 'IP') * p_trans_IP +
+            (infection_0 == 'IM') * p_trans_IM
+        )
 
         foi_contributions = contacts * infectiousness
         force_of_infection = colSums(foi_contributions)
@@ -382,8 +428,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #(and, conversely, technically the possibility of infection should take
         #account of waning over the course of the shift) -- but again, this is
         #negligible in practice
-        p_infection = 1 - exp(-force_of_infection *
-                                (1 - infection_protection(agents, start_time)))
+        p_infection = 1 - exp(-force_of_infection * susceptibility_0)
         #TBD: delete below once confirmed working
         #p_infection = 1 - exp(-force_of_infection)
         #p_infection_V1 = 1 - exp(-force_of_infection * V1_susceptibility)
@@ -391,13 +436,15 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #p_infection_R = 1 - exp(-force_of_infection * R_susceptibility)
         #p_infection_B = 1 - exp(-force_of_infection * B_susceptibility)
 
+        #TBD: move or otherwise fix this?
         # Putting the process of infection on hold a moment, to figure out who
         # among the already-infected needs to progress along their course of
         # infection (or recover), before the shift is over.
         #
         # Ideally, we probably want to incorporate transitions out of
         # infectiousness into calculation of transmission potentials, but later.
-        pil = progress_infection(agents, N, start_time, end_time)
+        #TBD: this needs to use symptoms_0
+        pil = progress_infection(agents, N, start_time, end_time, symptoms_0)
         agents = pil$agents
         xE_to_IA = pil$xE_to_IA
         xE_to_IP = pil$xE_to_IP
@@ -422,10 +469,10 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #floaters (check).)
 
 
+        
         NI_to_E_community = ((agents$infection_status == 'NI') &
-                !(agents$isolated) & (
-                rbinom(N, 1, 1 - exp(-lambda *
-                        (1 - infection_protection(agents, start_time))))
+                !isolated_0 & (
+                rbinom(N, 1, 1 - exp(-lambda * susceptibility_0))
                                 #TBD: delete below once this is confirmed working
                                 #(agents$immune_status == 'FS' & rbinom(N, 1, 1 - exp(-lambda))) |
                                 #(agents$immune_status == 'V1' & rbinom(N, 1, 1 - exp(-lambda * V1_susceptibility))) |
@@ -433,6 +480,10 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                                 #(agents$immune_status == 'R' & rbinom(N, 1, 1 - exp(-lambda * R_susceptibility))) |
                                 #(agents$immune_status == 'B' & rbinom(N, 1, 1 - exp(-lambda * B_susceptibility)))
                             ))
+        #if(any(is.na(infection_protection(agents, start_time)))) {
+        #    cat(start_time, end_time, '\n')
+        #    print(agents[is.na(infection_protection(agents, start_time)),])
+        #}
         #print('Never mind')
 
         #Old contact tracing code that needs to be revised and reactivated.
@@ -443,6 +494,10 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #should ideally be a truncated exponential, but this is
         #adequate for now
 
+        #cat(sum(NI_to_E_community), start_time, end_time,'\n')
+        .GlobalEnv[['NI_to_E_community']] = NI_to_E_community
+        .GlobalEnv[['start_time']] = start_time
+        .GlobalEnv[['end_time']] = end_time
         agents$time_E[NI_to_E_community] = runif(sum(NI_to_E_community),
                                                  start_time, end_time)
 
@@ -508,8 +563,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                 agents$duration_E[xE_to_IA]
         agents$time_IP[xE_to_IP] = agents$time_E[xE_to_IP] +
                 agents$duration_E[xE_to_IP]
-        agents$time_isolated[xE_to_IP & agents$isolated] =
-                agents$time_IP[xE_to_IP & agents$isolated]
+        agents$time_isolated[xE_to_IP & isolated_0] =
+                agents$time_IP[xE_to_IP & isolated_0]
         #TBD: above is awkward, and should be in an isolation function
         #likewise below, and in the progression function
         agents$time_IM[IP_to_IM] = agents$time_IP[IP_to_IM] +
@@ -583,38 +638,38 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     Out1$RE[k] <- sum(agents$infection_status == "E" &
                       agents$immune_status == "R")
     Out1$S_isolated[k] <-  sum(agents$infection_status == "NI" &
-                               agents$immune_status == 'FS' & agents$isolated)
+                               agents$immune_status == 'FS' & isolated_0)
     Out1$E_isolated[k] <-  sum(agents$infection_status == "E" &
-                               agents$immune_status == 'FS' & agents$isolated)
+                               agents$immune_status == 'FS' & isolated_0)
     Out1$IA_isolated[k] <- sum(agents$infection_status == "IA" &
-                               agents$isolated)
+                               isolated_0)
     Out1$IP_isolated[k] <- sum(agents$infection_status == "IP" &
-                               agents$isolated)
+                               isolated_0)
     Out1$IM_isolated[k] <- sum(agents$infection_status == "IM" &
-                               agents$isolated)
+                               isolated_0)
     Out1$R_isolated[k] <-  sum(agents$infection_status == "NI" &
-                               agents$immune_status == "R" & agents$isolated)
+                               agents$immune_status == "R" & isolated_0)
     Out1$V1_isolated[k] <-  sum(agents$infection_status == "NI" &
-                                agents$immune_status == "V1" & agents$isolated)
+                                agents$immune_status == "V1" & isolated_0)
     Out1$V2_isolated[k] <-  sum(agents$infection_status == "NI" &
-                                agents$immune_status == "V2" & agents$isolated)
+                                agents$immune_status == "V2" & isolated_0)
     Out1$V1E_isolated[k] <-  sum(agents$infection_status == "E" &
-                                 agents$immune_status == "V1" & agents$isolated)
+                                 agents$immune_status == "V1" & isolated_0)
     Out1$V2E_isolated[k] <-  sum(agents$infection_status == "E" &
-                                 agents$immune_status == "V2" & agents$isolated)
+                                 agents$immune_status == "V2" & isolated_0)
     ####
     #note that *for now* I am treating between-shift floaters as present at a
     #deterministic 1/3 or 1/2, as the case may be
     ####
     Out1$n_scheduled[k] = sum(agent_presence)
     Out1$n_absent[k] = sum(agent_presence * (agents$infection_status %in%
-                                c('IS', 'IC', 'D') | agents$isolated))
+                                c('IS', 'IC', 'D') | isolated_0))
     Out1$RE_isolated[k] <-  sum(agents$infection_status == "E" &
-                                agents$immune_status == "R" & agents$isolated)
+                                agents$immune_status == "R" & isolated_0)
     Out1$qn_scheduled[k] = sum(quantitative_presence)
     Out1$qn_absent[k] = sum(quantitative_presence *
                             (agents$infection_status %in% c('IS', 'IC', 'D') |
-                             agents$isolated))
+                             isolated_0))
     Out1$new_infections[k] = sum(NI_to_E_community + NI_to_E)
 
     }

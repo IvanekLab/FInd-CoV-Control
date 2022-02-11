@@ -319,6 +319,8 @@ vaccination_rate_list[['weekend_ps_1']] = vaccination_rate_list[['ps_1']]
 vaccination_rate_list[['weekend_ps_2']] = vaccination_rate_list[['ps_2']]
 vaccination_rate_list[['weekend_cs']] = vaccination_rate_list[['cs']]
 
+vaccination_interval = 21
+
 #workday = c('work', 'home', 'sleep')
 #day_off = c('home', 'home', 'sleep')
 #print('step 4')
