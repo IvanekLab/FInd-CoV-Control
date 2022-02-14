@@ -4,4 +4,14 @@
 Shared
 waning-branch
 partial-recovereds-only
+Swiss
+baselines-only
+daisy-econ-code
+facility-added-interface
+facility-adding-interface
+facility-now-with-shift-split-quantitative-presence
+facility-now-with-shift-split
 *.txt
+nohup.out
+temp-facility-model-dump/
+

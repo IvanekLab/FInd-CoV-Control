@@ -132,6 +132,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #        initial_V1 + seq_len(initial_B)
     #TBD: reconcile this with boosted_on_time_probability
 
+    #Note: these can be allowed to not all be N, as long as they're constant with
+            #each interventions parameters
+
     agents$infection_status[index_E]= "E"
     agents$time_E[index_E]= -runif(E0, 0, agents$duration_E[index_E])
 

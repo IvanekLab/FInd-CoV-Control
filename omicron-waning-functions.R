@@ -52,8 +52,10 @@ net_symptomatic_protection = function (agents, start_time) {
     t = pmax(t, 0) #kludge for testing; TBD: remove
     prev = agents$previous_immunity
     #print('on')
+    #print(ais)
     #print(agents$immune_status)
     #print(agents$previous_immunity)
+    #print(t)
     protection = ifelse(ais == 'FS',
         0,
         ifelse(ais == 'V1',
@@ -89,13 +91,18 @@ symptom_protection = function(agents, start_time) {
 }
 
 #debugging check
-#ip = infection_protection(list(immune_status = c(rep('FS', 28), rep('V1', 28),
-#                                                 rep('V2', 56), rep('B', 56),
-#                                                 rep('R', 28)),
-#                               time_last_immunity_event = -rep((1:28),7),
-#                               immunity_before_last_immunity_event = c(
-#                                    rep(0,84), rep(.36, 28), rep(0, 28),
-#                                    rep(.4, 28), rep(.6,28)
-#                                )
-#                               ),0)
+#immune_status = c(rep('FS', 28), rep('V1', 28), rep('V2', 56), rep('B', 56),
+#                  rep('R', 28))
+#time_last_immunity_event = -rep((1:28),7)
+#previous_immunity = c(rep(0,84), rep(.36, 28), rep(0, 28), rep(.4, 28), rep(.6,28))
+#agents = list(immune_status = immune_status,
+#              time_last_immunity_event = time_last_immunity_event,
+#              previous_immunity = previous_immunity)
+#nsp = net_symptomatic_protection(agents,0)
+#ip = infection_protection(agents,0)
+#sp = symptom_protection(agents,0)
+#plot(nsp)
+#points(ip,type='l')
+#points(sp,type='l',col='red',lty=2)
+#abline(h=0)
 
