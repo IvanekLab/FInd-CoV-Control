@@ -221,7 +221,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 5#100#0
+double_wrap_num_sims = 100#0
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -233,13 +233,13 @@ double_wrap_num_sims = 5#100#0
 #then run
 #git diff --no-index --word-diff --ignore-all-space a.txt b.txt
 full_run(
-         workers_per_crew = '4', # FM: workers per line
-         crews_per_supervisor = '2', # FM: / lines per shift
+         workers_per_crew = '10', # FM: workers per line
+         crews_per_supervisor = '3', # FM: / lines per shift
          supervisors = '2', # FM: shifts
-         n_shift_floaters ='4', # FM only (for with farm model,
+         n_shift_floaters ='10', # FM only (for with farm model,
                                  # will require NULL/NA)
-         n_cleaners = '4', # FM only (for farm model, will require NULL/NA)
-         n_all_floaters = '4', # FM only (for farm model, will require NULL/NA)
+         n_cleaners = '10', # FM only (for farm model, will require NULL/NA)
+         n_all_floaters = '10', # FM only (for farm model, will require NULL/NA)
          days = '90',
          employee_housing = 'Shared', 
          social_distancing_shared_housing = 'Intermediate',
@@ -248,17 +248,17 @@ full_run(
          n_no_symptoms = '1', #i.e., exposed (TBD: not asymp/presymp --
                               #should perhaps alter language?)
          n_mild = '0',
-         fraction_recovered = 0,#'.116', # TBD: Swiss Cheese it
+         fraction_recovered = .62,#'.116', # TBD: Swiss Cheese it
                                       # TBD: For now,
                                       # do calculations here by hand
-         fraction_fully_vaccinated = 0,#'.627',  #  TBD: (for now: and not boosted?
+         fraction_fully_vaccinated = .74,#'.627',  #  TBD: (for now: and not boosted?
                                               #(check))
-         fraction_boosted = .5,
+         fraction_boosted = .52,
          boosting_rate = 0,
          working_directory = '.',
          folder_name = 'facility-added-interface', # relative to working
                                                    # directory
-         unique_id = 'no-recovered-no-vaccinated-fb_.5',
+         unique_id = 'tentative-default',
          variant = 'omicron',
          analyze_only = 'FALSE',
          PARALLEL = TRUE
