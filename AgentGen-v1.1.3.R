@@ -33,6 +33,10 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                                             0.01, 0),
                       SEVERE_MULTIPLIER = 1,
                       boosting_on_time_probability = 0) {
+    if(max(IA0, IP0, initial_V1, initial_B) > 0) {
+        stop('Attempt to use buggy functionality in AgentGen.')
+    }
+
     Age_Categories = c("10-19", "20-29", "30-39", "40-49", "50-59", "60-69",
                        "70-79", "80+")
 
@@ -79,9 +83,10 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          time_V1 = Inf,
                          time_V2 = Inf,
                          time_B = Inf,
-                         boosting_on_time = rbinom(
-                            N, 1, boosting_on_time_probability
-                         ), #TBD: harmonize this with method use for setting up
+                         boosting_on_time = 1:N %in% sample(N, round(N * boosting_on_time_probability)),
+                         #boosting_on_time = rbinom(
+                         #   N, 1, boosting_on_time_probability
+                         #), #TBD: harmonize this with method use for setting up
                             #initial boostedness
                          time_isolated = Inf,  #setup for time in Isolation
                                                #unlike the states listed above,
@@ -120,48 +125,46 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #as a bonus, the use of seq_len in this fashion means that guarding the
     #operations with if statements is not necessary (to avoid the problem where
     #R interprets "1:0" as "c(1,0)", rather than "numeric(0)").
-    index_E = seq_len(E0)
-    index_IA = E0 + seq_len(IA0)
-    index_IP = E0 + IA0 + seq_len(IP0)
-    index_IM = E0 + IA0 + IP0 + seq_len(IM0)
-    index_R = E0 + IA0 + IP0 + IM0 + seq_len(initial_recovered)
-    index_V2 = E0 + IA0 + IP0 + IM0 + initial_recovered + seq_len(initial_V2)
-    index_V1 = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 +
-                seq_len(initial_V1)
+    index_E = 1:N %in% sample(N, E0) #seq_len(E0)
+    #index_IA = E0 + seq_len(IA0)
+    #index_IP = E0 + IA0 + seq_len(IP0)
+    #index_IM = E0 + IA0 + IP0 + seq_len(IM0)
+    index_R = 1:N %in% sample(N, initial_recovered)#E0 + IA0 + IP0 + IM0 + seq_len(initial_recovered)
+    index_V2 = 1:N %in% sample(N, initial_V2) #E0 + IA0 + IP0 + IM0 + initial_recovered + seq_len(initial_V2)
+    #index_V1 = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 +
+    #            seq_len(initial_V1)
     #index_B = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 +
     #        initial_V1 + seq_len(initial_B)
+    
     #TBD: reconcile this with boosted_on_time_probability
 
     #Note: these can be allowed to not all be N, as long as they're constant with
             #each interventions parameters
 
+    #since neither of these is affected by the other factors, it can be left
+    #here for now
     agents$infection_status[index_E]= "E"
     agents$time_E[index_E]= -runif(E0, 0, agents$duration_E[index_E])
 
-    agents$infection_status[index_IA] = "IA"
-    agents$time_IA[index_IA]= -runif(IA0, 0, agents$duration_IA[index_IA])
+    #agents$infection_status[index_IA] = "IA"
+    #agents$time_IA[index_IA]= -runif(IA0, 0, agents$duration_IA[index_IA])
 
-    agents$infection_status[index_IP]= "IP"
-    agents$time_IP[index_IP]= -runif(IP0, 0, agents$duration_IP[index_IP])
+    #agents$infection_status[index_IP]= "IP"
+    #agents$time_IP[index_IP]= -runif(IP0, 0, agents$duration_IP[index_IP])
 
-    agents$infection_status[index_IM]= "IM"
-    agents$time_IM[index_IM]= -runif(IM0, 0, agents$duration_IM[index_IM])
+    #agents$infection_status[index_IM]= "IM"
+    #agents$time_IM[index_IM]= -runif(IM0, 0, agents$duration_IM[index_IM])
 
-    agents$immune_status[index_R] = 'R'
-    agents$time_R[index_R]= -runif(initial_recovered, 0, 365)
-    #adequate for now; may required revision when immune waning is added
-    agents$time_last_immunity_event[index_R] = agents$time_R[index_R]
-    agents$previous_immunity[index_R] = 0
-    #TBD: should definitely be revised once swiss-cheesing is complete
+    #initial_recovered code moved from here to below V2 and boosted
+    #because it's (marginally) simpler
 
-
-    agents$immune_status[index_V1] = 'V1'
-    agents$vax_status[index_V1] = 'V1'
-    agents$time_V1[index_V1] = -runif(initial_V1, 0, 21) #not a perfect model of
+    #agents$immune_status[index_V1] = 'V1'
+    #agents$vax_status[index_V1] = 'V1'
+    #agents$time_V1[index_V1] = -runif(initial_V1, 0, 21) #not a perfect model of
                                                          #reality, but good
                                                          #enough
-    agents$time_last_immunity_event[index_V1] = agents$time_V1[index_V1]
-    agents$previous_immunity[index_V1] = 0
+    #agents$time_last_immunity_event[index_V1] = agents$time_V1[index_V1]
+    #agents$previous_immunity[index_V1] = 0
 
     agents$immune_status[index_V2] = 'V2'
     agents$vax_status[index_V2] = 'V2'
@@ -191,10 +194,12 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
         (agents$time_V2[index_V2] - agents$time_V1[index_V2]) / 7
     ) #TBD de-7 if changing how weeks are handled
 
-    index_B = (agents$vax_status == 'V2' & agents$time_V2 < -152)
+    index_B = (agents$vax_status == 'V2' &
+               agents$time_V2 < -152 &
+               agents$boosting_on_time)
     agents$immune_status[index_B] = 'B'
     agents$vax_status[index_B] = 'B'
-    agents$infection_status[index_B] = 'NI'
+    #agents$infection_status[index_B] = 'NI'
     #agents$time_B[index_B] = -runif(initial_B, 0, 92)
     agents$time_B[index_B] = pmax(agents$time_V2[index_B] + 152, -92)
     #TBD: Fix lower bound
@@ -209,14 +214,64 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #TBD: correct technical error / generate standard "on-schedule" previous
     #immunities
 
+    agents$time_R[index_R]= -runif(initial_recovered, 0, 365)
+    #adequate for now; may required revision when immune waning is added
+    #indeed, no longer really adequate, but good enough for debugging purposes
+    only_R = index_R & !index_V2
+    agents$immune_status[only_R] = 'R'
+    agents$time_last_immunity_event[only_R] = agents$time_R[only_R]
+    agents$previous_immunity[only_R] = 0
+    #TBD: should definitely be revised once swiss-cheesing is complete
+
+    R_last = (index_R &
+              index_V2 &
+              agents$time_R > agents$time_last_immunity_event)
+    agents$previous_immunity[R_last] = net_symptomatic_protection(agents[R_last,], agents$time_R[R_last])
+    agents$time_last_immunity_event[R_last] = agents$time_R[R_last]
+    agents$immune_status[R_last] = 'R'
+
+    R_V1_V2 = (index_R &
+              index_V2 &
+              (!agents$boosting_on_time) &
+              agents$time_R < agents$time_V1
+    )
+    #TBD: Fix setting of previous immunity no later than when B = R during first
+    #two weeks is changed (is this already okay?)
+    agents$previous_immunity[R_V1_V2] = B_decay(21 / 7) #TBD: de-7
+    #agents$time_last_immunity_event[R_V1_V2] #is unchanged
+    agents$immune_status[R_V1_V2] = 'B'
+
+    V1_R_V2 = (index_R &
+              index_V2 &
+              (!agents$boosting_on_time) &
+              agents$time_R >= agents$time_V1 &
+              agents$time_R < agents$time_V2
+    )
+    agents$previous_immunity[V1_R_V2] = R_protection((agents$time_V2[V1_R_V2] - agents$time_R[V1_R_V2]) / 7) #TBD: de-7
+    #agents$time_last_immunity_event[R_V1_V2] #is unchanged
+    agents$immune_status[V1_R_V2] = 'B'
+
+    V2_R_B = (index_R &
+              index_V2 &
+              (agents$boosting_on_time) &
+              agents$time_R >= agents$time_V2 &
+              agents$time_R < agents$time_B
+    )
+    agents$previous_immunity[V2_R_B] = R_protection((agents$time_B[V2_R_B] - agents$time_R[V2_R_B]) / 7) #TBD: de-7
+    #agents$time_last_immunity_event[R_V1_V2] #is unchanged
+    #agents$immune_status[V1_R_V2] = 'B'
+
+    #R_V2_B changes nothing at all.
+
+
     #generating transition times before the most recent
     #maybe not necessary, but seems like a good guard against weird bugs
-    agents$time_IP[index_IM] = (agents$time_IM[index_IM] -
-                                agents$duration_IP[index_IM])
-    agents$time_E[index_IP] = (agents$time_IP[index_IP] -
-                               agents$duration_E[index_IP])
-    agents$time_E[index_IA] = (agents$time_IA[index_IA] -
-                               agents$duration_E[index_IA])
+    #agents$time_IP[index_IM] = (agents$time_IM[index_IM] -
+    #                            agents$duration_IP[index_IM])
+    #agents$time_E[index_IP] = (agents$time_IP[index_IP] -
+    #                           agents$duration_E[index_IP])
+    #agents$time_E[index_IA] = (agents$time_IA[index_IA] -
+    #                           agents$duration_E[index_IA])
 
     #Import text file of disease progression probabilities
     Probability_Matrix <- read.csv('Probability_Matrix.csv')
