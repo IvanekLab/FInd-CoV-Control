@@ -530,23 +530,26 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                     #(agents$immune_status == 'B' & (rbinom(N, 1, p_infection_B) > 0))
         )
 
+        #TBD: reenable infector sampling once I've found a way to extend common
+        #random variables to that
+
         if(sum(NI_to_E) > 0) { #necessitated by weird behavior of apply
                               #when given an empty matrix
-            potential_infectors = foi_contributions[,NI_to_E]
-            if(sum(NI_to_E) == 1) { # in this case, potential_infectors is a
-                                    # vector instead of a matrix
-                infectors = sample(1:N, 1, prob = potential_infectors /
-                                            sum(potential_infectors))
-            } else {
-                infectors = apply(potential_infectors, 2,
-                                  function(x) sample(1:N, 1, prob = x / sum(x)))
-            }
+            #potential_infectors = foi_contributions[,NI_to_E]
+            #if(sum(NI_to_E) == 1) { # in this case, potential_infectors is a
+            #                        # vector instead of a matrix
+            #    infectors = sample(1:N, 1, prob = potential_infectors /
+            #                                sum(potential_infectors))
+            #} else {
+            #    infectors = apply(potential_infectors, 2,
+            #                      function(x) sample(1:N, 1, prob = x / sum(x)))
+            #}
 
-            agents$infector_ID[NI_to_E] = agents$ID[infectors]
-            agents$infector_state[NI_to_E] = paste(
-                    agents$infection_status[infectors],
-                    agents$immune_status[infectors],
-                    agents$vax_status[infectors], sep = '_')
+            #agents$infector_ID[NI_to_E] = agents$ID[infectors]
+            #agents$infector_state[NI_to_E] = paste(
+            #        agents$infection_status[infectors],
+            #        agents$immune_status[infectors],
+            #        agents$vax_status[infectors], sep = '_')
             #above is kludgey
             #but we're not currently using this for anything anyway
             agents$infection_status[NI_to_E] = 'E'

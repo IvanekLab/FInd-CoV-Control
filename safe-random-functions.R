@@ -28,6 +28,11 @@ random_functions_and_counter = function() {
                        #prob = 1 always gives 1
     }
 
+    print_rand_state = function(s) {
+        cat('\n\n', s, '\nseed:', set_seed, '\ncalls:', runif_0_1_calls_counter,
+            '\ncurrent state, abbreviated:', .Random.seed[1:3], '\n\n')
+    }
+
     list(
          safe_set_seed = safe_set_seed,
          sunif = sunif,
@@ -36,7 +41,7 @@ random_functions_and_counter = function() {
     )
 }
 
-if(!exists(SAFE_RANDOM_FUNCTIONS_INITIALIZED) {
+if(!exists('SAFE_RANDOM_FUNCTIONS_INITIALIZED')) {
     rfac_l = random_functions_and_counter()
     safe_set_seed = rfac_l[['safe_set_seed']]
     sunif = rfac_l[['sunif']]

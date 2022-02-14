@@ -347,9 +347,12 @@ step_index = (1:steps) * (1/3) #step_length
 
 
 ###### code to run simulation with num_sims iterations
+source('safe-random-functions.R')
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
-    set.seed(-778276078) #random 32-bit signed integer generated using
+    safe_set_seed(-778276078)
+    #set.seed(-778276078) #random 32-bit signed integer generated using
                          #atmospheric noise for reproducible output
+    cat('intervention:', index_i, 'seed set:', runif(1, 0, 1), '\n')
 }
 
 sys_time_start = Sys.time()
@@ -358,6 +361,8 @@ for (i in 1:num_sims) {
                        initial_recovered = initial_recovered,
                        initial_V1 = initial_V1, initial_V2 = initial_V2,
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER)
+    
+    cat('intervention:', index_i, 'run:', i, 'agents initialized:', runif(1, 0, 1), '\n')
                                                 
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
@@ -371,6 +376,7 @@ for (i in 1:num_sims) {
                  quantitative_presence_list = quantitative_presence_list,
                  #waning_parameters = waning_parameters,
                  boosting_rate = boosting_rate)
+    cat('intervention:', index_i, 'run:', i, 'ABM completed:', runif(1, 0, 1), '\n')
     agents = model$agents
     output = model$Out1
 
@@ -382,6 +388,8 @@ for (i in 1:num_sims) {
     full_output[,,i] = as.matrix(output) #this works; for whatever reason,
                                          #as.array does not
 } # for (i in 1:num_sims)
+
+print_rand_state(paste('intervention:', index_i, 'printing state'))
 
 sys_time_end = Sys.time()
 cat(sys_time_end - sys_time_start, 'for', row_name,'\n')
