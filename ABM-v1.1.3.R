@@ -53,7 +53,7 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
     #If successful, this will cause parameter sets that do nothing different to
     #actually give identical results
     randomize_ties = sample(N)
-    irrational_testing_mask = (rbinom(N, 1, testing_rate) == 1)
+    irrational_testing_mask = (sbern(N, testing_rate) == 1)
     detection_probability = ifelse(infection_status == 'IA',
         1 - IA_FNR,
         ifelse(infection_status == 'IP',
@@ -67,7 +67,7 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
             )
         )
     )
-    conditional_detection_mask = rbinom(N, 1, detection_probability)
+    conditional_detection_mask = sbern(N, detection_probability)
 
     if(sum(testing_rate) > 0) {        
         if(max(testing_rate) == 1) { #Must use max(testing_rate) because at-work
@@ -116,9 +116,9 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                      immunity_0) {
     #vaccinate
     #pulled out to for rand() calls
-    vaccination_mask = rbinom(N, 1, vaccination_rate)
-    boosting_mask = rbinom(N, 1, boosting_rate)
-    event_times = runif(N, start_time, end_time)
+    vaccination_mask = sbern(N, vaccination_rate)
+    boosting_mask = sbern(N, boosting_rate)
+    event_times = sunif(N, start_time, end_time)
     if(sum(vaccination_rate) > 0) {
         ####
         #modifying for facility model -- never mind, doesn't need modification!
@@ -250,7 +250,7 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0) {
     xE_to_I = ((agents$infection_status == 'E') &
                 ((end_time - agents$time_E) > agents$duration_E))
     #TBD (possibly): Again, might want to simplify this
-    xE_to_IP = xE_to_I & agents$symptomatic & rbinom(N, 1, symptoms_0)
+    xE_to_IP = xE_to_I & agents$symptomatic & sbern(N, symptoms_0)
     xE_to_IA = xE_to_I & !xE_to_IP
 
     IP_to_IM = ((agents$infection_status == 'IP') &
@@ -481,13 +481,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         
         NI_to_E_community = ((agents$infection_status == 'NI') &
                 !isolated_0 & (
-                rbinom(N, 1, 1 - exp(-lambda * susceptibility_0))
-                                #TBD: delete below once this is confirmed working
-                                #(agents$immune_status == 'FS' & rbinom(N, 1, 1 - exp(-lambda))) |
-                                #(agents$immune_status == 'V1' & rbinom(N, 1, 1 - exp(-lambda * V1_susceptibility))) |
-                                #(agents$immune_status == 'V2' & rbinom(N, 1, 1 - exp(-lambda * V2_susceptibility))) |
-                                #(agents$immune_status == 'R' & rbinom(N, 1, 1 - exp(-lambda * R_susceptibility))) |
-                                #(agents$immune_status == 'B' & rbinom(N, 1, 1 - exp(-lambda * B_susceptibility)))
+                sbern(N, 1 - exp(-lambda * susceptibility_0))
                             ))
         #if(any(is.na(infection_protection(agents, start_time)))) {
         #    cat(start_time, end_time, '\n')
@@ -507,7 +501,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #.GlobalEnv[['NI_to_E_community']] = NI_to_E_community
         #.GlobalEnv[['start_time']] = start_time
         #.GlobalEnv[['end_time']] = end_time
-        potential_times_E = runif(N, start_time, end_time)
+        potential_times_E = sunif(N, start_time, end_time)
         agents$time_E[NI_to_E_community] = potential_times_E[NI_to_E_community]
 
         # Note that while we are now using continuous transition times, the
@@ -520,14 +514,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #TBD: fix below block using susceptibility
         NI_to_E = (
             (agents$infection_status == 'NI') & #now redefined
-            rbinom(N, 1, p_infection) &
-            !isolated_0 #TBD: Is this really new!?!?!?
-                    #TBD:delete below block once this is confirmed working
-                    #(agents$immune_status == 'FS' & (rbinom(N, 1, p_infection) > 0)) |
-                    #(agents$immune_status == 'V1' & (rbinom(N, 1, p_infection_V1) > 0)) |
-                    #(agents$immune_status == 'V2' & (rbinom(N, 1, p_infection_V2) > 0)) |
-                    #(agents$immune_status == 'R' & (rbinom(N, 1, p_infection_R) > 0)) |
-                    #(agents$immune_status == 'B' & (rbinom(N, 1, p_infection_B) > 0))
+            sbern(N, p_infection) &
+            !isolated_0
         )
 
         #TBD: reenable infector sampling once I've found a way to extend common

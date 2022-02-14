@@ -362,7 +362,7 @@ for (i in 1:num_sims) {
                        initial_V1 = initial_V1, initial_V2 = initial_V2,
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER)
     
-    cat('intervention:', index_i, 'run:', i, 'agents initialized:', runif(1, 0, 1), '\n')
+    #cat('intervention:', index_i, 'run:', i, 'agents initialized:', runif(1, 0, 1), '\n')
                                                 
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
@@ -376,7 +376,7 @@ for (i in 1:num_sims) {
                  quantitative_presence_list = quantitative_presence_list,
                  #waning_parameters = waning_parameters,
                  boosting_rate = boosting_rate)
-    cat('intervention:', index_i, 'run:', i, 'ABM completed:', runif(1, 0, 1), '\n')
+    #cat('intervention:', index_i, 'run:', i, 'ABM completed:', runif(1, 0, 1), '\n')
     agents = model$agents
     output = model$Out1
 
@@ -389,7 +389,9 @@ for (i in 1:num_sims) {
                                          #as.array does not
 } # for (i in 1:num_sims)
 
-print_rand_state(paste('intervention:', index_i, 'printing state'))
+#print_rand_state(paste('intervention:', index_i, 'printing state'))
+
+cat('intervention:', index_i, 'All runs completed; Test value:', runif(1, 0, 1), '\n')
 
 sys_time_end = Sys.time()
 cat(sys_time_end - sys_time_start, 'for', row_name,'\n')
