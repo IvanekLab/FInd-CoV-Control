@@ -48,20 +48,12 @@ full_run = function(
                     n_no_symptoms,
                     n_mild,
                     fraction_recovered,
-                    fraction_fully_vaccinated, # TBD: This is defined FOR NOW as
-                                               # fraction fully vax
-                                               #and NOT boosted
-                                               #this is not ideal; it means that
-                                               # we have to work around a bunch
-                                               # of things. but to try to do it
-                    # the other way *before* blending in the swiss cheese fixes
-                    # is to court madness
-                                               #TBD: figure out where the next
+                    fraction_fully_vaccinated, #TBD: figure out where the next
                                                #comment line comes from
-                                               #going to want this to be
-                                               #consistent with 
-                    fraction_boosted, #TBD: finish implementing? (is this done?)
-                    boosting_rate, #.05 arbitrary, probably high
+                                                    #going to want this to be
+                                                    #consistent with 
+                    fraction_boosted, #TBD: possibly rename?
+                    boosting_rate, #TBD: remove?
                     working_directory,
                     folder_name,
                     unique_id, 
@@ -195,7 +187,8 @@ full_run = function(
     #n_mild -- done
     #although note that we might consider in the future allowing initial exposed
     #and mild to be drawn from the vaccinated
-    #TBD: change the above once swiss-cheesing is fully fixed
+    #TBD: change the above once swiss-cheesing is fully fixed; in particular,
+    #once mild is working again
     #fraction_recovered -- done
     #fraction_fully_vaccinated -- done
 

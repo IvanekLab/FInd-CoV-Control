@@ -84,10 +84,6 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          time_V2 = Inf,
                          time_B = Inf,
                          boosting_on_time = 1:N %in% sample(N, round(N * boosting_on_time_probability)),
-                         #boosting_on_time = rbinom(
-                         #   N, 1, boosting_on_time_probability
-                         #), #TBD: harmonize this with method use for setting up
-                            #initial boostedness
                          time_isolated = Inf,  #setup for time in Isolation
                                                #unlike the states listed above,
                                                #this is not a mutually exclusive
@@ -135,8 +131,6 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #            seq_len(initial_V1)
     #index_B = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 +
     #        initial_V1 + seq_len(initial_B)
-    
-    #TBD: reconcile this with boosted_on_time_probability
 
     #Note: these can be allowed to not all be N, as long as they're constant with
             #each interventions parameters
@@ -221,7 +215,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     agents$immune_status[only_R] = 'R'
     agents$time_last_immunity_event[only_R] = agents$time_R[only_R]
     agents$previous_immunity[only_R] = 0
-    #TBD: should definitely be revised once swiss-cheesing is complete
+    #TBD: check what line this comment previously applied to (not where it is
+    #now) and check that it no longer applies:
+        #TBD: should definitely be revised once swiss-cheesing is complete
 
     R_last = (index_R &
               index_V2 &

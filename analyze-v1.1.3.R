@@ -159,7 +159,8 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
         step_index = step_index[mask]
     }
 
-    #TBD: NB: smear and mask not yet implemented
+    #TBD: NB: smear and mask not yet implemented (alternatively: TBD: remove
+    #functionality that was decided against)
 
     if(daily_sum) {
         step_index = step_index[smear]

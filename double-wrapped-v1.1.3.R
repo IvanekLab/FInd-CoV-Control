@@ -43,18 +43,14 @@ double_wrap_rational_testing = TRUE
 double_wrap_initial_recovered = round(fraction_recovered * N)
 
 #below is kinda kludgey, but works
-#TBD: Remember, this needs a fix once things are redefined with swiss-cheese
+#TBD: Run the numbers to confirm that all the swiss-cheese updates really are
+#working 100% correctly
 double_wrap_initial_V2 = round(N * fraction_fully_vaccinated) 
 double_wrap_initial_V1 = 0 
 
-#TBD: Check if swiss-cheese is handling V2 + R individuals correctly, in terms
-#of setting their vax status!
-#TBD: Fix swiss-cheese's handling of vaccination of (NV, V1) + (R, W)
-#individuals, if this is not already correct (since we will be merging,
-#it should be safe to make this note here)
-
 double_wrap_initial_B = 0#round(N * fraction_boosted) #fix in swiss-cheese
     #TBD: remove this variable entirely OR rework the handling in AgentGen
+        #(probably remove entirely)
 
 #if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 +
 #   double_wrap_initial_B > N) {

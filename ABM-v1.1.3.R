@@ -17,9 +17,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-#TBD: I'm pretty sure this is failing to push all R -> B upon vaccination
-    #TBD: Check if this is still true
-
 source('omicron-waning-functions.R')
 
 unisolation_fn = function(agents, start_time) {
@@ -75,6 +72,14 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
             indices = indices[eligible[indices]] 
             theoretical_number_of_tests = testing_rate * sum(agent_presence) +
                     fractional_test_carried
+            #TBD: is this right? should this instead be = sum(testing_rate) +
+            #fractional_test_carried?
+            #But if my concern holds, then why does testing ever occur?
+            #Is it just because of fractional_test_carried? But if so, why does
+            #nominal testing rate ever matter -- surely, this ends up
+            #being large enough that all possible testing occurs on all
+            #shifts. This needs testing. It appears to be working right, but I
+            #am not sure why.
             number_of_tests = min(floor(theoretical_number_of_tests),
                     length(indices))
             fractional_test_carried = theoretical_number_of_tests -
@@ -232,7 +237,6 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
 #infection_0 is *not* used here, because we want (theoretical, in practice
 #extremely unlikely) < 1 shift duration phases to end in a non-"retroactive"
 #fashion
-#TBD: decide about symptoms_0
 progress_infection = function(agents, N, start_time, end_time, symptoms_0,
                               isolated_0, immunity_0) {
     xE_to_I = (agents$infection_status == 'E' &
@@ -259,7 +263,8 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
     agents$time_isolated[IP_to_IM & isolated_0] =
         agents$time_IM[IP_to_IM & isolated_0]
     agents$infection_status[xE_to_IP] = 'IP'
-    #TBD: above is awkward, and should be in an isolation function
+    #TBD: above is awkward, and should ideally be in an isolation function
+    #but doing this in practice is tricky
 
     IA_to_R =  (agents$infection_status == 'IA' &
                 end_time - agents$time_IA > agents$duration_IA
@@ -419,7 +424,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         immunity_0 = net_symptomatic_protection(agents, start_time)
         susceptibility_0 = 1 - infection_protection(agents, start_time)
         symptoms_0 = 1 - symptom_protection(agents, start_time)
-        vax_status_0 = agents$vax_status #TBD: Make sure I don't use this incorrectly!
+        vax_status_0 = agents$vax_status
         
         #TBD: Theoretically, check that recovery and vaccination in the same
         #step don't generate ridiculous results
@@ -462,7 +467,6 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         agents$time_E[NI_to_E_community] = potential_times_E[NI_to_E_community]
 
 
-        #TBD: fix below block using susceptibility
         NI_to_E = (
             agents$infection_status == 'NI' &
             sbern(N, p_infection) &
@@ -472,7 +476,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         agents$time_E[NI_to_E] = potential_times_E[NI_to_E] 
 
 
-        #TBD: move or otherwise fix this?
+        #TBD: move or otherwise fix this comment?
         # Putting the process of infection on hold a moment, to figure out who
         # among the already-infected needs to progress along their course of
         # infection (or recover), before the shift is over.
@@ -497,6 +501,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         infection_status_1 = agents$infection_status #but is this actually right?
                                                      #if we want absences, don't
         #we want status at the start of the shift
+        #TBD: Figure this out
         immune_status_1 = agents$immune_status
 
         Out1$S[k] <-  sum(agents$infection_status == "NI" &
