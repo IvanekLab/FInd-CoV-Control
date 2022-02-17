@@ -294,6 +294,10 @@ contacts_list = list(ps_1 = production_shift_1 * work_scaling_factor +
                      weekend_cs = raw_home_contacts_weekend_cs *
                          home_scaling_factor)
 
+#print(production_shift_1)
+#stop('ps_1')
+
+#cat('\nps1 = ', production_shift_1, '\nwsf =',  work_scaling_factor, '\nraw_home_contacts_ps_1 =',raw_home_contacts_ps_1, ' home_scaling_factor =',  home_scaling_factor, '\n')
 
 #vaccination_rate_list = list(work = 0,
 #                             home = scenario_parameters$home_vaccination_rate *

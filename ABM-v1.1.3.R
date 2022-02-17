@@ -57,8 +57,11 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
     )
     conditional_detection_mask = sbern(N, detection_probability)
 
-    if(sum(testing_rate) > 0) {        
+    if(sum(testing_rate) > 0) {
+        cat('\nt =', start_time, ':\ntesting rate =', testing_rate, '\n')
         if(max(testing_rate) == 1) {
+                cat('1 branch\ntesting mask = agent presence = ',
+                    agent_presence, '\n')
                 testing_mask = agent_presence #TBD: is this quite right?
         } else if(rational_testing) {
             indices = order(agents$time_tested, randomize_ties) 
@@ -69,6 +72,10 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
             ) #NB: Note that this tacitly assumes at-work testing,
               #not at-home testing upon feeling sick
               #TBD: This may be redundant with how testing_rate is defined?
+            cat('rational branch\nindices =', indices,
+                '\neligible = ', eligible, '\nagent presence =',
+                agent_presence, '\nfractional test carried =',
+                fractional_test_carried, '\n')
             indices = indices[eligible[indices]] 
             theoretical_number_of_tests = testing_rate * sum(agent_presence) +
                     fractional_test_carried
@@ -80,12 +87,24 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
             #being large enough that all possible testing occurs on all
             #shifts. This needs testing. It appears to be working right, but I
             #am not sure why.
+                #Update: This is wrong, but in a way that does indeed explain
+                #why testing rate matters (but which I'm not confident is
+                #generating the right number of tests in practice).
+                #So next step: TBD: Fix it.
             number_of_tests = min(floor(theoretical_number_of_tests),
                     length(indices))
             fractional_test_carried = theoretical_number_of_tests -
                     number_of_tests
             testing_mask = (1:N) %in% indices[1:number_of_tests]
+            cat('[indexed] indices =', indices,
+                '\ntheoretical number of tests =', theoretical_number_of_tests,
+                '\nnumber of tests =', number_of_tests, '\n',
+                '[new] fractional test carried =', fractional_test_carried,
+                '\ntesting_mask =', testing_mask, '\n')
         } else {
+            cat('irrational branch\ntesting mask =', irrational_testing_mask,
+                '\n')
+            #TBD: I'm pretty sure this is wrong; fix it
             testing_mask = irrational_testing_mask
         }
 
@@ -472,6 +491,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
             sbern(N, p_infection) &
             !isolated_0
         )
+        #cat('\n\nNI_to_E debug:\nagents$infection_status =', agents$infection_status, #TBD: probably should use infection_status_0 anyway
+        #    '\ninfectiousness=', infectiousness, '\ncontacts=', contacts, '\nfoi_contributions=', foi_contributions)#, '\nforce_of_infection=', force_of_infection, '\np_infection =', p_infection, '\nNI_to_E =', NI_to_E)
         agents$infection_status[NI_to_E] = 'E'
         agents$time_E[NI_to_E] = potential_times_E[NI_to_E] 
 
