@@ -214,7 +214,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 1#000
+double_wrap_num_sims = 100#0
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -226,19 +226,19 @@ double_wrap_num_sims = 1#000
 #then run
 #git diff --no-index --word-diff --ignore-all-space a.txt b.txt
 full_run(
-         workers_per_crew = '2', # FM: workers per line
-         crews_per_supervisor = '1', # FM: / lines per shift
-         supervisors = '1', # FM: shifts
-         n_shift_floaters ='2', # FM only (for with farm model,
+         workers_per_crew = '10', # FM: workers per line
+         crews_per_supervisor = '3', # FM: / lines per shift
+         supervisors = '2', # FM: shifts
+         n_shift_floaters ='10', # FM only (for with farm model,
                                  # will require NULL/NA)
-         n_cleaners = '2', # FM only (for farm model, will require NULL/NA)
-         n_all_floaters = '2', # FM only (for farm model, will require NULL/NA)
-         days = '1',
-         employee_housing = 'Shared',
+         n_cleaners = '10', # FM only (for farm model, will require NULL/NA)
+         n_all_floaters = '10', # FM only (for farm model, will require NULL/NA)
+         days = '90',
+         employee_housing = 'Shared', 
          social_distancing_shared_housing = 'Intermediate',
          community_transmission = 'Intermediate',
          social_distancing_work = 'Intermediate',
-         n_no_symptoms = '0', #i.e., exposed (TBD: not asymp/presymp --
+         n_no_symptoms = '1', #i.e., exposed (TBD: not asymp/presymp --
                               #should perhaps alter language?)
          n_mild = '0',
          fraction_recovered = .62,#'.116', # TBD: Swiss Cheese it
@@ -249,9 +249,9 @@ full_run(
          fraction_boosted = .52,
          boosting_rate = 0,
          working_directory = '.',
-         folder_name = 'miscellaneous-tests', # relative to working
+         folder_name = 'facility-added-interface', # relative to working
                                                    # directory
-         unique_id = 'testing-rate-test-A',
+         unique_id = 'tentative-default',
          variant = 'omicron',
          analyze_only = 'FALSE',
          PARALLEL = TRUE

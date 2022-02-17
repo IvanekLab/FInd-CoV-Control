@@ -160,9 +160,9 @@ if(PARALLEL) {
   #in the current version, we use %do% explicitly anyway
   #but this may change in a future version
 
-#full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
-#                                .verbose = TRUE) %dopar% {
-for(i in 1:k_max) {
+full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
+                                .verbose = TRUE) %dopar% {
+#for(i in 1:k_max) {
 #full_output_filenames = foreach(i=c(6:8,12:13), .combine = c, .inorder=TRUE,
 #                                .verbose = TRUE) %dopar% {
 #for(i in 4:4) {
