@@ -337,12 +337,9 @@ step_length_list = list(ps_1 = 1/3, ps_2 = 1/3, cs = 1/3, weekend_ps_1 = 1/3,
                         weekend_ps_2 = 1/3, weekend_cs = 1/3)
 #testing_rate_list = list(home = 0, work = get('work_testing_rate',
 #                         scenario_parameters), sleep = 0)
-testing_rate_list = list(ps_1 = on_ps_1 * get('work_testing_rate',
-                                              scenario_parameters),
-                         ps_2 = on_ps_2 * get('work_testing_rate',
-                                              scenario_parameters),
-                         cs =   on_cs * get('work_testing_rate',
-                                            scenario_parameters),
+testing_rate_list = list(ps_1 = get('work_testing_rate', scenario_parameters),
+                         ps_2 = get('work_testing_rate', scenario_parameters),
+                         cs =   get('work_testing_rate', scenario_parameters),
                          weekend_ps_1 = 0,
                          weekend_ps_2 = 0,
                          weekend_cs = 0)
