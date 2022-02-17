@@ -57,9 +57,9 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
     )
     conditional_detection_mask = sbern(N, detection_probability)
 
-    if(sum(testing_rate) > 0) {        
+    if(sum(testing_rate) > 0) {
         if(max(testing_rate) == 1) {
-                testing_mask = agent_presence #TBD: is this quite right?
+                testing_mask = agent_presence
         } else if(rational_testing) {
             indices = order(agents$time_tested, randomize_ties) 
             eligible = (
@@ -68,31 +68,27 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
                 !isolated
             ) #NB: Note that this tacitly assumes at-work testing,
               #not at-home testing upon feeling sick
-              #TBD: This may be redundant with how testing_rate is defined?
             indices = indices[eligible[indices]] 
             theoretical_number_of_tests = testing_rate * sum(agent_presence) +
                     fractional_test_carried
-            #TBD: is this right? should this instead be = sum(testing_rate) +
-            #fractional_test_carried?
-            #But if my concern holds, then why does testing ever occur?
-            #Is it just because of fractional_test_carried? But if so, why does
-            #nominal testing rate ever matter -- surely, this ends up
-            #being large enough that all possible testing occurs on all
-            #shifts. This needs testing. It appears to be working right, but I
-            #am not sure why.
             number_of_tests = min(floor(theoretical_number_of_tests),
                     length(indices))
             fractional_test_carried = theoretical_number_of_tests -
                     number_of_tests
             testing_mask = (1:N) %in% indices[1:number_of_tests]
         } else {
+            #TBD: I'm pretty sure this is wrong (in that it does not take
+            #account of who is on shift). But since irrational testing cannot be
+            #produced by the current interface, this is irrelevant. So this is a
+            #low priority to fix.
+            #Alternatively, TBD: Remove irrational testing and "rational"
+            #vaccination code, so they don't clutter up the source.
             testing_mask = irrational_testing_mask
         }
 
         agents$time_tested[testing_mask] = start_time
 
-        x_to_Isol = testing_mask & conditional_detection_mask #this is all,
-                                                              #right?
+        x_to_Isol = testing_mask & conditional_detection_mask
         agents$isolated[x_to_Isol] = TRUE
         agents$time_isolated[x_to_Isol] = start_time
     }

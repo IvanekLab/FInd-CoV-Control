@@ -162,7 +162,7 @@ if(PARALLEL) {
 
 full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
                                 .verbose = TRUE) %dopar% {
-#for(i in c(6:8,12:13)) {
+#for(i in 1:k_max) {
 #full_output_filenames = foreach(i=c(6:8,12:13), .combine = c, .inorder=TRUE,
 #                                .verbose = TRUE) %dopar% {
 #for(i in 4:4) {

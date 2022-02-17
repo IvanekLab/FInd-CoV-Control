@@ -294,6 +294,10 @@ contacts_list = list(ps_1 = production_shift_1 * work_scaling_factor +
                      weekend_cs = raw_home_contacts_weekend_cs *
                          home_scaling_factor)
 
+#print(production_shift_1)
+#stop('ps_1')
+
+#cat('\nps1 = ', production_shift_1, '\nwsf =',  work_scaling_factor, '\nraw_home_contacts_ps_1 =',raw_home_contacts_ps_1, ' home_scaling_factor =',  home_scaling_factor, '\n')
 
 #vaccination_rate_list = list(work = 0,
 #                             home = scenario_parameters$home_vaccination_rate *
@@ -333,12 +337,9 @@ step_length_list = list(ps_1 = 1/3, ps_2 = 1/3, cs = 1/3, weekend_ps_1 = 1/3,
                         weekend_ps_2 = 1/3, weekend_cs = 1/3)
 #testing_rate_list = list(home = 0, work = get('work_testing_rate',
 #                         scenario_parameters), sleep = 0)
-testing_rate_list = list(ps_1 = on_ps_1 * get('work_testing_rate',
-                                              scenario_parameters),
-                         ps_2 = on_ps_2 * get('work_testing_rate',
-                                              scenario_parameters),
-                         cs =   on_cs * get('work_testing_rate',
-                                            scenario_parameters),
+testing_rate_list = list(ps_1 = get('work_testing_rate', scenario_parameters),
+                         ps_2 = get('work_testing_rate', scenario_parameters),
+                         cs =   get('work_testing_rate', scenario_parameters),
                          weekend_ps_1 = 0,
                          weekend_ps_2 = 0,
                          weekend_cs = 0)
