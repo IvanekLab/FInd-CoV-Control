@@ -334,7 +334,7 @@ for(x in c('1', '2', '3', '4')) {
     for(y in c('a', 'b', 'c', 'd')) {
         ap_x = get(paste0('ap_', x))
         ap_y = get(paste0('ap_', y))
-        ap_id = list(unique_id = paste0('scenario_', x, y))
+        ap_id = list(unique_id = paste0('scenario_', x, y, '_x100'))
         do.call(full_run, c(common_parameters, ap_x, ap_y, ap_id))
     }
 }
@@ -347,7 +347,7 @@ for(x in c('1', '2', '3', '4')) {
     for(y in c('a', 'b', 'c', 'd')) {
         ap_x = get(paste0('ap_', x))
         ap_y = get(paste0('ap_', y))
-        ap_id = list(unique_id = paste0('scenario_', x, y))
+        ap_id = list(unique_id = paste0('scenario_', x, y, '_x1000'))
         do.call(full_run, c(common_parameters, ap_x, ap_y, ap_id))
     }
 }
