@@ -17,7 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-source('omicron-waning-functions.R')
+#source('omicron-waning-functions.R')
 
 unisolation_fn = function(agents, start_time) {
     isolation_duration = 5
@@ -99,7 +99,8 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
 vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                      start_time, end_time, boosting_rate,
                      infection_0, immune_status_0, vax_status_0, isolated_0,
-                     immunity_0) {
+                     immunity_0,
+                     net_symptomatic_protection) {
 
     #some of the assignments below could be condensed, but I'm trying to be
     #systematic about things
@@ -326,7 +327,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                 scenario_parameters, steps, step_length_list, testing_rate_list,
                 vaccination_rate_list,  agent_presence_list,
                 quantitative_presence_list, #waning_parameters,
-                boosting_rate) {
+                boosting_rate,
+                protection_functions) {
 
     N <-nrow(agents)
 
@@ -379,6 +381,11 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     end_time = 0 # End of the last shift before simulation starts
     fractional_test_carried = 0
 
+    net_symptomatic_protection = get('net_symptomatic_protection',
+                                     protection_functions)
+    infection_protection = get('infection_protection', protection_functions)
+    symptom_protection = get('symptom_protection', protection_functions)
+
     # Move people through time
     for(k in 1:steps) {
         contacts = get(schedule[k], contacts_list)
@@ -430,7 +437,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         agents = vaccinate(agents, N, vaccination_rate, vaccination_interval,
                            start_time, end_time, boosting_rate,
                            infection_0, immune_status_0, vax_status_0,
-                           isolated_0, immunity_0)
+                           isolated_0, immunity_0,
+                           net_symptomatic_protection)
 
         infectiousness = (!isolated_0) * (
             (infection_0 == 'IA') * p_trans_IA +
