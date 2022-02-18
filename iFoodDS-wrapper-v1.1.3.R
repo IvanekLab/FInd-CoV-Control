@@ -215,7 +215,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 10#00
+double_wrap_num_sims = 100#0
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -341,4 +341,14 @@ for(x in c('1', '2', '3', '4')) {
 
 #do.call(full_run, c(common_parameters, default_additional_parameters))
 
+double_wrap_num_sims = 1000
+
+for(x in c('1', '2', '3', '4')) {
+    for(y in c('a', 'b', 'c', 'd')) {
+        ap_x = get(paste0('ap_', x))
+        ap_y = get(paste0('ap_', y))
+        ap_id = list(unique_id = paste0('scenario_', x, y))
+        do.call(full_run, c(common_parameters, ap_x, ap_y, ap_id))
+    }
+}
 
