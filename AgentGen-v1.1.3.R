@@ -24,7 +24,7 @@
 #rather than S), $vax_status (currently same as immune status for fully
 #unvaccinated)
 
-source('omicron-waning-functions.R')
+#source('omicron-waning-functions.R')
 
 AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       initial_recovered = 0, initial_V1 = 0, initial_V2 = 0,
@@ -32,10 +32,19 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
                                             0.01, 0),
                       SEVERE_MULTIPLIER = 1,
-                      boosting_on_time_probability = 0) {
+                      boosting_on_time_probability = 0,
+                      protection_functions) {
+    #cat(IA0, IP0, initial_V1, initial_B)
     if(max(IA0, IP0, initial_V1, initial_B) > 0) {
         stop('Attempt to use buggy functionality in AgentGen.')
     }
+
+    V1_protection = get('V1_protection', protection_functions)
+    V2_protection = get('V2_protection', protection_functions)
+    R_protection = get('R_protection', protection_functions)
+    B_protection = get('B_protection', protection_functions)
+    net_symptomatic_protection = get('net_symptomatic_protection',
+                                     protection_functions)
 
     Age_Categories = c("10-19", "20-29", "30-39", "40-49", "50-59", "60-69",
                        "70-79", "80+")
@@ -233,7 +242,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     )
     #TBD: Fix setting of previous immunity no later than when B = R during first
     #two weeks is changed (is this already okay?)
-    agents$previous_immunity[R_V1_V2] = B_decay(21 / 7) #TBD: de-7
+    agents$previous_immunity[R_V1_V2] = B_protection(21 / 7, 0) #TBD: de-7
+        #0 often not technically correct, but doesn't matter for any of the fn
+        #we're considering
     #agents$time_last_immunity_event[R_V1_V2] #is unchanged
     agents$immune_status[R_V1_V2] = 'B'
 

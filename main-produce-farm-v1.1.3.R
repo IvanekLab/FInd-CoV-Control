@@ -357,7 +357,8 @@ for (i in 1:num_sims) {
     agents <- AgentGen(N, E0 = n_exposed, IA0 = 0, IP0 = 0, IM0 = n_mild,
                        initial_recovered = initial_recovered,
                        initial_V1 = initial_V1, initial_V2 = initial_V2,
-                       SEVERE_MULTIPLIER = SEVERE_MULTIPLIER)
+                       SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
+                       protection_functions = protection_functions)
     
     #cat('intervention:', index_i, 'run:', i, 'agents initialized:', runif(1, 0, 1), '\n')
                                                 
@@ -372,7 +373,9 @@ for (i in 1:num_sims) {
                  agent_presence_list = agent_presence_list,
                  quantitative_presence_list = quantitative_presence_list,
                  #waning_parameters = waning_parameters,
-                 boosting_rate = boosting_rate)
+                 boosting_rate = boosting_rate,
+                 protection_functions = protection_functions
+    )
     #cat('intervention:', index_i, 'run:', i, 'ABM completed:', runif(1, 0, 1), '\n')
     agents = model$agents
     output = model$Out1

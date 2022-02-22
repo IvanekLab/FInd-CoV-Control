@@ -7,6 +7,8 @@
 #Set analyze_only to TRUE to reanalyze an existing output set with modified
 #analyze.R
 
+source('general-waning-functions.R')
+
 safe.integer = function(s) {
     i = strtoi(s)
     if(is.na(i)) {
@@ -59,7 +61,8 @@ full_run = function(
                     unique_id, 
                     variant,
                     analyze_only,
-                    PARALLEL
+                    PARALLEL,
+                    protection_functions
 ) {
     setwd(working_directory)
 
@@ -105,7 +108,7 @@ full_run = function(
        n_mild == 0 &&
        fraction_recovered == .116 &&
        fraction_fully_vaccinated == .627) {
-        unique_id = paste(unique_id, 'baseline', sep = '')
+            unique_id = paste(unique_id, 'baseline', sep = '')
     }
 
     crews_by_team = rep(crews_per_supervisor, supervisors) 
@@ -127,7 +130,7 @@ full_run = function(
         } else if(tolower(community_transmission) == 'intermediate'){
             double_wrap_community_foi = 0.001
         } else if(tolower(community_transmission) == 'high'){
-            double_wrap_community_foi = 0.002
+            double_wrap_community_foi = 0.01
         } else {
             stop(paste('Invalid community_transmission:',
                        community_transmission))
@@ -169,6 +172,7 @@ full_run = function(
     } else {
         stop(paste('Invalid social_distancing_work:', social_distancing_work))
     }
+
     if(variant == 'delta') {
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 2
         #DELTA_VAX = TRUE
@@ -176,9 +180,6 @@ full_run = function(
             #double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 #* 7/3
         #kludged for sane values aiming for 7; make more precise determination
-        #TBD: reinstate increased level; just trying to sanity-check this now
-        #so now at R0 = 3
-        #later
     }
 
     n_exposed = n_no_symptoms # done, although this should ideally be split up
@@ -214,7 +215,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 100#0
+double_wrap_num_sims = 10#00
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -225,34 +226,35 @@ double_wrap_num_sims = 100#0
 #copy the relevant signatures to two files, strip out comments, strip out ,s and
 #then run
 #git diff --no-index --word-diff --ignore-all-space a.txt b.txt
-full_run(
-         workers_per_crew = '10', # FM: workers per line
-         crews_per_supervisor = '3', # FM: / lines per shift
-         supervisors = '2', # FM: shifts
-         n_shift_floaters ='10', # FM only (for with farm model,
-                                 # will require NULL/NA)
-         n_cleaners = '10', # FM only (for farm model, will require NULL/NA)
-         n_all_floaters = '10', # FM only (for farm model, will require NULL/NA)
-         days = '90',
-         employee_housing = 'Shared', 
-         social_distancing_shared_housing = 'Intermediate',
-         community_transmission = 'Intermediate',
-         social_distancing_work = 'Intermediate',
-         n_no_symptoms = '1', #i.e., exposed (TBD: not asymp/presymp --
-                              #should perhaps alter language?)
-         n_mild = '0',
-         fraction_recovered = .62,#'.116', # TBD: Swiss Cheese it
-                                      # TBD: For now,
-                                      # do calculations here by hand
-         fraction_fully_vaccinated = .74,#'.627',  #  TBD: (for now: and not boosted?
-                                              #(check))
-         fraction_boosted = .52,
-         boosting_rate = 0,
-         working_directory = '.',
-         folder_name = 'facility-added-interface', # relative to working
-                                                   # directory
-         unique_id = 'tentative-default',
-         variant = 'omicron',
-         analyze_only = 'FALSE',
-         PARALLEL = TRUE
+common_parameters = list(
+    workers_per_crew = '10',    # FM: workers per line
+    crews_per_supervisor = '3', # FM: / lines per shift
+    supervisors = '2',          # FM: shifts
+    n_shift_floaters ='10',     # FM only (for farm model, will require NULL/NA)
+    n_cleaners = '10',          # FM only (for farm model, will require NULL/NA)
+    n_all_floaters = '10',      # FM only (for farm model, will require NULL/NA)
+    days = '90',
+    employee_housing = 'Private', 
+    social_distancing_shared_housing = NULL,
+    community_transmission = 'Intermediate',
+    social_distancing_work = 'Intermediate',
+    n_no_symptoms = '1',        #i.e., exposed 
+    n_mild = '0',
+    boosting_rate = 0,
+    working_directory = '.',
+    folder_name = 'post-scenarios',   # relative to working directory
+    variant = 'omicron',
+    analyze_only = 'FALSE',
+    PARALLEL = TRUE
 )
+
+default_additional_parameters = list(
+    fraction_recovered = .69,
+    fraction_fully_vaccinated = .71, #TBD: Add "fully vaccinated in last 5 months" parameter at 9% by default
+    fraction_boosted = .45,
+    unique_id = 'tentative-default',
+    protection_functions = default_protection_functions
+)
+
+do.call(full_run, c(common_parameters, default_additional_parameters))
+
