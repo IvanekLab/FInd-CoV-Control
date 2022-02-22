@@ -205,7 +205,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #agents$infection_status[index_B] = 'NI'
     #agents$time_B[index_B] = -runif(initial_B, 0, 92)
     agents$time_B[index_B] = pmax(agents$time_V2[index_B] + 152, -92)
-    #TBD: Fix lower bound
+    #TBD: Fix this and other distributions to use new questions.
+    #TBD: Pull out distributions to separate functions or even a separate file?
     #agents$time_V2[index_B] = agents$time_B[index_B] - 152
     #doesn't really matter
     #agents$time_V1[index_B] = agents$time_V2[index_B] - 21
@@ -231,7 +232,10 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     R_last = (index_R &
               index_V2 &
               agents$time_R > agents$time_last_immunity_event)
-    agents$previous_immunity[R_last] = net_symptomatic_protection(agents[R_last,], agents$time_R[R_last])
+    agents$previous_immunity[R_last] = net_symptomatic_protection(
+            agents[R_last,],
+            agents$time_R[R_last]
+    )
     agents$time_last_immunity_event[R_last] = agents$time_R[R_last]
     agents$immune_status[R_last] = 'R'
 
@@ -240,8 +244,6 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
               (!agents$boosting_on_time) &
               agents$time_R < agents$time_V1
     )
-    #TBD: Fix setting of previous immunity no later than when B = R during first
-    #two weeks is changed (is this already okay?)
     agents$previous_immunity[R_V1_V2] = B_protection(21 / 7, 0) #TBD: de-7
         #0 often not technically correct, but doesn't matter for any of the fn
         #we're considering
@@ -254,7 +256,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
               agents$time_R >= agents$time_V1 &
               agents$time_R < agents$time_V2
     )
-    agents$previous_immunity[V1_R_V2] = R_protection((agents$time_V2[V1_R_V2] - agents$time_R[V1_R_V2]) / 7) #TBD: de-7
+    agents$previous_immunity[V1_R_V2] = R_protection(
+        (agents$time_V2[V1_R_V2] - agents$time_R[V1_R_V2]) / 7 #TBD: de-7
+    )
     #agents$time_last_immunity_event[R_V1_V2] #is unchanged
     agents$immune_status[V1_R_V2] = 'B'
 
@@ -264,7 +268,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
               agents$time_R >= agents$time_V2 &
               agents$time_R < agents$time_B
     )
-    agents$previous_immunity[V2_R_B] = R_protection((agents$time_B[V2_R_B] - agents$time_R[V2_R_B]) / 7) #TBD: de-7
+    agents$previous_immunity[V2_R_B] = R_protection(
+        (agents$time_B[V2_R_B] - agents$time_R[V2_R_B]) / 7 #TBD: de-7
+    ) 
     #agents$time_last_immunity_event[R_V1_V2] #is unchanged
     #agents$immune_status[V1_R_V2] = 'B'
 
@@ -285,7 +291,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
   
     #Merge parameters for disease progression (Psymptomatic, Psevere, and
     #Pcritical) from table into data frame
-    agents=merge.data.frame(agents, Probability_Matrix, by="Age_Cat", all.x=TRUE)
+    agents=merge.data.frame(agents, Probability_Matrix, by="Age_Cat",
+                            all.x=TRUE)
 
     #pre-calculating, as with times
     agents$symptomatic = rbinom(N, 1, agents$p_symptomatic) > 0

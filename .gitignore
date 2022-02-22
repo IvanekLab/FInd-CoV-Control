@@ -14,4 +14,7 @@ facility-now-with-shift-split
 *.txt
 nohup.out
 temp-facility-model-dump/
-
+miscellaneous/
+post-scenarios/
+sample_data-new.rds
+sum.png

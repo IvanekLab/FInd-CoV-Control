@@ -41,7 +41,7 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
     #same number of calls -> functionally identical parameter sets give
     #identical results
     randomize_ties = sample(N)
-    irrational_testing_mask = (sbern(N, testing_rate) == 1)
+    irrational_testing_mask = (sbern(N, testing_rate) == 1) & agent_presence
     detection_probability = ifelse(infection_status == 'IA',
         1 - IA_FNR,
         ifelse(infection_status == 'IP',
@@ -77,12 +77,6 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
                     number_of_tests
             testing_mask = (1:N) %in% indices[1:number_of_tests]
         } else {
-            #TBD: I'm pretty sure this is wrong (in that it does not take
-            #account of who is on shift). But since irrational testing cannot be
-            #produced by the current interface, this is irrelevant. So this is a
-            #low priority to fix.
-            #Alternatively, TBD: Remove irrational testing and "rational"
-            #vaccination code, so they don't clutter up the source.
             testing_mask = irrational_testing_mask
         }
 
@@ -236,6 +230,12 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
 #fashion
 progress_infection = function(agents, N, start_time, end_time, symptoms_0,
                               isolated_0, immunity_0) {
+    # Note that, as currently coded, this function could generate odd results if
+    # vaccination can confer stronger immunity than natural recovery *and* an
+    # asymptomatic infected gets vaccinated and recovers on the same shift. But
+    # the former condition is never true in our current production code, and the
+    # latter should be rare in any event.
+
     xE_to_I = (agents$infection_status == 'E' &
                end_time - agents$time_E > agents$duration_E
     )
@@ -258,10 +258,9 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
     agents$time_IM[IP_to_IM] = agents$time_IP[IP_to_IM] +
         agents$duration_IP[IP_to_IM]
     agents$time_isolated[IP_to_IM & isolated_0] =
-        agents$time_IM[IP_to_IM & isolated_0]
+        agents$time_IM[IP_to_IM & isolated_0] #resetting isolation duration upon
+                                              #symptom onset
     agents$infection_status[xE_to_IP] = 'IP'
-    #TBD: above is awkward, and should ideally be in an isolation function
-    #but doing this in practice is tricky
 
     IA_to_R =  (agents$infection_status == 'IA' &
                 end_time - agents$time_IA > agents$duration_IA
@@ -275,7 +274,8 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
     )
 
     #TBD (eventually): Account for reduced chance of severe disease
-    #conditional on symptomatic
+    #conditional on symptomatic disease due to history of vaccination or natural
+    #infection
     IM_to_IS = IM_to_x & agents$severe
     agents$time_IS[IM_to_IS] = agents$time_IM[IM_to_IS] +
         agents$duration_IM[IM_to_IS]
@@ -429,11 +429,6 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         symptoms_0 = 1 - symptom_protection(agents, start_time)
         vax_status_0 = agents$vax_status
         
-        #TBD: Theoretically, check that recovery and vaccination in the same
-        #step don't generate ridiculous results
-        #in practice, I'm pretty sure this is impossible, with the way that
-        #progress_infection is currently coded
-
         agents = vaccinate(agents, N, vaccination_rate, vaccination_interval,
                            start_time, end_time, boosting_rate,
                            infection_0, immune_status_0, vax_status_0,
@@ -459,8 +454,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #In practice, though, it's unlikely to matter much -- most scenarios
         #will have few if any shifts in which both probabilities are
         #non-negligible.
-        #(In fact, none in the current version, except maybe for all-shift
-        #floaters (check).)
+        #(In fact, none in the current version, except for all-shift floaters.)
 
         NI_to_E_community = (
             agents$infection_status == 'NI' &
@@ -480,19 +474,16 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         agents$time_E[NI_to_E] = potential_times_E[NI_to_E] 
 
 
-        #TBD: move or otherwise fix this comment?
-        # Putting the process of infection on hold a moment, to figure out who
-        # among the already-infected needs to progress along their course of
-        # infection (or recover), before the shift is over.
-        #
         # Ideally, we probably want to incorporate transitions out of
-        # infectiousness into calculation of transmission potentials, but later.
+        # infectiousness (or into a different level of infectiousness) into
+        # calculation of transmission potentials, but that's a task for a later
+        # version.
         agents = progress_infection(agents, N, start_time, end_time, symptoms_0,
                                     isolated_0, immunity_0)
 
 
-        #TBD: We still need to recalculate durations for repeats of the same
-        #event (now possible)
+        #TBD (eventually): We still need to recalculate durations for repeats of
+        #the same event (now possible).
 
         #"Out1" records the sum of individuals in each state at time k
         #(i.e., during time from time=0 to time=nTime1)
@@ -500,11 +491,11 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #"agents" shows demographic characteristics of all individuals in the
         #population and their infection status at time nTime1
 
-        #TBD (ASAP): move this to an update_Out1 function
+        #TBD: move this to an update_Out1 function
         #NB: TRUE == 1 for the purpose of summation
-        infection_status_1 = agents$infection_status #but is this actually right?
-                                                     #if we want absences, don't
-        #we want status at the start of the shift
+        infection_status_1 = agents$infection_status
+        #but is this actually right? if we want absences, don't we want status
+        #at the *start* of the shift?
         #TBD: Figure this out
         immune_status_1 = agents$immune_status
 
