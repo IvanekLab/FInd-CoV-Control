@@ -130,7 +130,7 @@ full_run = function(
         } else if(tolower(community_transmission) == 'intermediate'){
             double_wrap_community_foi = 0.001
         } else if(tolower(community_transmission) == 'high'){
-            double_wrap_community_foi = 0.002
+            double_wrap_community_foi = 0.01
         } else {
             stop(paste('Invalid community_transmission:',
                        community_transmission))
@@ -178,7 +178,7 @@ full_run = function(
         #DELTA_VAX = TRUE
     } else if (variant == 'omicron') {
             #double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
-        double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 7/3
+        double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 #* 7/3
         #kludged for sane values aiming for 7; make more precise determination
     }
 
@@ -215,7 +215,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 100#0
+double_wrap_num_sims = 10#00
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -242,113 +242,19 @@ common_parameters = list(
     n_mild = '0',
     boosting_rate = 0,
     working_directory = '.',
-    folder_name = '2022-02-17-scenarios',   # relative to working directory
+    folder_name = 'post-scenarios',   # relative to working directory
     variant = 'omicron',
     analyze_only = 'FALSE',
     PARALLEL = TRUE
 )
 
 default_additional_parameters = list(
-    fraction_recovered = .62,
-    fraction_fully_vaccinated = .74,
-    fraction_boosted = .52,
+    fraction_recovered = .69,
+    fraction_fully_vaccinated = .71, #TBD: Add "fully vaccinated in last 5 months" parameter at 9% by default
+    fraction_boosted = .45,
     unique_id = 'tentative-default',
-    protection_functions = default2_protection_functions
+    protection_functions = default_protection_functions
 )
 
-ap_1 = list(
-    fraction_recovered = 0,
-    fraction_fully_vaccinated = 0,
-    fraction_boosted = 0
-)
-
-ap_2 = list(
-    fraction_recovered = 0.5,
-    fraction_fully_vaccinated = 0,
-    fraction_boosted = 0
-)
-
-ap_3 = list(
-    fraction_recovered = 0,
-    fraction_fully_vaccinated = 0.5,
-    fraction_boosted = 0
-)
-
-ap_4 = list(
-    fraction_recovered = 0,
-    fraction_fully_vaccinated = 0.5,
-    fraction_boosted = 0.5
-)
-
-ap_5 = list(
-    fraction_recovered = 0.5,
-    fraction_fully_vaccinated = 0.5,
-    fraction_boosted = 0.5
-)
-
-
-#below: TBD: de-7
-nine_months = 365.2425 * 9/12 / 7
-five_months = 365.2425 * 5/12 / 7
-ap_a = list(
-    protection_functions = make_protection_functions(
-        V1_protection = two_level_protection(level = 0.5, duration = 4),
-        V2_protection = two_level_protection(level = 1,
-                                             duration = five_months),
-        B_protection = two_level_protection(level = 1,
-                                            duration = nine_months),
-        R_protection = two_level_protection(level = 1,
-                                            duration = nine_months)
-    )
-)
-
-ap_b = list(
-    protection_functions = make_protection_functions(
-        V1_protection = two_level_protection(level = 0.1, duration = 4),
-        V2_protection = two_level_protection(level = 0.2,
-                                             duration = five_months),
-        B_protection = two_level_protection(level = 1,
-                                            duration = nine_months),
-        R_protection = two_level_protection(level = 1,
-                                            duration = nine_months)
-    )
-)
-
-ap_c = list(
-    protection_functions = make_protection_functions(
-        V1_protection = two_level_protection(level = 0.1, duration = 4),
-        V2_protection = two_level_protection(level = 0.2,
-                                             duration = five_months),
-        B_protection = two_level_protection(level = 0.5,
-                                            duration = nine_months),
-        R_protection = two_level_protection(level = 0.5,
-                                            duration = nine_months)
-    )
-)
-
-ap_d = list(
-    protection_functions = default2_protection_functions
-)
-
-for(x in c('1', '2', '3', '4')) {
-    for(y in c('a', 'b', 'c', 'd')) {
-        ap_x = get(paste0('ap_', x))
-        ap_y = get(paste0('ap_', y))
-        ap_id = list(unique_id = paste0('scenario_', x, y, '_x100'))
-        do.call(full_run, c(common_parameters, ap_x, ap_y, ap_id))
-    }
-}
-
-#do.call(full_run, c(common_parameters, default_additional_parameters))
-
-double_wrap_num_sims = 1000
-
-for(x in c('1', '2', '3', '4')) {
-    for(y in c('a', 'b', 'c', 'd')) {
-        ap_x = get(paste0('ap_', x))
-        ap_y = get(paste0('ap_', y))
-        ap_id = list(unique_id = paste0('scenario_', x, y, '_x1000'))
-        do.call(full_run, c(common_parameters, ap_x, ap_y, ap_id))
-    }
-}
+do.call(full_run, c(common_parameters, default_additional_parameters))
 
