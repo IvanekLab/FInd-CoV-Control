@@ -35,6 +35,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       boosting_on_time_probability = 0,
                       protection_functions) {
     #cat(IA0, IP0, initial_V1, initial_B)
+    #TBD: Fix handling of IM0 (currently, it is simply ignored! -- this was not
+    #true in earlier versions; it's a kludge introduced during incorporation of
+    #swiss cheese code.
     if(max(IA0, IP0, initial_V1, initial_B) > 0) {
         stop('Attempt to use buggy functionality in AgentGen.')
     }
@@ -194,8 +197,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #again, not perfect, but doesn't actually matter
     #(currently, and probably ever)
     agents$previous_immunity[index_V2] = V1_protection(
-        (agents$time_V2[index_V2] - agents$time_V1[index_V2]) / 7
-    ) #TBD de-7 if changing how weeks are handled
+        (agents$time_V2[index_V2] - agents$time_V1[index_V2])
+    )
 
     index_B = (agents$vax_status == 'V2' &
                agents$time_V2 < -152 &
@@ -214,7 +217,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #print(agents$time_B[index_B])
     #print(agents$time_V2[index_B])
     agents$previous_immunity[index_B] = V2_protection(
-        (agents$time_B[index_B] - agents$time_V2[index_B]) / 7, 0) #TBD: de-7
+        (agents$time_B[index_B] - agents$time_V2[index_B]), 0)
     #TBD: correct technical error / generate standard "on-schedule" previous
     #immunities
 
@@ -244,7 +247,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
               (!agents$boosting_on_time) &
               agents$time_R < agents$time_V1
     )
-    agents$previous_immunity[R_V1_V2] = B_protection(21 / 7, 0) #TBD: de-7
+    agents$previous_immunity[R_V1_V2] = B_protection(21, 0)
         #0 often not technically correct, but doesn't matter for any of the fn
         #we're considering
     #agents$time_last_immunity_event[R_V1_V2] #is unchanged
@@ -257,7 +260,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
               agents$time_R < agents$time_V2
     )
     agents$previous_immunity[V1_R_V2] = R_protection(
-        (agents$time_V2[V1_R_V2] - agents$time_R[V1_R_V2]) / 7 #TBD: de-7
+        (agents$time_V2[V1_R_V2] - agents$time_R[V1_R_V2])
     )
     #agents$time_last_immunity_event[R_V1_V2] #is unchanged
     agents$immune_status[V1_R_V2] = 'B'
@@ -269,7 +272,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
               agents$time_R < agents$time_B
     )
     agents$previous_immunity[V2_R_B] = R_protection(
-        (agents$time_B[V2_R_B] - agents$time_R[V2_R_B]) / 7 #TBD: de-7
+        (agents$time_B[V2_R_B] - agents$time_R[V2_R_B])
     ) 
     #agents$time_last_immunity_event[R_V1_V2] #is unchanged
     #agents$immune_status[V1_R_V2] = 'B'

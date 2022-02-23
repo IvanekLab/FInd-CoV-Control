@@ -9,36 +9,37 @@
 #}
 
 default_V2_decay = function(t) {
-    0.91157392 * exp(-0.08904459 * t)
+    0.91157392 * exp(-0.08904459 / 7 * t)
 }
 
 default_B_decay = function(t) {
-    0.471669758 * exp(-0.083161719*t) + 0.326600870 * exp(-0.008970573*t)
+    (0.471669758 * exp(-0.083161719 / 7 * t) +
+     0.326600870 * exp(-0.008970573 / 7 * t))
 }
 
 default_R_decay = default_B_decay #although the protection functions are non-identical
 
 default_V1_protection = function(t, prev) {
     #prev unused; included for consistent interface
-    ifelse(t < 3,
-        .36 * t / 3,
+    ifelse(t < 21,
+        .36 * t / 21,
         .36
     )
 }
 
 default_V2_protection = function(t, prev) {
-    ifelse(t < 2,
-        (t / 2) * default_V2_decay(2) + ((2 - t) / 2) * prev,
+    ifelse(t < 14,
+        (t / 14) * default_V2_decay(14) + ((14 - t) / 14) * prev,
         default_V2_decay(t)
     )
 }
 
 
 default_B_protection = function(t, prev) {
-    ifelse(t < 1, 
-        t * .62 + (1 - t) * prev,
-        ifelse(t < 2,
-            (2 - t) * .62 + (t - 1) * default_B_decay(2), 
+    ifelse(t < 7, 
+        t / 7 * .62 + (7 - t) / 7 * prev,
+        ifelse(t < 14,
+            (14 - t) / 7 * .62 + (t - 7) / 7 * default_B_decay(14), 
             default_B_decay(t)
         )
     )
@@ -46,7 +47,7 @@ default_B_protection = function(t, prev) {
 
 default_R_protection = function(t, prev) {
     #prev unused; included for consistent interface
-    ifelse(t < 2,
+    ifelse(t < 14,
         1,
         default_R_decay(t)
     )
@@ -60,16 +61,9 @@ make_protection_functions = function(V1_protection, V2_protection, B_protection,
 
     net_symptomatic_protection = function (agents, start_time) {
         ais = agents$immune_status
-        t = (start_time - agents$time_last_immunity_event) / 7 #relevant data is
-                                                               #given in weeks
-                                                               #TBD:de-7?
-        t = pmax(t, 0) #kludge for testing; TBD: remove
+        t = (start_time - agents$time_last_immunity_event)
+        t = pmax(t, 0) #TBD: find a way to not need this kludge
         prev = agents$previous_immunity
-        #print('on')
-        #print(ais)
-        #print(agents$immune_status)
-        #print(agents$previous_immunity)
-        #print(t)
         protection = ifelse(ais == 'FS',
             0,
             ifelse(ais == 'V1',
@@ -86,8 +80,6 @@ make_protection_functions = function(V1_protection, V2_protection, B_protection,
                 )
             )
         )
-        #print(protection)
-        #print('off')
         if(any(is.na(protection))) {
             mask = is.na(protection)
             cat('Problematic agents:\n')
@@ -127,7 +119,7 @@ default2_protection_functions = make_protection_functions(default_V1_protection,
                                                           default_R_protection,
                                                           default_R_protection)
 
-#debugging check
+#old debugging check; may no longer be valid
 #immune_status = c(rep('FS', 28), rep('V1', 28), rep('V2', 56), rep('B', 56),
 #                  rep('R', 28))
 #time_last_immunity_event = -rep((1:28),7)
