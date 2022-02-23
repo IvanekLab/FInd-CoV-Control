@@ -90,6 +90,43 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
     list(agents = agents, fractional_test_carried = fractional_test_carried)
 }
 
+# In a technical sense, the following function is totally redundant (and with
+# the "exploded" style of listing numerous arguments to a function, it's not
+# event shorter), *but* it helps to ensure that all subscripting is consistent,
+# etc.
+#
+# Note that setting mask = TRUE will update the indicate values for all agents
+update_agents = function(agents, mask, ...) {
+    if(any(mask)) {
+
+        N = dim(agents)[1]
+
+        argv = list(...)
+
+        # This block (before for(...)) is for debugging purposes, and should
+        # probably be deleted from production code to save run time.
+        argument_names = names(argv)
+        column_names = names(agents)
+        if(!all(argument_names %in% column_names)) { # i.e., if we are trying to
+                                                     # "update" anything that
+                                                     # doesn't already exist
+            stop('Invalid column labels: ',
+                argument_names[!(argument_names %in% column_names)])
+        }
+    
+        for(name in names(argv)) {
+            argument = argv[[name]]
+
+            if(length(argument) == N) {
+                agents[mask, name] = argument[mask] 
+            } else if(length(argument) == 1) {
+                agents[mask, name] = argument
+            }
+        }
+    }
+    agents
+}
+
 vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                      start_time, end_time, boosting_rate,
                      infection_0, immune_status_0, vax_status_0, isolated_0,
@@ -114,15 +151,14 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                    vaccination_mask &
                    !isolated_0
         )
-        #agents = update(agents,
-        #                mask = S_to_V1,
-        #                immune_status = 'V1',
-        #                vax_status = 'V1'
-        agents$previous_immunity[S_to_V1] = immunity_0[S_to_V1]
-        agents$time_V1[S_to_V1] = event_times[S_to_V1]
-        agents$time_last_immunity_event[S_to_V1] = agents$time_V1[S_to_V1]
-        agents$immune_status[S_to_V1] = 'V1'
-        agents$vax_status[S_to_V1] = 'V1'
+        agents = update_agents(agents = agents,
+                               mask = S_to_V1,
+                               previous_immunity = immunity_0,
+                               time_V1 = event_times,
+                               time_last_immunity_event = event_times,
+                               immune_status = 'V1',
+                               vax_status = 'V1'
+        )
 
         V1_to_V2 = (infection_0 == 'NI' &
                     immune_status_0 == 'V1' &
@@ -131,11 +167,14 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                     vaccination_rate > 0 &
                     !isolated_0
         )
-        agents$previous_immunity[V1_to_V2] = immunity_0[V1_to_V2]
-        agents$time_V2[V1_to_V2] = event_times[V1_to_V2]
-        agents$time_last_immunity_event[V1_to_V2] = agents$time_V2[V1_to_V2]
-        agents$immune_status[V1_to_V2] = 'V2'
-        agents$vax_status[V1_to_V2] = 'V2'
+        agents = update_agents(agents = agents,
+                               mask = V1_to_V2,
+                               previous_immunity = immunity_0,
+                               time_V2 = event_times,
+                               time_last_immunity_event = event_times,
+                               immune_status = 'V2',
+                               vax_status = 'V2'
+        )
 
         #boosting via shots earlier than boosters (+ natural Recovery)
         R_to_B_via_V1 = (infection_0 == 'NI' &
@@ -144,11 +183,14 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                          vaccination_mask &
                          !isolated_0
         )
-        agents$previous_immunity[R_to_B_via_V1] = immunity_0[R_to_B_via_V1]
-        agents$time_B[R_to_B_via_V1] = event_times[R_to_B_via_V1]
-        agents$time_last_immunity_event[R_to_B_via_V1] = agents$time_B[R_to_B_via_V1]
-        agents$immune_status[R_to_B_via_V1] = 'B'
-        agents$vax_status[R_to_B_via_V1] = 'V1'
+        agents = update_agents(agents = agents,
+                               mask = R_to_B_via_V1,
+                               previous_immunity = immunity_0,
+                               time_V1 = event_times,
+                               time_last_immunity_event = event_times,
+                               immune_status = 'B',
+                               vax_status = 'V1'
+        )
 
         R_to_B_via_V2 = (infection_0 == 'NI' &
                          immune_status_0 == 'R' &
@@ -157,15 +199,15 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                          vaccination_rate > 0 &
                          !isolated_0
         )
-        agents$previous_immunity[R_to_B_via_V2] = immunity_0[R_to_B_via_V2]
-        agents$time_B[R_to_B_via_V2] = event_times[R_to_B_via_V2]
-        agents$time_last_immunity_event[R_to_B_via_V2] = agents$time_B[R_to_B_via_V2]
-        agents$immune_status[R_to_B_via_V2] = 'B'
-        agents$vax_status[R_to_B_via_V2] = 'V2'
-    }# else {
-    #    R_to_B_via_V1 = FALSE
-    #    R_to_B_via_V2 = FALSE
-    #}
+        agents = update_agents(agents = agents,
+                               mask = R_to_B_via_V2,
+                               previous_immunity = immunity_0,
+                               time_V2 = event_times,
+                               time_last_immunity_event = event_times,
+                               immune_status = 'B',
+                               vax_status = 'V2'
+        )
+    }
 
     x_to_B_on_time = (infection_0 == 'NI' &
                       #any immune status
@@ -175,11 +217,14 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                       agents$boosting_on_time &
                       !isolated_0
     )
-    agents$previous_immunity[x_to_B_on_time] = immunity_0[x_to_B_on_time]
-    agents$time_B[x_to_B_on_time] = event_times[x_to_B_on_time]
-    agents$time_last_immunity_event[x_to_B_on_time] = agents$time_B[x_to_B_on_time]
-    agents$immune_status[x_to_B_on_time] = 'B'
-    agents$vax_status[x_to_B_on_time] = 'B'
+    agents = update_agents(agents = agents,
+                           mask = x_to_B_on_time,
+                           previous_immunity = immunity_0,
+                           time_B = event_times,
+                           time_last_immunity_event = event_times,
+                           immune_status = 'B',
+                           vax_status = 'B'
+    )
 
     #boost
     if(sum(boosting_rate) > 0) {
@@ -189,26 +234,19 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                 vax_status_0 == 'V2' & !isolated_0) &
                 (end_time - agents$time_V2 > 152 + 1) & #5 months
                 boosting_mask)
-        agents$previous_immunity[x_to_B_late] = immunity_0[x_to_B_late]
-        agents$time_B[x_to_B_late] = event_times[x_to_B_late]
-        agents$time_last_immunity_event[x_to_B_late] = agents$time_B[x_to_B_late]
-        agents$immune_status[x_to_B_late] = 'B'
-        agents$vax_status[x_to_B_late] = 'B'
-    } #else #{
-    #    x_to_B_late = FALSE
-    #}
-
-    #x_to_B_any = R_to_B_via_V1 | R_to_B_via_V2 | x_to_B_on_time | x_to_B_late
-    #agents$time_B[x_to_B_any] = event_times[x_to_B_any]
-    #agents$previous_immunity[x_to_B_any] = immunity_0[x_to_B_any]
-    #agents$time_last_immunity_event[x_to_B_any] = agents$time_B[x_to_B_any]
-    #agents$immune_status[x_to_B_any] = 'B'
-    #agents$vax_status[x_to_B_on_time] = 'B'
-    #agents$vax_status[x_to_B_late] = 'B'
-    #agents$vax_status[R_to_B_via_V1] = 'V1'
-    #agents$vax_status[R_to_B_via_V2] = 'V2'
+        agents = update_agents(agents = agents,
+                               mask = x_to_B_late,
+                               previous_immunity = immunity_0,
+                               time_B = event_times,
+                               time_last_immunity_event = event_times,
+                               immune_status = 'B',
+                               vax_status = 'B'
+        )
+    }
 
 
+    # This block is for debugging and should be deleted in production code, to
+    # save run time.
     immunity_1 = net_symptomatic_protection(agents, start_time)
     test_mask = immunity_1 < immunity_0
     if(any(test_mask)) {
@@ -377,14 +415,14 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     p_trans_IP = get('p_trans_IP', virus_parameters)
     p_trans_IM = get('p_trans_IM', virus_parameters)
     isolation_duration = get('isolation_duration', scenario_parameters)
-
-    end_time = 0 # End of the last shift before simulation starts
-    fractional_test_carried = 0
-
     net_symptomatic_protection = get('net_symptomatic_protection',
                                      protection_functions)
     infection_protection = get('infection_protection', protection_functions)
     symptom_protection = get('symptom_protection', protection_functions)
+
+    #Creating initial conditions
+    end_time = 0 # End of the last shift before simulation starts
+    fractional_test_carried = 0
 
     # Move people through time
     for(k in 1:steps) {
@@ -496,7 +534,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         infection_status_1 = agents$infection_status
         #but is this actually right? if we want absences, don't we want status
         #at the *start* of the shift?
-        #TBD: Figure this out
+        #TBD: For absences, we want start of the shift. But for individual
+        #curves, we want end (unless we later change that too).
         immune_status_1 = agents$immune_status
 
         Out1$S[k] <-  sum(agents$infection_status == "NI" &

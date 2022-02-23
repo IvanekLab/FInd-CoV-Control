@@ -165,7 +165,7 @@ full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
 #for(i in 6:k_max) {
 #full_output_filenames = foreach(i=c(6:8,12:13), .combine = c, .inorder=TRUE,
 #                                .verbose = TRUE) %dopar% {
-#for(i in 4:4) {
+#for(i in 6:6) {
     parameter_set = parameter_sets[i,]
     double_wrap_reduction = parameter_set$double_wrap_reduction
     double_wrap_temp_test = parameter_set$double_wrap_temp_test

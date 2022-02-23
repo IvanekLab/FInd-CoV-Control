@@ -89,6 +89,9 @@ make_protection_functions = function(V1_protection, V2_protection, B_protection,
         #print(protection)
         #print('off')
         if(any(is.na(protection))) {
+            mask = is.na(protection)
+            cat('Problematic agents:\n')
+            print(agents[mask,])
             stop('NAs in net_symptomatic_protection') #debugging
         }
         protection

@@ -250,7 +250,7 @@ default_additional_parameters = list(
     fraction_recovered = .69,
     fraction_fully_vaccinated = .71, #TBD: Add "fully vaccinated in last 5 months" parameter at 9% by default
     fraction_boosted = .45,
-    unique_id = 'default-v2',
+    unique_id = 'default-v3',
     protection_functions = default_protection_functions
 )
 
