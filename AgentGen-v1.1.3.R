@@ -20,11 +20,9 @@
 #The default age_probabilities vector is based on finding the MLE 4-parameter
 #beta distribution that best fits age category data on agricultural workers
 
-#replacing $state with $infection_status (NI rather than S), $immune_status (FS
+#replaced $state with $infection_status (NI rather than S), $immune_status (FS
 #rather than S), $vax_status (currently same as immune status for fully
 #unvaccinated)
-
-#source('omicron-waning-functions.R')
 
 AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       initial_recovered = 0, initial_V1 = 0, initial_V2 = 0,
@@ -34,10 +32,12 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       SEVERE_MULTIPLIER = 1,
                       boosting_on_time_probability = 0,
                       protection_functions) {
-    #cat(IA0, IP0, initial_V1, initial_B)
     #TBD: Fix handling of IM0 (currently, it is simply ignored! -- this was not
     #true in earlier versions; it's a kludge introduced during incorporation of
     #swiss cheese code.
+
+    #TBD (eventually): Either add back in the ability to use these or remove
+    #them from the parameter list.
     if(max(IA0, IP0, initial_V1, initial_B) > 0) {
         stop('Attempt to use buggy functionality in AgentGen.')
     }
@@ -95,7 +95,10 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          time_V1 = Inf,
                          time_V2 = Inf,
                          time_B = Inf,
-                         boosting_on_time = 1:N %in% sample(N, round(N * boosting_on_time_probability)),
+                         boosting_on_time = 1:N %in% sample(
+                            N,
+                            round(N * boosting_on_time_probability)
+                         ),
                          time_isolated = Inf,  #setup for time in Isolation
                                                #unlike the states listed above,
                                                #this is not a mutually exclusive
@@ -129,20 +132,27 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          #"stringsAsFactors = FALSE" is to allow other states later on
     ) 
 
-    #pre-calculating these for clarity and ease of debugging
-    #as a bonus, the use of seq_len in this fashion means that guarding the
-    #operations with if statements is not necessary (to avoid the problem where
-    #R interprets "1:0" as "c(1,0)", rather than "numeric(0)").
-    index_E = 1:N %in% sample(N, E0) #seq_len(E0)
-    #index_IA = E0 + seq_len(IA0)
-    #index_IP = E0 + IA0 + seq_len(IP0)
-    #index_IM = E0 + IA0 + IP0 + seq_len(IM0)
-    index_R = 1:N %in% sample(N, initial_recovered)#E0 + IA0 + IP0 + IM0 + seq_len(initial_recovered)
-    index_V2 = 1:N %in% sample(N, initial_V2) #E0 + IA0 + IP0 + IM0 + initial_recovered + seq_len(initial_V2)
-    #index_V1 = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 +
-    #            seq_len(initial_V1)
-    #index_B = E0 + IA0 + IP0 + IM0 + initial_recovered + initial_V2 +
-    #        initial_V1 + seq_len(initial_B)
+    #pre-calculating all indices for clarity and ease of debugging
+    index_E_or_IM = sample(N, E0 + IM0) #1:N %in% sample(N, E0 + IM0)
+    #index_E = 1:N %in% sample((1:N)[index_E_or_IM], E0)
+    #There has to be a cleaner way to do this.
+    if(E0 > 0 & IM0 > 0) {
+        index_E = index_E_or_IM[1:E0]
+        index_IM = index_E_or_IM[(E0+1):(E0+IM0)]
+    } else if(E0 > 0) {
+        index_E = index_E_or_IM
+        index_IM = numeric()
+    } else if(IM0 > 0) {
+        index_E = numeric()
+        index_IM = index_E_or_IM
+    } else {
+        index_E = numeric()
+        index_IM = numeric()
+    }
+    
+    #TBD (eventually): Take account of immunity in assigning initial infectees
+    index_R = 1:N %in% sample(N, initial_recovered)
+    index_V2 = 1:N %in% sample(N, initial_V2)
 
     #Note: these can be allowed to not all be N, as long as they're constant with
             #each interventions parameters
@@ -152,28 +162,27 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     agents$infection_status[index_E]= "E"
     agents$time_E[index_E]= -runif(E0, 0, agents$duration_E[index_E])
 
-    #agents$infection_status[index_IA] = "IA"
-    #agents$time_IA[index_IA]= -runif(IA0, 0, agents$duration_IA[index_IA])
-
-    #agents$infection_status[index_IP]= "IP"
-    #agents$time_IP[index_IP]= -runif(IP0, 0, agents$duration_IP[index_IP])
-
-    #agents$infection_status[index_IM]= "IM"
-    #agents$time_IM[index_IM]= -runif(IM0, 0, agents$duration_IM[index_IM])
+    agents$infection_status[index_IM]= "IM"
+    #cat('\n')
+    #print(index_E_or_IM)
+    #print(index_E)
+    #print(index_IM)
+    #print(sum(index_IM))
+    #print(agents$time_IM[index_IM])
+    agents$time_IM[index_IM]= -runif(IM0, 0, agents$duration_IM[index_IM])
+    # These next two lines shouldn't matter, but seem harmless, and like a good
+    # way to avoid the possibility of weird errors.
+    agents$time_IP[index_IM] = (agents$time_IM[index_IM] -
+                                agents$duration_IP[index_IM])
+    agents$time_E[index_IM] = (agents$time_IP[index_IM] -
+                                agents$duration_E[index_IM])
 
     #initial_recovered code moved from here to below V2 and boosted
     #because it's (marginally) simpler
 
-    #agents$immune_status[index_V1] = 'V1'
-    #agents$vax_status[index_V1] = 'V1'
-    #agents$time_V1[index_V1] = -runif(initial_V1, 0, 21) #not a perfect model of
-                                                         #reality, but good
-                                                         #enough
-    #agents$time_last_immunity_event[index_V1] = agents$time_V1[index_V1]
-    #agents$previous_immunity[index_V1] = 0
-
     agents$immune_status[index_V2] = 'V2'
     agents$vax_status[index_V2] = 'V2'
+
     #for time_R, at least the split around 6 months is right,
     #even if the rest of the distro isn't
 
@@ -205,32 +214,26 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                agents$boosting_on_time)
     agents$immune_status[index_B] = 'B'
     agents$vax_status[index_B] = 'B'
-    #agents$infection_status[index_B] = 'NI'
-    #agents$time_B[index_B] = -runif(initial_B, 0, 92)
     agents$time_B[index_B] = pmax(agents$time_V2[index_B] + 152, -92)
     #TBD: Fix this and other distributions to use new questions.
     #TBD: Pull out distributions to separate functions or even a separate file?
-    #agents$time_V2[index_B] = agents$time_B[index_B] - 152
-    #doesn't really matter
-    #agents$time_V1[index_B] = agents$time_V2[index_B] - 21
     agents$time_last_immunity_event[index_B] = agents$time_B[index_B]
-    #print(agents$time_B[index_B])
-    #print(agents$time_V2[index_B])
     agents$previous_immunity[index_B] = V2_protection(
         (agents$time_B[index_B] - agents$time_V2[index_B]), 0)
     #TBD: correct technical error / generate standard "on-schedule" previous
     #immunities
 
     agents$time_R[index_R]= -runif(initial_recovered, 0, 365)
-    #adequate for now; may required revision when immune waning is added
+    #adequate for now; may require revision when immune waning is added
     #indeed, no longer really adequate, but good enough for debugging purposes
     only_R = index_R & !index_V2
     agents$immune_status[only_R] = 'R'
     agents$time_last_immunity_event[only_R] = agents$time_R[only_R]
     agents$previous_immunity[only_R] = 0
-    #TBD: check what line this comment previously applied to (not where it is
-    #now) and check that it no longer applies:
-        #TBD: should definitely be revised once swiss-cheesing is complete
+
+    # NB: R_V1 and V1_R (without V2 or B) don't need to be addressed, because
+    # the current version of the code does not allow anyone to have
+    # vax_status == 'V1' at simulation start
 
     R_last = (index_R &
               index_V2 &
@@ -262,7 +265,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     agents$previous_immunity[V1_R_V2] = R_protection(
         (agents$time_V2[V1_R_V2] - agents$time_R[V1_R_V2])
     )
-    #agents$time_last_immunity_event[R_V1_V2] #is unchanged
+    #agents$time_last_immunity_event[V1_R_V2] #is unchanged
     agents$immune_status[V1_R_V2] = 'B'
 
     V2_R_B = (index_R &
@@ -274,20 +277,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     agents$previous_immunity[V2_R_B] = R_protection(
         (agents$time_B[V2_R_B] - agents$time_R[V2_R_B])
     ) 
-    #agents$time_last_immunity_event[R_V1_V2] #is unchanged
-    #agents$immune_status[V1_R_V2] = 'B'
+    #agents$time_last_immunity_event[V2_R_B] #is unchanged
 
-    #R_V2_B changes nothing at all.
-
-
-    #generating transition times before the most recent
-    #maybe not necessary, but seems like a good guard against weird bugs
-    #agents$time_IP[index_IM] = (agents$time_IM[index_IM] -
-    #                            agents$duration_IP[index_IM])
-    #agents$time_E[index_IP] = (agents$time_IP[index_IP] -
-    #                           agents$duration_E[index_IP])
-    #agents$time_E[index_IA] = (agents$time_IA[index_IA] -
-    #                           agents$duration_E[index_IA])
+    #R_V2_B changes nothing at all
 
     #Import text file of disease progression probabilities
     Probability_Matrix <- read.csv('Probability_Matrix.csv')
