@@ -55,7 +55,6 @@ full_run = function(
                                                     #going to want this to be
                                                     #consistent with 
                     fraction_boosted, #TBD: possibly rename?
-                    boosting_rate, #TBD: remove?
                     working_directory,
                     folder_name,
                     unique_id, 
@@ -240,7 +239,6 @@ common_parameters = list(
     social_distancing_work = 'Intermediate',
     n_no_symptoms = '1',        #i.e., exposed 
     n_mild = '0',
-    boosting_rate = 0,
     working_directory = '.',
     folder_name = 'post-scenarios',   # relative to working directory
     variant = 'omicron',
@@ -252,7 +250,7 @@ default_additional_parameters = list(
     fraction_recovered = .69,
     fraction_fully_vaccinated = .71, #TBD: Add "fully vaccinated in last 5 months" parameter at 9% by default
     fraction_boosted = .45,
-    unique_id = 'tentative-default',
+    unique_id = 'default-v2',
     protection_functions = default_protection_functions
 )
 
