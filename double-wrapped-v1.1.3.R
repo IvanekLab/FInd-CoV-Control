@@ -48,18 +48,10 @@ double_wrap_initial_recovered = round(fraction_recovered * N)
 double_wrap_initial_V2 = round(N * fraction_fully_vaccinated) 
 double_wrap_initial_V1 = 0 
 
-double_wrap_initial_B = 0#round(N * fraction_boosted) #fix in swiss-cheese
-    #TBD: remove this variable entirely OR rework the handling in AgentGen
-        #(probably remove entirely)
-
-#if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 +
-#   double_wrap_initial_B > N) {
-#        stop(paste('Exposed + mild + recovered + fully vaccinated  >',
-#                   'Total number of employees:\n',
-#                    n_exposed, '+', n_mild, '+', double_wrap_initial_recovered,
-#                   '+', double_wrap_initial_V2, '+', double_wrap_initial_B, '>',
-#                   N))
-#}
+if(n_exposed + n_mild > N) {
+    stop(paste('Exposed + mild > Total number of employees:\n',
+               n_exposed, '+', n_mild, '>', N))
+}
 
 temperature_thresholds = c(38)#, 37.5, 37.1)
 viral_test_rates = c(0.05, 0.3, 1.0)

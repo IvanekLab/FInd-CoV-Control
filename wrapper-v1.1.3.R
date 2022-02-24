@@ -41,7 +41,6 @@ wrapper_fn = function(index_i) {   #goal: to get more meaningful debug data
 initial_recovered = 0 # batch mode: double_wrap_initial_recovered
 initial_V1 = 0        # batch mode: double_wrap_initial_V1
 initial_V2 = 0        # batch mode: double_wrap_initial_V2
-initial_B = 0         # batch mode: double_wrap_initial_B
 
 ###########################################
 # Flags controlling various interventions #
@@ -98,7 +97,6 @@ if(exists('DOUBLE_WRAPPED') && DOUBLE_WRAPPED == TRUE) {
     baseline_work_R0 = double_wrap_baseline_work_R0
     initial_V1 = double_wrap_initial_V1
     initial_V2 = double_wrap_initial_V2
-    initial_B = double_wrap_initial_B
     rational_testing = double_wrap_rational_testing
 }
 

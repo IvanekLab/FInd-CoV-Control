@@ -26,7 +26,9 @@
 
 AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       initial_recovered = 0, initial_V1 = 0, initial_V2 = 0,
-                      initial_B = 0,
+                      ffv_last_5_months, #TBD: actually use this
+                                         #TBD (eventually) make fraction vs.
+                                         #number consistent across parameters
                       age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
                                             0.01, 0),
                       SEVERE_MULTIPLIER = 1,
@@ -35,7 +37,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
 
     #TBD (eventually): Either add back in the ability to use these or remove
     #them from the parameter list.
-    if(max(IA0, IP0, initial_V1, initial_B) > 0) {
+    if(max(IA0, IP0, initial_V1) > 0) {
         stop('Attempt to use buggy functionality in AgentGen.')
     }
 

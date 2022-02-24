@@ -50,12 +50,9 @@ full_run = function(
                     n_no_symptoms,
                     n_mild,
                     fraction_recovered,
-                    fraction_fully_vaccinated, #TBD: figure out where the next
-                                               #comment line comes from
-                                                    #going to want this to be
-                                                    #consistent with 
-                    ffv_last_5_months, #TBD: actually use this
-                    fraction_boosted, #TBD: possibly rename?
+                    fraction_fully_vaccinated,
+                    ffv_last_5_months,
+                    fraction_boosted, #TBD (eventually): possibly rename?
                     working_directory,
                     folder_name,
                     unique_id, 
