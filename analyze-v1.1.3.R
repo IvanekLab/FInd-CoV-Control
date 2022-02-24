@@ -56,25 +56,18 @@ work_shifts = (schedule == 'work')
 production_shift_size = sum(on_ps_1)
 cleaning_shift_size =  sum(on_cs)
 
-####
-#not the most efficient approach, but it will do
-#note that this probably needs to be modified to work with segmented
-####
-#boxes = lapply(1:ceiling(days/7), function(i) c(5 + (7 * (i - 1)), -10, 7 * i, 60))
-boxes = lapply(1:ceiling(days/7),
-               function(i) c(5.5 + (7 * (i - 1)), -10, 7 * i + 0.5, 140))
 
 #summary plots
 combine = function(data, outcome_fn, summary_fn, summation_mode) { 
     if(!(summation_mode %in% c(FALSE, 'after', 'before'))) {
         stop('Invalid summation mode')
     }
-    #if(!using_agentss) {
-        dimnames(data) = list(rep(NA, dim(data)[1]), colnames(data),
-                              rep(NA, dim(data)[3]))
-        #above is a bit kludgey, but it works -- at some point in the future,
-        #we may explicitly save data with dimnames
-    #}
+    dimnames(data) = list(rep(NA, dim(data)[1]),
+                          colnames(data),
+                          rep(NA, dim(data)[3])
+    )
+    #above is a bit kludgey, but it works -- at some point in the future,
+    #we may explicitly save data with dimnames
     outcomes = outcome_fn(data)
     if(summation_mode == 'before') {
         outcomes = apply(outcomes, 2, cumsum) / (steps / days)
@@ -97,37 +90,8 @@ infected = function(data) {
     data[,'IA',] + data[,'IP',] + data[,'IM',] + data[,'IS',] + data[,'IC',]
 }
 
-#fuller_infected_one_agents = function(agents) {
-#    s = sum(agents$infection_status %in% c('IA', 'IP', 'IM', 'IS', 'IC'))
-#    s
-#}
-
-#fuller_infected_one_intervention = function(oi_data) {
-#    s = sapply(oi_data, fuller_infected_one_agents)
-#    s
-#}
-
-
-#fuller_infected = function(data) {
-#    sapply(data, fuller_infected_one_intervention)
-#}
-
 hospitalized_dead = function(data) {
     data[,'IS',] + data[,'IC',] + data[,'D',]
-}
-
-
-unavailable = function(data) {
-    (
-        hospitalized_dead(data) + data[,'S_isolated',] + data[,'E_isolated',] +
-        data[,'IA_isolated',] + data[,'IP_isolated',] + data[,'IM_isolated',] +
-        data[,'R_isolated',] + data[,'V1_isolated',] + data[,'V2_isolated',] +
-        data[,'V1E_isolated',] + data[,'V2E_isolated',] + data[,'RE_isolated',]
-    )
-}
-
-short = function(data) {
-    unavailable(data) > .15 * N
 }
 
 
@@ -145,7 +109,7 @@ short = function(data) {
 oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
                    summation_mode = FALSE, work_only = FALSE, main_title = NULL,
                    na.rm = FALSE, segmented = FALSE, daily_sum = FALSE,
-                   box_it = FALSE, mask = NA) {
+                   mask = NA) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png',
               sep = ''),
         height = 1000, width = 1000)
@@ -168,15 +132,7 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
 
     #bit of a kludge, but should ensure sane limits
     ys = list()
-#print('starting the loop')
     for (i in 1:length(full_output_filenames)) {
-#        if(use_agentss) {
-#            full_output = readRDS(paste0(full_output_filenames[i],'-fuller'))
-#            if(work_only) {
-#                stop('Combining work_only and use_agentss not yet implemented')
-#            }
-#        } else {
-#print(full_output_filenames)
         full_output = readRDS(full_output_filenames[i])
         if(work_only) {
             full_output = full_output[work_shifts,,]
@@ -193,20 +149,15 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
                               full_output[smear - 2,,]
         }
         ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn,
-                          summation_mode)#, using_agentss = use_agentss)
+                          summation_mode)
     }
     for(i in 1:length(full_output_filenames)) {
         if(i == 1) {
             par(mar = c(5,5,4,2))
-            #print('Mins')
-            #print(sapply(ys, min))
-            #print('Maxs')
-            #print(sapply(ys, max))
             ####
             #allowing for use of na.rm = TRUE
             ####
             if(segmented) {
-                #cat('i = 1\n-----\nys:', ys[[i]],'\n')
                 for(j in 1:length(step_index)) {
                     if(j == 1) {
                         plot(c(0, step_index[1]), rep(ys[[i]][1], 2), type = 'l', col = colors[i],
@@ -255,23 +206,20 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
             }
         }
     }
-    if(box_it) {
-        for(box_ in boxes) {
-            rect(box_[1], box_[2], box_[3], box_[4], col = 'gray90', border = NA)
-        }
-    }
     legend("topright",inset = .06, row.names, lwd = 4,
            col = colors, lty = ltys, y.intersp = 1, cex = 1.5)
     dev.off()
-    return(max(sapply(ys,max))) #to get maxes for the plots with forced same axes (in special purpose internal versions; kept here for consistency)
+    return(max(sapply(ys,max))) #to get maxes for the plots with forced same
+                                #axes (in special purpose internal versions;
+                                #kept here for consistency)
 }
 
 shiftwise_unavailable = function(data) {
     data[,'qn_absent',] 
 }
 
-shiftwise_unavailable_masked = function(data) {
-    ifelse(data[,'qn_scheduled',] == 0, NaN, data[,'qn_absent',])
+shiftwise_scheduled = function(data) {
+    data[,'qn_scheduled',]
 }
 
 shiftwise_unavailable_fraction = function(data) {
@@ -285,22 +233,6 @@ shiftwise_short = function(data) {
 new_infections = function(data) {
     data[,'new_infections',]
 }
-
-#shiftwise_special_unavailable = function(data) {
-#    data[,'n_special_absent',]
-#}
-
-#shiftwise_special_unavailable_fraction = function(data) {
-#    data[,'n_special_absent',] / data[,'n_special_scheduled',]
-#}
-
-#shiftwise_special_short = function(data) {
-#    shiftwise_special_unavailable_fraction(data) > .15
-#}
-
-#shiftwise_any_short = function(data) {
-#    shiftwise_short(data) | shiftwise_special_short(data)
-#}
 
 end_boxplot = function(filename, outcome_fn, xlab, summation_mode = 'before', work_only = FALSE, average = FALSE, xlim = NULL, percent = FALSE, main_title = NULL, mask = NA) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
@@ -475,29 +407,15 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
     }
 }
 
-#print('okay')
 
-oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))#, main_title = 'Delta')
-
-#print('not')
+oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))
 
 l = length(work_shifts)
 production_shifts = work_shifts & ((1:l) %% 3 != 0)
 cleaning_shifts =  work_shifts & ((1:l) %% 3 == 0)
 
-oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', production_shift_size, ' total)', sep = ''), mask = production_shifts)#, main_title = 'Delta')
-oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)#, main_title = 'Delta')
-
-#oneplot('Unavailable_with_fixed_weekends', shiftwise_unavailable_masked, mean, c(0,0), 'Scheduled Workers Unavailable', work_only = TRUE, na.rm = TRUE, daily_sum = TRUE, box_it = TRUE)
-#if(DELTA) {
-#     main_title = 'Delta'
-# } else {
-#     main_title = '2020 Strains'
-# }
-
-#print('So far . . .')
-#oneplot('fuller-Infected', fuller_infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''), use_agentss = TRUE)
-#print('Foiled!')
+oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', production_shift_size, ' total)', sep = ''), mask = production_shifts)
+oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)
 
 main_title = ''
 
@@ -512,8 +430,8 @@ end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cl
 end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
 end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Cleaning Shift Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
 
-#TBD: Make this function work correctly with the facility model (i.e., with not
-#everyone being on every work shift)
+#TBD: This is *probably* correct for the facility model now, but check
+#with Daisy
 sample_data = function() {
     interventions = length(full_output_filenames)
     for (i in 1:interventions) {
@@ -523,19 +441,18 @@ sample_data = function() {
             steps = dim(full_output)[1]
             reps = dim(full_output)[3]
             unavailable_array = array(0, c(interventions, steps, reps))
+            scheduled_array = array(0, c(interventions, steps, reps))
             total_infections_array = array(0, c(interventions, reps))
         }
-        #print(i)
-        #print(dim(full_output))
-        #print(dim(unavailable_array))
-        #print(dim(unavailable(full_output)))
-        unavailable_array[i,,] = unavailable(full_output)
+        unavailable_array[i,,] = shiftwise_unavailable(full_output)
+        scheduled_array[i,,] = shiftwise_scheduled(full_output)
         total_infections_array[i,] = apply(full_output[,'new_infections',], 2, sum)
     }
 
     l = list(N = N,
              days = days,
              unavailable = unavailable_array,
+             scheduled = scheduled_array,
              total_infections = total_infections_array,
              intervention_names = row.names,
              work_shifts = work_shifts)

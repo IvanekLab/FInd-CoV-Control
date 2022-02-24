@@ -16,9 +16,6 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-
-#source('omicron-waning-functions.R')
-
 unisolation_fn = function(agents, start_time) {
     isolation_duration = 5
 
@@ -129,8 +126,8 @@ update_agents = function(agents, mask, ...) {
 
 vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                      start_time, end_time, boosting_rate,
-                     infection_0, immune_status_0, vax_status_0, isolated_0,
-                     immunity_0,
+                     infection_status_0, immune_status_0, vax_status_0,
+                     isolated_0, immunity_0,
                      net_symptomatic_protection) {
 
     #some of the assignments below could be condensed, but I'm trying to be
@@ -145,7 +142,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
 
     if(sum(vaccination_rate) > 0) {
 
-        S_to_V1 = (infection_0 == 'NI' &
+        S_to_V1 = (infection_status_0 == 'NI' &
                    immune_status_0 == 'FS' &
                    vax_status_0 == 'NV' &
                    vaccination_mask &
@@ -160,7 +157,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                                vax_status = 'V1'
         )
 
-        V1_to_V2 = (infection_0 == 'NI' &
+        V1_to_V2 = (infection_status_0 == 'NI' &
                     immune_status_0 == 'V1' &
                     vax_status_0 == 'V1' &
                     end_time - agents$time_V1 > vaccination_interval &
@@ -177,7 +174,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         )
 
         #boosting via shots earlier than boosters (+ natural Recovery)
-        R_to_B_via_V1 = (infection_0 == 'NI' &
+        R_to_B_via_V1 = (infection_status_0 == 'NI' &
                          immune_status_0 == 'R' &
                          vax_status_0 == 'NV' &
                          vaccination_mask &
@@ -192,7 +189,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                                vax_status = 'V1'
         )
 
-        R_to_B_via_V2 = (infection_0 == 'NI' &
+        R_to_B_via_V2 = (infection_status_0 == 'NI' &
                          immune_status_0 == 'R' &
                          vax_status_0 == 'V1' &
                          end_time - agents$time_V1 > vaccination_interval &
@@ -209,7 +206,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         )
     }
 
-    x_to_B_on_time = (infection_0 == 'NI' &
+    x_to_B_on_time = (infection_status_0 == 'NI' &
                       #any immune status
                       vax_status_0 == 'V2' &
                       end_time - agents$time_V2 > 152 &
@@ -230,7 +227,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     if(sum(boosting_rate) > 0) {
         #time_V2 is only set when receiving second dose
         #so is still valid in R or B (from R + V1 or V2)
-        x_to_B_late = ((infection_0 == 'NI' &
+        x_to_B_late = ((infection_status_0 == 'NI' &
                 vax_status_0 == 'V2' & !isolated_0) &
                 (end_time - agents$time_V2 > 152 + 1) & #5 months
                 boosting_mask)
@@ -252,7 +249,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     if(any(test_mask)) {
         print(agents[test_mask,])
         print('Was:')
-        print(infection_0[test_mask])
+        print(infection_status_0[test_mask])
         print(immune_status_0[test_mask])
         print(vax_status_0[test_mask])
         print(isolated_0[test_mask])
@@ -263,9 +260,9 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     agents
 }
 
-#infection_0 is *not* used here, because we want (theoretical, in practice
-#extremely unlikely) < 1 shift duration phases to end in a non-"retroactive"
-#fashion
+#infection_status_0 is *not* used here, because we want (theoretical, in
+#practice extremely unlikely) < 1 shift duration phases to end in a
+#non-"retroactive" fashion
 progress_infection = function(agents, N, start_time, end_time, symptoms_0,
                               isolated_0, immunity_0) {
     # Note that, as currently coded, this function could generate odd results if
@@ -370,35 +367,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
     N <-nrow(agents)
 
-    Out1 <- data.frame(S = rep(0, steps),
-                       E = rep(0, steps),
-                       IA = rep(0, steps),
-                       IP = rep(0, steps),
-                       IM = rep(0, steps),
-                       IS = rep(0, steps),
-                       IC = rep(0, steps),
-                       R = rep(0, steps),
-                       RE = rep(0, steps),
-                       V1 = rep(0, steps),
-                       V2 = rep(0, steps),
-                       V1E = rep(0, steps),
-                       V2E = rep(0, steps),
-                       S_isolated = rep(0, steps),
-                       E_isolated = rep(0, steps),
-                       IA_isolated = rep(0, steps),
-                       IP_isolated = rep(0, steps),
-                       IM_isolated = rep(0, steps),
-                       R_isolated = rep(0, steps),
-                       RE_isolated = rep(0, steps),
-                       V1_isolated = rep(0, steps),
-                       V2_isolated = rep(0, steps),
-                       V1E_isolated = rep(0, steps),
-                       V2E_isolated = rep(0, steps),
-                       n_scheduled = rep(0, steps),
-                       n_absent = rep(0, steps),
-                       new_infections = rep(0, steps)
-    )
-
+    Out1 = make_Out1(steps)
+    
     # Dump parameters to local variables -- centralized for easier tweaking
     # and to make it easier to verify consistent use of "get",
     # for easier debugging.
@@ -457,7 +427,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #This goes after deisolation and isolation because it's isolation status
         #*after* those processes that we want to use here.
         #These may be more than we need, but should at least be adequate
-        infection_0 = agents$infection_status
+        infection_status_0 = agents$infection_status
         isolated_0 = agents$isolated
         immune_status_0 = agents$immune_status
         time_last_immunity_event_0 = agents$time_last_immunity_event
@@ -469,14 +439,14 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         
         agents = vaccinate(agents, N, vaccination_rate, vaccination_interval,
                            start_time, end_time, boosting_rate,
-                           infection_0, immune_status_0, vax_status_0,
+                           infection_status_0, immune_status_0, vax_status_0,
                            isolated_0, immunity_0,
                            net_symptomatic_protection)
 
         infectiousness = (!isolated_0) * (
-            (infection_0 == 'IA') * p_trans_IA +
-            (infection_0 == 'IP') * p_trans_IP +
-            (infection_0 == 'IM') * p_trans_IM
+            (infection_status_0 == 'IA') * p_trans_IA +
+            (infection_status_0 == 'IP') * p_trans_IP +
+            (infection_status_0 == 'IM') * p_trans_IM
         )
 
         foi_contributions = contacts * infectiousness
@@ -523,82 +493,117 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #TBD (eventually): We still need to recalculate durations for repeats of
         #the same event (now possible).
 
-        #"Out1" records the sum of individuals in each state at time k
-        #(i.e., during time from time=0 to time=nTime1)
-        #this allows ploting trajectories for each state in one simulation.
-        #"agents" shows demographic characteristics of all individuals in the
-        #population and their infection status at time nTime1
-
-        #TBD: move this to an update_Out1 function
-        #NB: TRUE == 1 for the purpose of summation
-        infection_status_1 = agents$infection_status
-        #but is this actually right? if we want absences, don't we want status
-        #at the *start* of the shift?
-        #TBD: For absences, we want start of the shift. But for individual
-        #curves, we want end (unless we later change that too).
-        immune_status_1 = agents$immune_status
-
-        Out1$S[k] <-  sum(agents$infection_status == "NI" &
-                        agents$immune_status == 'FS') 
-        Out1$E[k] <-  sum(agents$infection_status == "E" &
-                        agents$immune_status == 'FS')
-        Out1$IA[k] <- sum(agents$infection_status == "IA")
-        Out1$IP[k] <- sum(agents$infection_status == "IP")
-        Out1$IM[k] <- sum(agents$infection_status == "IM")
-        Out1$IS[k] <- sum(agents$infection_status == "IS")
-        Out1$IC[k] <- sum(agents$infection_status == "IC")
-        Out1$R[k] <-  sum(agents$infection_status == "NI" &
-                        agents$immune_status == 'R')
-        Out1$D[k] <-  sum(agents$infection_status == "D")
-        Out1$V1[k] <-  sum(agents$infection_status == "NI" &
-                        agents$immune_status == "V1")
-        Out1$V2[k] <-  sum(agents$infection_status == "NI" &
-                        agents$immune_status == "V2")
-        Out1$V1E[k] <-  sum(agents$infection_status == "E" &
-                            agents$immune_status == "V1")
-        Out1$V2E[k] <-  sum(agents$infection_status == "E" &
-                            agents$immune_status == "V2")
-        Out1$RE[k] <- sum(agents$infection_status == "E" &
-                        agents$immune_status == "R")
-        Out1$S_isolated[k] <-  sum(agents$infection_status == "NI" &
-                                agents$immune_status == 'FS' & isolated_0)
-        Out1$E_isolated[k] <-  sum(agents$infection_status == "E" &
-                                agents$immune_status == 'FS' & isolated_0)
-        Out1$IA_isolated[k] <- sum(agents$infection_status == "IA" &
-                                isolated_0)
-        Out1$IP_isolated[k] <- sum(agents$infection_status == "IP" &
-                                isolated_0)
-        Out1$IM_isolated[k] <- sum(agents$infection_status == "IM" &
-                                isolated_0)
-        Out1$R_isolated[k] <-  sum(agents$infection_status == "NI" &
-                                agents$immune_status == "R" & isolated_0)
-        Out1$V1_isolated[k] <-  sum(agents$infection_status == "NI" &
-                                    agents$immune_status == "V1" & isolated_0)
-        Out1$V2_isolated[k] <-  sum(agents$infection_status == "NI" &
-                                    agents$immune_status == "V2" & isolated_0)
-        Out1$V1E_isolated[k] <-  sum(agents$infection_status == "E" &
-                                    agents$immune_status == "V1" & isolated_0)
-        Out1$V2E_isolated[k] <-  sum(agents$infection_status == "E" &
-                                    agents$immune_status == "V2" & isolated_0)
-        ####
-        #note that *for now* I am treating between-shift floaters as present at a
-        #deterministic 1/3 or 1/2, as the case may be
-        ####
-        Out1$n_scheduled[k] = sum(agent_presence)
-        Out1$n_absent[k] = sum(agent_presence * (agents$infection_status %in%
-                                    c('IS', 'IC', 'D') | isolated_0))
-        Out1$RE_isolated[k] <-  sum(agents$infection_status == "E" &
-                                    agents$immune_status == "R" & isolated_0)
-        Out1$qn_scheduled[k] = sum(quantitative_presence)
-        Out1$qn_absent[k] = sum(quantitative_presence *
-                                (agents$infection_status %in% c('IS', 'IC', 'D') |
-                                isolated_0))
-        Out1$new_infections[k] = sum(NI_to_E_community + NI_to_E)
+        Out1 = update_Out1(Out1, k, agents, infection_status_0, isolated_0,
+                           agent_presence, quantitative_presence,
+                           NI_to_E_community, NI_to_E)
     
     }
-    
+
+    #"Out1" records the sum of individuals in each state at time k
+    #(i.e., during time from time=0 to time=nTime1)
+    #this allows ploting trajectories for each state in one simulation.
+    #"agents" shows demographic characteristics of all individuals in the
+    #population and their infection status at time nTime1    
     Out <- list("Out1" = Out1, "agents" = agents)
     
-    return (Out) #return a list of objects
+    Out #return a list of objects
 }
 
+# TBD (eventually): Either trim the following functions to only include what we
+# actually need for analyses, or at least systematize based on current handling
+# of state (infection_status + immune_status + vax_status). But for now, this is
+# fine (if excessive and kinda weird).
+
+
+make_Out1 = function(steps) {
+    data.frame(
+        S = rep(0, steps),
+        E = rep(0, steps),
+        IA = rep(0, steps),
+        IP = rep(0, steps),
+        IM = rep(0, steps),
+        IS = rep(0, steps),
+        IC = rep(0, steps),
+        R = rep(0, steps),
+        RE = rep(0, steps),
+        V1 = rep(0, steps),
+        V2 = rep(0, steps),
+        V1E = rep(0, steps),
+        V2E = rep(0, steps),
+        S_isolated = rep(0, steps),
+        E_isolated = rep(0, steps),
+        IA_isolated = rep(0, steps),
+        IP_isolated = rep(0, steps),
+        IM_isolated = rep(0, steps),
+        R_isolated = rep(0, steps),
+        RE_isolated = rep(0, steps),
+        V1_isolated = rep(0, steps),
+        V2_isolated = rep(0, steps),
+        V1E_isolated = rep(0, steps),
+        V2E_isolated = rep(0, steps),
+        n_scheduled = rep(0, steps),
+        n_absent = rep(0, steps),
+        new_infections = rep(0, steps)
+    )
+}
+
+update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
+                       agent_presence, quantitative_presence,
+                       NI_to_E_community, NI_to_E) {
+    #NB: TRUE == 1 for the purpose of summation
+    infection_status_1 = agents$infection_status
+    immune_status_1 = agents$immune_status
+
+    f = function(infection_status, immune_status = NULL, mask = TRUE) {
+        if(is.null(immune_status)) {
+            immune_status = immune_status_1 #will always match
+        }
+        sum(
+            infection_status_1 == infection_status &
+            immune_status_1 == immune_status
+        )
+    }
+
+        Out1$S[k] <-  f('NI', 'FS') 
+        Out1$E[k] <-  f('E', 'FS')
+        Out1$IA[k] <- f('IA')
+        Out1$IP[k] <- f('IP')
+        Out1$IM[k] <- f('IM')
+        Out1$IS[k] <- f('IS')
+        Out1$IC[k] <- f('IC')
+        Out1$R[k] <-  f('NI', 'R')
+        Out1$RE[k] <- f('E', 'R')
+        Out1$D[k] <-  f('D')
+        Out1$V1[k] <-  f('NI', 'V1')
+        Out1$V2[k] <-  f('NI', 'V2')
+        Out1$V1E[k] <-  f('E', 'V1')
+        Out1$V2E[k] <-  f('E', 'V2')
+        #TBD: Check that below is used consistently -- this is isolated at the
+        #start of shift + state at end?
+        Out1$S_isolated[k] <-  f('NI', 'FS',  isolated_0)
+        Out1$E_isolated[k] <-  f('E', 'FS',  isolated_0)
+        Out1$IA_isolated[k] <- f('IA', isolated_0)
+        Out1$IP_isolated[k] <- f('IP', isolated_0)
+        Out1$IM_isolated[k] <- f('IM', isolated_0)
+        Out1$R_isolated[k] <-  f('NI', 'R',  isolated_0)
+        Out1$RE_isolated[k] <-  f('E', 'R',  isolated_0)
+        Out1$V1_isolated[k] <-  f('NI', 'V1',  isolated_0)
+        Out1$V2_isolated[k] <-  f('NI', 'V2',  isolated_0)
+        Out1$V1E_isolated[k] <-  f('E', 'V1',  isolated_0)
+        Out1$V2E_isolated[k] <-  f('E', 'V2',  isolated_0)
+
+        absent = (infection_status_0 %in% c('IS', 'IC', 'D') | isolated_0)
+
+        ####
+        #note that *for now* I am treating between-shift floaters as present at
+        #a deterministic 1/3 or 1/2, as the case may be
+        ####
+
+        Out1$n_scheduled[k] = sum(agent_presence)
+        Out1$n_absent[k] = sum(agent_presence * absent)
+        Out1$qn_scheduled[k] = sum(quantitative_presence)
+        Out1$qn_absent[k] = sum(quantitative_presence * absent)
+        Out1$new_infections[k] = sum(NI_to_E_community + NI_to_E)
+
+        Out1
+}
