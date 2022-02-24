@@ -530,6 +530,7 @@ make_Out1 = function(steps) {
         V2 = rep(0, steps),
         V1E = rep(0, steps),
         V2E = rep(0, steps),
+        BE = rep(0, steps),
         S_isolated = rep(0, steps),
         E_isolated = rep(0, steps),
         IA_isolated = rep(0, steps),
@@ -578,8 +579,7 @@ update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
         Out1$V2[k] <-  f('NI', 'V2')
         Out1$V1E[k] <-  f('E', 'V1')
         Out1$V2E[k] <-  f('E', 'V2')
-        #TBD: Check that below is used consistently -- this is isolated at the
-        #start of shift + state at end?
+        Out1$BE[k] <- f('E', 'B')
         Out1$S_isolated[k] <-  f('NI', 'FS',  isolated_0)
         Out1$E_isolated[k] <-  f('E', 'FS',  isolated_0)
         Out1$IA_isolated[k] <- f('IA', isolated_0)

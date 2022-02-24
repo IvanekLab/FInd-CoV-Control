@@ -32,9 +32,6 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       SEVERE_MULTIPLIER = 1,
                       boosting_on_time_probability = 0,
                       protection_functions) {
-    #TBD: Fix handling of IM0 (currently, it is simply ignored! -- this was not
-    #true in earlier versions; it's a kludge introduced during incorporation of
-    #swiss cheese code.
 
     #TBD (eventually): Either add back in the ability to use these or remove
     #them from the parameter list.

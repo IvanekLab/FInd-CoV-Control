@@ -349,7 +349,7 @@ if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
     safe_set_seed(-778276078)
     #set.seed(-778276078) #random 32-bit signed integer generated using
                          #atmospheric noise for reproducible output
-    cat('intervention:', index_i, 'seed set:', runif(1, 0, 1), '\n')
+    #cat('intervention:', index_i, 'seed set:', runif(1, 0, 1), '\n')
 }
 
 sys_time_start = Sys.time()
@@ -359,8 +359,6 @@ for (i in 1:num_sims) {
                        initial_V1 = initial_V1, initial_V2 = initial_V2,
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
                        protection_functions = protection_functions)
-    
-    #cat('intervention:', index_i, 'run:', i, 'agents initialized:', runif(1, 0, 1), '\n')
                                                 
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
