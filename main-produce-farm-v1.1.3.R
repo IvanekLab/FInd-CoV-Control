@@ -357,7 +357,7 @@ for (i in 1:num_sims) {
     agents <- AgentGen(N, E0 = n_exposed, IA0 = 0, IP0 = 0, IM0 = n_mild,
                        initial_recovered = initial_recovered,
                        initial_V1 = initial_V1, initial_V2 = initial_V2,
-                       ffv_last_5_months = ffv_last_5_months,
+                       ffv_last_five_months = ffv_last_five_months,
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
                        protection_functions = protection_functions)
                                                 

@@ -51,7 +51,7 @@ full_run = function(
                     n_mild,
                     fraction_recovered,
                     fraction_fully_vaccinated,
-                    ffv_last_5_months,
+                    ffv_last_five_months,
                     fraction_boosted, #TBD (eventually): possibly rename?
                     working_directory,
                     folder_name,
@@ -247,9 +247,9 @@ common_parameters = list(
 default_additional_parameters = list(
     fraction_recovered = 0.69,
     fraction_fully_vaccinated = 0.71,
-    ffv_last_5_months = 0.09, #TBD: Add "fully vaccinated in last 5 months" parameter at 9% by default
+    ffv_last_five_months = 0.09,
     fraction_boosted = 0.45,
-    unique_id = 'default-v7',
+    unique_id = 'default-v8',
     protection_functions = default_protection_functions
 )
 

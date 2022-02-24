@@ -26,9 +26,10 @@
 
 AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       initial_recovered = 0, initial_V1 = 0, initial_V2 = 0,
-                      ffv_last_5_months, #TBD: actually use this
-                                         #TBD (eventually) make fraction vs.
-                                         #number consistent across parameters
+                      ffv_last_five_months, #TBD (eventually) make fraction vs.
+                                            #number consistent across parameters
+                                            #TBD (eventually): rename to be more
+                                            #general?
                       age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
                                             0.01, 0),
                       SEVERE_MULTIPLIER = 1,
@@ -128,7 +129,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          duration_IC = rgamma(N, shape=34.0278, scale=0.4114),
                          #Michelle based on Kerr et al
                          stringsAsFactors = FALSE
-                         #"stringsAsFactors = FALSE" is to allow other states later on
+                         #"stringsAsFactors = FALSE" is to allow transition into
+                         #states that are not present at simulation start
     ) 
 
     #pre-calculating all indices for clarity and ease of debugging
@@ -152,6 +154,16 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #TBD (eventually): Take account of immunity in assigning initial infectees
     index_R = 1:N %in% sample(N, initial_recovered)
     index_V2 = 1:N %in% sample(N, initial_V2)
+    initial_V2_last_five_months = round(ffv_last_five_months * initial_V2)
+    if(initial_V2_last_five_months == 0) {
+        index_V2_last_five_months = rep(FALSE, N)
+    } else if(sum(index_V2) == initial_V2_last_five_months) {
+        index_V2_last_five_months = index_V2
+    } else { #implies sum(index_V2) > 1, so the following sample() call is safe
+        index_V2_last_five_months = 1:N %in% sample((1:N)[index_V2],
+                                                    initial_V2_last_five_months)
+    }
+    index_V2_older = index_V2 & !index_V2_last_five_months
 
     #Note: these can be allowed to not all be N, as long as they're constant with
             #each interventions parameters
@@ -162,12 +174,6 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     agents$time_E[index_E]= -runif(E0, 0, agents$duration_E[index_E])
 
     agents$infection_status[index_IM]= "IM"
-    #cat('\n')
-    #print(index_E_or_IM)
-    #print(index_E)
-    #print(index_IM)
-    #print(sum(index_IM))
-    #print(agents$time_IM[index_IM])
     agents$time_IM[index_IM]= -runif(IM0, 0, agents$duration_IM[index_IM])
     # These next two lines shouldn't matter, but seem harmless, and like a good
     # way to avoid the possibility of weird errors.
@@ -182,24 +188,15 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     agents$immune_status[index_V2] = 'V2'
     agents$vax_status[index_V2] = 'V2'
 
-    #for time_R, at least the split around 6 months is right,
-    #even if the rest of the distro isn't
-
-    #let's try for 50th percentile again -- not wonderful, but tolerable
-    #half-way point is around april 30, 2021 (just under 9 months ago), so a
-    #uniform distribution would imply 18 months, but vaccination started around
-    #December 13, 2020, not much more than 12 months
-    #but wait, that's total doses anyway
-    #this gives us april 18
-    #okay, you know what? fuck it. this look similar in shape and rough location
-    #to the doses limited plot, which suggests a very roughly piecewise
-    #solution:
-    #before july 20 (= -188 days, call it 190), but since dec 13 2020
-    #(= -407 days, call it 410) 332 million doses = 62%, call it 60
-    #total 535 million doses
-    agents$time_V2[index_V2] = -ifelse(rbinom(initial_V2,1,0.6),
-                                       runif(initial_V2, 0, 188),
-                                       runif(initial_V2, 188, 410))
+    #Using uniform distributions for now; may change later.
+    #TBD (eventually): better distributions
+    agents$time_V2[index_V2_last_five_months] = runif(
+        initial_V2_last_five_months, -152, 0
+    )
+    agents$time_V2[index_V2_older] = runif(
+        initial_V2_last_five_months, -(365+61), -152 #fully vax starts in
+                                                     #mid-december 2020
+    )
     agents$time_last_immunity_event[index_V2] = agents$time_V2[index_V2]
     agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21
     #again, not perfect, but doesn't actually matter
@@ -213,18 +210,15 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                agents$boosting_on_time)
     agents$immune_status[index_B] = 'B'
     agents$vax_status[index_B] = 'B'
-    agents$time_B[index_B] = pmax(agents$time_V2[index_B] + 152, -92)
-    #TBD: Fix this and other distributions to use new questions.
-    #TBD: Pull out distributions to separate functions or even a separate file?
+    agents$time_B[index_B] = pmax(agents$time_V2[index_B] + 152, -152)
     agents$time_last_immunity_event[index_B] = agents$time_B[index_B]
     agents$previous_immunity[index_B] = V2_protection(
-        (agents$time_B[index_B] - agents$time_V2[index_B]), 0)
-    #TBD: correct technical error / generate standard "on-schedule" previous
-    #immunities
+        agents$time_B[index_B] - agents$time_V2[index_B],
+        agents$previous_immunity[index_V2] #i.e., the *previous* previous imm.
+    )
 
+    #particularly suboptimal at the moment, given the recent massive peak
     agents$time_R[index_R]= -runif(initial_recovered, 0, 365)
-    #adequate for now; may require revision when immune waning is added
-    #indeed, no longer really adequate, but good enough for debugging purposes
     only_R = index_R & !index_V2
     agents$immune_status[only_R] = 'R'
     agents$time_last_immunity_event[only_R] = agents$time_R[only_R]
