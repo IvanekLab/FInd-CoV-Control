@@ -43,8 +43,6 @@ double_wrap_rational_testing = TRUE
 double_wrap_initial_recovered = round(fraction_recovered * N)
 
 #below is kinda kludgey, but works
-#TBD: Run the numbers to confirm that all the swiss-cheese updates really are
-#working 100% correctly
 double_wrap_initial_V2 = round(N * fraction_fully_vaccinated) 
 double_wrap_initial_V1 = 0 
 
@@ -152,9 +150,9 @@ if(PARALLEL) {
   #in the current version, we use %do% explicitly anyway
   #but this may change in a future version
 
-full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
-                                .verbose = TRUE) %dopar% {
-#for(i in 1:1) {
+#full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
+#                                .verbose = TRUE) %dopar% {
+for(i in 1:1) {
     parameter_set = parameter_sets[i,]
     double_wrap_reduction = parameter_set$double_wrap_reduction
     double_wrap_temp_test = parameter_set$double_wrap_temp_test

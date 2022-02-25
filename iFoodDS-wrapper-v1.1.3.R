@@ -1,5 +1,5 @@
 #Usage example, with default values:
-#TBD: fill in
+#TBD (eventually): fill in
 
 #Note: Only one of social_distancing_shared_housing and community_transmission
 #will be used; a good practice is to set the other one to something invalid
@@ -115,8 +115,6 @@ full_run = function(
                            n_shift_floaters) +
                     n_cleaners + n_all_floaters
     
-    #days -- done
-
     if((tolower(employee_housing) == 'private') ||
        (tolower(employee_housing) == 'individual')) {
         housing_dormitory = FALSE
@@ -179,22 +177,12 @@ full_run = function(
         #kludged for sane values aiming for 7; make more precise determination
     }
 
-    n_exposed = n_no_symptoms # done, although this should ideally be split up
+    n_exposed = n_no_symptoms # this should perhaps be split up at some point
                               # into exposed, pre-symptomatic, and asymptomatic;
                               # the difference is small, though
-    #n_mild -- done
-    #although note that we might consider in the future allowing initial exposed
-    #and mild to be drawn from the vaccinated
-    #TBD: change the above once swiss-cheesing is fully fixed; in particular,
-    #once mild is working again
-    #fraction_recovered -- done
-    #fraction_fully_vaccinated -- done
 
-    #subdirectory = paste(set_name, '-files/', sep = '')
     subdirectory = paste(folder_name, '/', sep = '')
     dir.create(subdirectory)
-    #wd = getwd()
-    #setwd(subdirectory)
     if(analyze_only) { # these should be saved in a separate file
                        # once we start having more complex schedules
     #    steps = days * 3
@@ -207,7 +195,6 @@ full_run = function(
     step_index = (1:steps) * (1/3)
     source('analyze-v1.1.3.R', local = TRUE)
     analyze_fn()
-    #setwd(wd)
 }
 
 FIXED_SEED = TRUE
@@ -235,8 +222,8 @@ common_parameters = list(
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
     social_distancing_work = 'Intermediate',
-    n_no_symptoms = '1',        #i.e., exposed 
-    n_mild = '0',
+    n_no_symptoms = '10',        #i.e., exposed 
+    n_mild = '20',
     working_directory = '.',
     folder_name = 'post-scenarios',   # relative to working directory
     variant = 'omicron',
@@ -249,7 +236,7 @@ default_additional_parameters = list(
     fraction_fully_vaccinated = 0.71,
     ffv_last_five_months = 0.09,
     fraction_boosted = 0.45,
-    unique_id = 'default-v8',
+    unique_id = 'default-v8-10-20',
     protection_functions = default_protection_functions
 )
 

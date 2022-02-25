@@ -62,7 +62,7 @@ make_protection_functions = function(V1_protection, V2_protection, B_protection,
     net_symptomatic_protection = function (agents, start_time) {
         ais = agents$immune_status
         t = (start_time - agents$time_last_immunity_event)
-        t = pmax(t, 0) #TBD: find a way to not need this kludge
+        t = pmax(t, 0) #TBD (eventually): find a way to not need this kludge
         prev = agents$previous_immunity
         protection = ifelse(ais == 'FS',
             0,

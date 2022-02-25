@@ -60,13 +60,6 @@ VirusParameters = function(p_trans_IP = .0575, relative_trans_IA = .11,
 
 virus_parameters = VirusParameters()
 
-#if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
-#print('variants')
-#TBD: Previously below, generating vaccine_parameters list, now in
-#yanked-vaccine-parameters.R; this line should eventually be removed entirely
-
-
-#2022-01-16 removed rates
 ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
                               work_testing_rate, isolation_duration,
                               home_vaccination_rate, lambda = 0, crews_by_team,
@@ -152,11 +145,7 @@ cleaning_shift_full = contacts_matrices[['cleaning_shift_full']]
 shift_sum =  contacts_matrices[['shift_sum']]
 N <<- dim(production_shift_1)[1] #little kludgey
 
-####
-#Need to make proper sleep vs. at-home distinction for Shared housing
-#TBD: Check this has been done right
-####
-sleep_contacts = matrix(0, N, N)
+#sleep_contacts = matrix(0, N, N)
 
 #if(scenario_parameters$housing_dormitory) {
 #    dormitory_contacts = matrix(scenario_parameters$dormitory_intensity/N, N, N)
@@ -359,7 +348,11 @@ for (i in 1:num_sims) {
                        initial_V1 = initial_V1, initial_V2 = initial_V2,
                        ffv_last_five_months = ffv_last_five_months,
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
+                       boosting_on_time_probability = fraction_boosted,
                        protection_functions = protection_functions)
+    assign('agents', agents, envir = .GlobalEnv)
+    #print(get('agents', .GlobalEnv))
+    stop()
                                                 
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
