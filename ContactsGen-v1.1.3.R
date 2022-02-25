@@ -1,8 +1,30 @@
+# ContactsGen-v1.1.3.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 1.1.3.
+# Copyright (C) 2020-2021 Cornell University.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
 # Basic model: Employees are organized into crews, each with one foreman and
-# one or more (ordinary) workers. Crews are organized into teams (my term, may
-# change), each of which is under a supervisor. Supervisors, in turn,
-# are all under a single manager. Crews may be of different sizes, and
-# teams may include different numbers of crews.
+# one or more (ordinary) workers. Crews are organized into teams, each of which
+# is under a supervisor. Supervisors, in turn, are all under a single manager.
+# Crews may be of different sizes, and teams may include different numbers of crews.
+# (In the current version of the complete model, all crews are the same size, and all
+# teams include the same number of the crews, but this is not required by the
+# functions in this file. If this requirement is not relaxed in future versions,
+# this file may be simplifed by taking explicit account of it.
 
 
 library(Matrix)
@@ -95,9 +117,8 @@ Primary_Matrices = function(crews_by_team, crew_sizes) {
 
     # Turns the single vector crew_sizes into a list
     # The latter could simply have been given as a parameter, rather than
-    # using the two current parameters. I might or might not change that.
-    #print(crews_by_team)
-    #print(crew_sizes)
+    # using the two current parameters. This may or may not be changed
+    # in the future.
     crew_sizes_split = split(crew_sizes, rep(1:length(crews_by_team),
                                              crews_by_team))
 
@@ -193,7 +214,7 @@ Secondary_Matrices = function(primary_matrices) {
     #diag inherently 0
 
     #o_mm is inherently 0, given that we do not count pairs of an individual
-    #with themself
+    #with themself, as there is only one manager.
 
     o_wm = aw %*% t(am) + am %*% t(aw)
     o_fm = af %*% t(am) + am %*% t(af)
@@ -237,14 +258,10 @@ Work_Contacts = function(secondary_matrices, rates, average) {
 #Since home contacts are currently being modeled as homogeneous mixing, not
 #writing code to generate matrices for that.
 
-#Example scenario I was given:
-#primary_matrices = Primary_Matrices(c(3,2,4), rep(10,9))
-#Smaller scenario that's possible to reasonably efficiently check accuracy for:
-#primary_matrices = Primary_Matrices(c(1,2), c(2,2,3))
-#secondary_matrices = Secondary_Matrices(primary_matrices)
-#sample_rates here is a bunch of essentially random garbage, just to test that
-#Work_Contacts actually runs
-example_rates = list(c_ww = 1,      #by definition?
+#sample_rates here is a bunch of provisional assumptions, since we need
+#*something* to use here. A future version of the model may change these
+#values; it may also allow end users to specify their own.
+example_rates = list(c_ww = 1,      #by definition (reference value);
                                     #these are relative rates,
                                     #so making the rate at which a worker
                                     #contacts another worker on the same crew 1
@@ -266,11 +283,8 @@ example_rates = list(c_ww = 1,      #by definition?
                     o_sm = 1
     )
 
-#work_contacts = Work_Contacts(secondary_matrices, sample_rates, 5)
-
 #Okay, now for a single master function:
 ContactsGen <- function(crews_by_team, crew_sizes, contact_rates, average) {
-    #print(crews_by_team)
     primary_matrices = Primary_Matrices(crews_by_team, crew_sizes)
     secondary_matrices = Secondary_Matrices(primary_matrices)
     work_contacts = Work_Contacts(secondary_matrices, contact_rates, average)

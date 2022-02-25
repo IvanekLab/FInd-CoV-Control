@@ -1,13 +1,13 @@
 #Usage example, with default values:
-#full_run(10, 3, 3, 90, 'Private', NULL, 'Intermediate', 'Intermediate', 1, 0, .2, .4, 'iFoods-Private')
-#Or for shared housing:
-#full_run(10, 3, 3, 90, 'Shared', 'Intermediate', 'NULL', 'Intermediate', 1, 0, .2, .4, 'iFoods-Public')
+#TBD (eventually): fill in
 
 #Note: Only one of social_distancing_shared_housing and community_transmission
 #will be used; a good practice is to set the other one to something invalid
 #(e.g., NULL) as a failsafe.
 #Set analyze_only to TRUE to reanalyze an existing output set with modified
 #analyze.R
+
+source('general-waning-functions.R')
 
 safe.integer = function(s) {
     i = strtoi(s)
@@ -33,19 +33,34 @@ safe.logical = function(s) {
     b
 }
 
-full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
-                    n_shift_floaters, n_cleaners, n_all_floaters,
-                    days, employee_housing, social_distancing_shared_housing,
-                    community_transmission, social_distancing_work,
-                    n_no_symptoms, n_mild, fraction_recovered,
+#removing default values from testing code to ensure that accidental omission
+#doesn't generate stupid results
+full_run = function(
+                    workers_per_crew,
+                    crews_per_supervisor,
+                    supervisors,
+                    n_shift_floaters,
+                    n_cleaners,
+                    n_all_floaters,
+                    days,
+                    employee_housing,
+                    social_distancing_shared_housing,
+                    community_transmission,
+                    social_distancing_work,
+                    n_no_symptoms,
+                    n_mild,
+                    fraction_recovered,
                     fraction_fully_vaccinated,
+                    ffv_last_five_months,
+                    fraction_boosted, #TBD (eventually): possibly rename?
                     working_directory,
                     folder_name,
                     unique_id, 
-                    DELTA = TRUE,
-                    analyze_only = 'FALSE',
-                    SEVERE_MULTIPLIER = '2',
-                    PARALLEL = 'FALSE') {
+                    variant,
+                    analyze_only,
+                    PARALLEL,
+                    protection_functions
+) {
     setwd(working_directory)
 
     workers_per_crew = safe.integer(workers_per_crew)
@@ -60,8 +75,20 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
 
     fraction_recovered = safe.numeric(fraction_recovered)
     fraction_fully_vaccinated = safe.numeric(fraction_fully_vaccinated)
-    DELTA = safe.logical(DELTA)
-    SEVERE_MULTIPLIER = safe.numeric(SEVERE_MULTIPLIER)
+
+    variant = tolower(variant)
+    if(variant == 'delta') {
+        #DELTA = safe.logical(DELTA)
+        #SEVERE_MULTIPLIER = safe.numeric(SEVERE_MULTIPLIER)
+        #DELTA = TRUE
+        SEVERE_MULTIPLIER = 2
+    } else if(variant == 'omicron') {
+        SEVERE_MULTIPLIER = 1.2
+    } else if(variant == '2020'){
+        SEVERE_MULTIPLIER = 1
+    } else {
+        stop(paste('Unsupported variant:', variant))
+    }
 
     analyze_only = safe.logical(analyze_only)
     PARALLEL = safe.logical(PARALLEL)
@@ -78,17 +105,18 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
        n_mild == 0 &&
        fraction_recovered == .116 &&
        fraction_fully_vaccinated == .627) {
-        unique_id = paste(unique_id, 'baseline', sep = '')
+            unique_id = paste(unique_id, 'baseline', sep = '')
     }
 
     crews_by_team = rep(crews_per_supervisor, supervisors) 
     crew_sizes = rep(workers_per_crew, crews_per_supervisor * supervisors) 
     #N = sum(crew_sizes) + length(crew_sizes) + supervisors + 1 
-    N = 1 + supervisors * (1 + workers_per_crew * crews_per_supervisor + n_shift_floaters) + n_cleaners + n_all_floaters
+    N = 1 + supervisors * (1 + workers_per_crew * crews_per_supervisor +
+                           n_shift_floaters) +
+                    n_cleaners + n_all_floaters
     
-    #days -- done
-
-    if((tolower(employee_housing) == 'private') || (tolower(employee_housing) == 'individual')) {
+    if((tolower(employee_housing) == 'private') ||
+       (tolower(employee_housing) == 'individual')) {
         housing_dormitory = FALSE
         dormitory_R0 = 0 
 
@@ -97,12 +125,15 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
         } else if(tolower(community_transmission) == 'intermediate'){
             double_wrap_community_foi = 0.001
         } else if(tolower(community_transmission) == 'high'){
-            double_wrap_community_foi = 0.002
+            double_wrap_community_foi = 0.01
         } else {
-            stop(paste('Invalid community_transmission:', community_transmission))
+            stop(paste('Invalid community_transmission:',
+                       community_transmission))
         }
-        if(DELTA) {
+        if(variant == 'delta') {
             double_wrap_community_foi = 2 * double_wrap_community_foi
+        } else if (variant == 'omicron') {
+            double_wrap_community_foi = 4 * double_wrap_community_foi
         }
     } else if(tolower(employee_housing) == 'shared') {
         housing_dormitory = TRUE
@@ -115,41 +146,45 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
         } else if(tolower(social_distancing_shared_housing) == 'low') {
             dormitory_R0 = 2 
         } else {
-            stop(paste('Invalid social_distancing_shared_housing:', social_distancing_shared_housing))
+            stop(paste('Invalid social_distancing_shared_housing:',
+                       social_distancing_shared_housing))
         }
-        if(DELTA) {
+        if(variant == 'delta') {
             dormitory_R0 = 2 * dormitory_R0
+        } else if (variant == 'omicron') {
+            dormitory_R0 = 4 * dormitory_R0
         }
     } else {
         stop(paste('Invalid employee_housing:', employee_housing))
     }
 
-    if(tolower(social_distancing_work) == 'high') {           #fixed 2021-08-17
+    if(tolower(social_distancing_work) == 'high') {           
         double_wrap_baseline_work_R0 = 2
     } else if(tolower(social_distancing_work) == 'intermediate') {
         double_wrap_baseline_work_R0 = 3
-    } else if(tolower(social_distancing_work) == 'low') {  #fixed 2021-08-17
+    } else if(tolower(social_distancing_work) == 'low') {  
         double_wrap_baseline_work_R0 = 4
     } else {
         stop(paste('Invalid social_distancing_work:', social_distancing_work))
     }
-    if(DELTA) {
+
+    if(variant == 'delta') {
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 2
-        DELTA_VAX = TRUE
+        #DELTA_VAX = TRUE
+    } else if (variant == 'omicron') {
+            #double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
+        double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 #* 7/3
+        #kludged for sane values aiming for 7; make more precise determination
     }
 
-    n_exposed = n_no_symptoms # done, although this should ideally be split up into exposed, pre-symptomatic, and asymptomatic; the difference is small, though
-    #n_mild -- done
-    #although note that we might consider in the future allowing initial exposed and mild to be drawn from the vaccinated
-    #fraction_recovered -- done
-    #fraction_fully_vaccinated -- done
+    n_exposed = n_no_symptoms # this should perhaps be split up at some point
+                              # into exposed, pre-symptomatic, and asymptomatic;
+                              # the difference is small, though
 
-    #subdirectory = paste(set_name, '-files/', sep = '')
     subdirectory = paste(folder_name, '/', sep = '')
     dir.create(subdirectory)
-    #wd = getwd()
-    #setwd(subdirectory)
-    if(analyze_only) { # these should be saved in a separate file once we start having more complex schedules
+    if(analyze_only) { # these should be saved in a separate file
+                       # once we start having more complex schedules
     #    steps = days * 3
     #    step_index = (1:steps) * (1/3)
     } else {
@@ -160,14 +195,50 @@ full_run = function(workers_per_crew, crews_per_supervisor, supervisors,
     step_index = (1:steps) * (1/3)
     source('analyze-v1.1.3.R', local = TRUE)
     analyze_fn()
-    #setwd(wd)
 }
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
 double_wrap_num_sims = 10#00
 
-
 #note that several of these parameters are not actually used (no longer true?)
-full_run('15', '4', '1', '20', '10', '30', '90', 'Shared', 'Intermediate', 'Intermediate', 'Intermediate', '1', '0', '.116', '.627', working_directory = '.', 'facility-added-interface', 'comparable-switched-up', TRUE, analyze_only = 'FALSE', SEVERE_MULTIPLIER = '2', PARALLEL = TRUE)
+#separating into one variable per line for comments and diffing
+#here using all variable names explicitly, so that errors fail loudly instead of
+#giving weird bugs
+#(note that a word diff ignoring whitespace vs. function definition is now
+#relatively straightforward, if function definition is similarly formatted):
+#copy the relevant signatures to two files, strip out comments, strip out ,s and
+#then run
+#git diff --no-index --word-diff --ignore-all-space a.txt b.txt
+common_parameters = list(
+    workers_per_crew = '10',    # FM: workers per line
+    crews_per_supervisor = '3', # FM: / lines per shift
+    supervisors = '2',          # FM: shifts
+    n_shift_floaters ='10',     # FM only (for farm model, will require NULL/NA)
+    n_cleaners = '10',          # FM only (for farm model, will require NULL/NA)
+    n_all_floaters = '10',      # FM only (for farm model, will require NULL/NA)
+    days = '90',
+    employee_housing = 'Private', 
+    social_distancing_shared_housing = NULL,
+    community_transmission = 'Intermediate',
+    social_distancing_work = 'Intermediate',
+    n_no_symptoms = '1',        #i.e., exposed 
+    n_mild = '0',
+    working_directory = '.',
+    folder_name = 'post-scenarios',   # relative to working directory
+    variant = 'omicron',
+    analyze_only = 'FALSE',
+    PARALLEL = TRUE
+)
+
+default_additional_parameters = list(
+    fraction_recovered = 0.69,
+    fraction_fully_vaccinated = 0.71,
+    ffv_last_five_months = 0.09,
+    fraction_boosted = 0.45,
+    unique_id = 'default-v9',
+    protection_functions = default_protection_functions
+)
+
+do.call(full_run, c(common_parameters, default_additional_parameters))
 
