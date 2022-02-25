@@ -125,6 +125,8 @@ scenario_parameters = ScenarioParameters(work_R0 = net_work_R0,
 ####
 #edits for facility here
 ####
+lambda_home = scenario_parameters$lambda
+
 if(farm_or_facility == 'farm') {
     work_contacts <- ContactsGen(scenario_parameters$crews_by_team,
                                  scenario_parameters$crew_sizes,
@@ -138,7 +140,6 @@ if(farm_or_facility == 'farm') {
     } else {
         dormitory_contacts = sleep_contacts
     }
-    lambda_home = scenario_parameters$lambda
 
     contacts_list = list(work = work_contacts * 7/5, #to account for two days off
                                                      #per week

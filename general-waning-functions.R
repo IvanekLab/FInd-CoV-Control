@@ -59,7 +59,7 @@ default_R_protection = function(t, prev) {
 make_protection_functions = function(V1_protection, V2_protection, B_protection,
                                      R_protection) {
 
-    net_symptomatic_protection = function (agents, start_time) {
+    net_symptomatic_protection = function(agents, start_time) {
         ais = agents$immune_status
         t = (start_time - agents$time_last_immunity_event)
         t = pmax(t, 0) #TBD (eventually): find a way to not need this kludge
@@ -146,5 +146,55 @@ two_level_protection = function(level, duration) {
 }
 
 one_one_three_protection_functions = function(level, duration) {
-    stop('one one three not implemented yet.')
+    V1_net_symptoms = 1 - .37
+    V2_susceptibility = 1 - .65
+    V2_net_symptoms = 1 - .88
+    V2_symptoms = V2_net_symptoms / V2_susceptibility
+    V2_exp = log(V2_symptoms) / log(V2_net_symptoms)
+    V1_symptoms = V1_net_symptoms ** V2_exp #haven't seen them separated, so doing the best I can
+    V1_susceptibility = V1_net_symptoms / V1_symptoms
+
+    protection_functions = make_protection_functions(
+        two_level_protection(1 - V1_net_symptoms, Inf),
+        two_level_protection(1 - V2_net_symptoms, Inf),
+        two_level_protection(1, Inf), #Since the only way to become boosted
+                                      #without booster shots is vax + R
+        two_level_protection(1, Inf)
+    )
+
+    protection_functions$infection_protection = function(agents, start_time) {
+        ais = agents$immune_status
+        t = (start_time - agents$time_last_immunity_event)
+        t = pmax(t, 0) #TBD (eventually): find a way to not need this kludge
+        prev = agents$previous_immunity
+        protection = ifelse(ais == 'FS',
+            0,
+            ifelse(ais == 'V1',
+                1 - V1_susceptibility,
+                ifelse(ais == 'V2',
+                    1 - V2_susceptibility,
+                    ifelse(ais == 'B',
+                        1,
+                        ifelse(ais == 'R',
+                            1,
+                            NA
+                        )
+                    )
+                )
+            )
+        )
+        if(any(is.na(protection))) {
+            mask = is.na(protection)
+            cat('Problematic agents:\n')
+            print(agents[mask,])
+            stop('NAs in net_symptomatic_protection') #debugging
+        }
+        protection
+    }
+
+    symptom_protection = function(agents, start_time) {
+        nsp = net_symptomatic_protection(agents, start_time)
+        ip = infection_protection(agents, start_time)
+        ifelse(nsp == 1, 1, 1 - (1 - nsp) / (1 - ip))
+    }
 }

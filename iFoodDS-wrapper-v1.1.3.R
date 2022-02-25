@@ -128,6 +128,9 @@ full_run = function(
                             n_shift_floaters) +
              n_cleaners + n_all_floaters
         )
+        crews_by_team = rep(crews_per_supervisor, supervisors) 
+        crew_sizes = rep(workers_per_crew, crews_per_supervisor * supervisors)
+
     } else {
         stop('Invalid value for farm_or_facility: ', farm_or_facility)
     }
