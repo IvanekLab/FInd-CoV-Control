@@ -83,8 +83,8 @@ num_sims = 100 # number of simulations; 100 takes 1-2 minutes
 ################################################################
 
 if(exists('DOUBLE_WRAPPED') && DOUBLE_WRAPPED == TRUE) {
-    #TBD: Really, this whole setup should be handled by parameters passed into
-    #the function either from double-wrapped.R or elsewhere
+    #TBD (eventually): Really, this whole setup should be handled by parameters
+    #passed into the function either from double-wrapped.R or elsewhere
     initial_recovered = double_wrap_initial_recovered
     theoretical_social_distancing_R0_reduction = double_wrap_reduction
     temperature_screening = (double_wrap_temp_test != FALSE)
@@ -222,7 +222,7 @@ if(initial_V1 > 0) {
     filename_core = paste(filename_core, ',initial_V1-', initial_V1, sep = '')
 }
 
-#TBD: Add more specifications
+#TBD (eventually): Add more specifications
 
 filename_core = paste(filename_core, ',n_sims-', num_sims, 'index_i-', index_i,
                       sep = '')
