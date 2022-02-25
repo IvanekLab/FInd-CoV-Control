@@ -144,3 +144,7 @@ two_level_protection = function(level, duration) {
         )
     }
 }
+
+one_one_three_protection_functions = function(level, duration) {
+    stop('one one three not implemented yet.')
+}

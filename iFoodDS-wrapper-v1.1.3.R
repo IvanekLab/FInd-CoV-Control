@@ -36,6 +36,7 @@ safe.logical = function(s) {
 #removing default values from testing code to ensure that accidental omission
 #doesn't generate stupid results
 full_run = function(
+                    farm_or_facility,
                     workers_per_crew,
                     crews_per_supervisor,
                     supervisors,
@@ -93,27 +94,43 @@ full_run = function(
     analyze_only = safe.logical(analyze_only)
     PARALLEL = safe.logical(PARALLEL)
 
-    if(workers_per_crew == 10 &&
-       crews_per_supervisor == 3 &&
-       supervisors == 3 &&
-       days == 90 &&
-       employee_housing == 'Shared' &&
-       social_distancing_shared_housing == 'Intermediate' &&
-       #community_transmission == NULL &&
-       social_distancing_work == 'Intermediate' &&
-       n_no_symptoms == 1 &&
-       n_mild == 0 &&
-       fraction_recovered == .116 &&
-       fraction_fully_vaccinated == .627) {
-            unique_id = paste(unique_id, 'baseline', sep = '')
-    }
+    
+    farm_or_facility == tolower(farm_or_facility)
+    if(farm_or_facility == 'farm') {
 
-    crews_by_team = rep(crews_per_supervisor, supervisors) 
-    crew_sizes = rep(workers_per_crew, crews_per_supervisor * supervisors) 
-    #N = sum(crew_sizes) + length(crew_sizes) + supervisors + 1 
-    N = 1 + supervisors * (1 + workers_per_crew * crews_per_supervisor +
-                           n_shift_floaters) +
-                    n_cleaners + n_all_floaters
+        if(
+            workers_per_crew == 10 &&
+            crews_per_supervisor == 3 &&
+            supervisors == 3 &&
+            days == 90 &&
+            employee_housing == 'Shared' &&
+            social_distancing_shared_housing == 'Intermediate' &&
+            #community_transmission == NULL &&
+            social_distancing_work == 'Intermediate' &&
+            n_no_symptoms == 1 &&
+            n_mild == 0 &&
+            fraction_recovered == .116 &&
+            fraction_fully_vaccinated == .627
+        ) {
+            unique_id = paste(unique_id, 'baseline', sep = '')
+        }
+
+        crews_by_team = rep(crews_per_supervisor, supervisors) 
+        crew_sizes = rep(workers_per_crew, crews_per_supervisor * supervisors)
+
+        N = sum(crew_sizes) + length(crew_sizes) + supervisors + 1 
+    } else if(farm_or_facility == 'facility') {
+
+        #TBD (eventually): add "default" facility conditions
+
+        N = (1 +
+             supervisors * (1 + workers_per_crew * crews_per_supervisor +
+                            n_shift_floaters) +
+             n_cleaners + n_all_floaters
+        )
+    } else {
+        stop('Invalid value for farm_or_facility: ', farm_or_facility)
+    }
     
     if((tolower(employee_housing) == 'private') ||
        (tolower(employee_housing) == 'individual')) {
@@ -213,32 +230,54 @@ double_wrap_num_sims = 10#00
 common_parameters = list(
     workers_per_crew = '10',    # FM: workers per line
     crews_per_supervisor = '3', # FM: / lines per shift
-    supervisors = '2',          # FM: shifts
-    n_shift_floaters ='10',     # FM only (for farm model, will require NULL/NA)
-    n_cleaners = '10',          # FM only (for farm model, will require NULL/NA)
-    n_all_floaters = '10',      # FM only (for farm model, will require NULL/NA)
     days = '90',
-    employee_housing = 'Private', 
-    social_distancing_shared_housing = NULL,
-    community_transmission = 'Intermediate',
     social_distancing_work = 'Intermediate',
     n_no_symptoms = '1',        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
     folder_name = 'post-scenarios',   # relative to working directory
-    variant = 'omicron',
     analyze_only = 'FALSE',
     PARALLEL = TRUE
 )
 
-default_additional_parameters = list(
+additional_facility_parameters = list(
+    farm_or_facility = 'facility',
+    supervisors = '2',          # FM: shifts
+    n_shift_floaters ='10',     # FM only (for farm model, will require NULL/NA)
+    n_cleaners = '10',          # FM only (for farm model, will require NULL/NA)
+    n_all_floaters = '10',      # FM only (for farm model, will require NULL/NA)
+    employee_housing = 'Private', 
+    social_distancing_shared_housing = NULL,
+    community_transmission = 'Intermediate',
+    
     fraction_recovered = 0.69,
     fraction_fully_vaccinated = 0.71,
     ffv_last_five_months = 0.09,
     fraction_boosted = 0.45,
-    unique_id = 'default-v9',
+    unique_id = 'default-v10',
+    variant = 'omicron',
     protection_functions = default_protection_functions
 )
 
-do.call(full_run, c(common_parameters, default_additional_parameters))
+additional_farm_parameters = list(
+    farm_or_facility = 'farm',
+    supervisors = '3',          # FM: shifts
+    n_shift_floaters ='0',      # FM only (for farm model, will require NULL/NA)
+    n_cleaners = '0',           # FM only (for farm model, will require NULL/NA)
+    n_all_floaters = '0',       # FM only (for farm model, will require NULL/NA)
+    employee_housing = 'Shared', 
+    social_distancing_shared_housing = 'Intermediate',
+    community_transmission = NULL,
+    
+    fraction_recovered = 0.116,
+    fraction_fully_vaccinated = 0.627 / (1 - 0.116),
+    ffv_last_five_months = 0, #or whatever
+    fraction_boosted = 0,
+    unique_id = 'farm-default',
+    variant = 'delta',
+    protection_functions = one_one_three_protection_functions
+)
+
+do.call(full_run, c(common_parameters, additional_facility_parameters))
+do.call(full_run, c(common_parameters, additional_farm_parameters))
 

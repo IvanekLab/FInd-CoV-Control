@@ -25,7 +25,7 @@ main_produce_farm_fn = function() { #goal: get more meaningful debug data
 library(Rlab)
  
 source("AgentGen-v1.1.3.R")
-#source("ContactsGen-v1.1.3.R")
+source("ContactsGen-v1.1.3.R")
 source("ABM-v1.1.3.R")
 
 #General note: foo = get('bar', baz) is similar to foo = baz[['bar']], *except*
@@ -125,65 +125,84 @@ scenario_parameters = ScenarioParameters(work_R0 = net_work_R0,
 ####
 #edits for facility here
 ####
-#work_contacts <- ContactsGen(scenario_parameters$crews_by_team,
-#                             scenario_parameters$crew_sizes,
-#                             scenario_parameters$rates,
-#                             scenario_parameters$average)
+if(farm_or_facility == 'farm') {
+    work_contacts <- ContactsGen(scenario_parameters$crews_by_team,
+                                 scenario_parameters$crew_sizes,
+                                 scenario_parameters$rates,
+                                 scenario_parameters$average)
 
-source('custom-contacts-gen-general.R')
-contacts_matrices = facility_contacts_gen(workers_per_line = workers_per_crew,
-                                          #keeping old names for analogous
-                                          #parameters in full_run *for now*
-                                          n_lines = crews_per_supervisor,
-                                          n_production_shifts = supervisors,
-                                          n_shift_floaters = n_shift_floaters,
-                                          n_cleaners = n_cleaners,
-                                          n_all_floaters = n_all_floaters)
-production_shift_1 = contacts_matrices[['production_shift_1']]
-production_shift_2 = contacts_matrices[['production_shift_2']]
-cleaning_shift_full = contacts_matrices[['cleaning_shift_full']]
-shift_sum =  contacts_matrices[['shift_sum']]
-N <<- dim(production_shift_1)[1] #little kludgey
+    #sleep_contacts = matrix(0, N, N)
 
-#sleep_contacts = matrix(0, N, N)
+    if(scenario_parameters$housing_dormitory) {
+        dormitory_contacts = matrix(scenario_parameters$dormitory_intensity/N, N, N)
+    } else {
+        dormitory_contacts = sleep_contacts
+    }
+    lambda_home = scenario_parameters$lambda
 
-#if(scenario_parameters$housing_dormitory) {
-#    dormitory_contacts = matrix(scenario_parameters$dormitory_intensity/N, N, N)
-#} else {
-#    dormitory_contacts = sleep_contacts
-#}
-lambda_home = scenario_parameters$lambda
-
-#contacts_list = list(work = work_contacts * 7/5, #to account for two days off
-#                                                 #per week
-#                     home = dormitory_contacts * 7 / 9, #to account for two
-#                                                        #home shifts per day
-#                                                        #off
-#                     sleep = sleep_contacts)
+    contacts_list = list(work = work_contacts * 7/5, #to account for two days off
+                                                     #per week
+                         home = dormitory_contacts * 7 / 9, #to account for two
+                                                            #home shifts per day
+                                                            #off
+                        sleep = sleep_contacts)
 
 
-#lambda_list = list(work = 0,
-#                   home = lambda_home,
-#                   sleep = 0)
+    lambda_list = list(work = 0,
+                       home = lambda_home,
+                       sleep = 0)
 
-####
-#TBD (eventually): Move this to the contacts generation file
-####
-psX_only_size = 1 + workers_per_crew * crews_per_supervisor + n_shift_floaters
-if(supervisors > 1) {
-    on_ps_1 = c(1/3, rep(1, psX_only_size), rep(0, psX_only_size),
-                rep(0, n_cleaners), rep(1/3, n_all_floaters))
-    on_ps_2 = c(1/3, rep(0, psX_only_size), rep(1, psX_only_size),
-                rep(0, n_cleaners), rep(1/3, n_all_floaters))
-    on_cs = c(1/3, rep(0, 2 * psX_only_size), rep(1, n_cleaners),
-              rep(1/3, n_all_floaters))
-} else {
-    on_ps_1 = c(1/2, rep(1, psX_only_size), rep(0, n_cleaners),
+    production_shift_1 = work_contacts
+    production_shift_2 = matrix(0, N, N)
+    cleaning_shift_full = matrix(0, N, N)
+
+    on_ps_1 = rep(1, N)
+    on_ps_2 = rep(0, N)
+    on_cs = rep(0, N)
+
+} else { #only alternative that we allow is facility
+
+    source('custom-contacts-gen-general.R')
+
+
+    contacts_matrices = facility_contacts_gen(
+        workers_per_line = workers_per_crew,
+        #keeping old names for analogous parameters in full_run *for now*
+        n_lines = crews_per_supervisor,
+        n_production_shifts = supervisors,
+        n_shift_floaters = n_shift_floaters,
+        n_cleaners = n_cleaners,
+        n_all_floaters = n_all_floaters
+    )
+
+    production_shift_1 = contacts_matrices[['production_shift_1']]
+    production_shift_2 = contacts_matrices[['production_shift_2']]
+    cleaning_shift_full = contacts_matrices[['cleaning_shift_full']]
+    shift_sum =  contacts_matrices[['shift_sum']]
+
+    #N <<- dim(production_shift_1)[1] #little kludgey
+
+    ####
+    #TBD (eventually): Move this to the contacts generation file
+    ####
+    psX_only_size = 1 + workers_per_crew * crews_per_supervisor + n_shift_floaters
+    if(supervisors > 1) {
+        on_ps_1 = c(1/3, rep(1, psX_only_size), rep(0, psX_only_size),
+                    rep(0, n_cleaners), rep(1/3, n_all_floaters))
+        on_ps_2 = c(1/3, rep(0, psX_only_size), rep(1, psX_only_size),
+                    rep(0, n_cleaners), rep(1/3, n_all_floaters))
+        on_cs = c(1/3, rep(0, 2 * psX_only_size), rep(1, n_cleaners),
+                rep(1/3, n_all_floaters))
+    } else {
+        on_ps_1 = c(1/2, rep(1, psX_only_size), rep(0, n_cleaners),
+                    rep(1/2, n_all_floaters))
+        on_ps_2 = rep(0, 1 + psX_only_size + n_cleaners + n_all_floaters)
+        on_cs = c(1/2, rep(0, psX_only_size), rep(1, n_cleaners),
                 rep(1/2, n_all_floaters))
-    on_ps_2 = rep(0, 1 + psX_only_size + n_cleaners + n_all_floaters)
-    on_cs = c(1/2, rep(0, psX_only_size), rep(1, n_cleaners),
-              rep(1/2, n_all_floaters))
+    }
 }
+
+
 
 if(any(on_ps_1 + on_ps_2 + on_cs != rep(1, N))) {
     stop('Some presences do not add up to 1.')
