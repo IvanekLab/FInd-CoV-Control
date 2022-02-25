@@ -194,8 +194,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
         initial_V2_last_five_months, -152, 0
     )
     agents$time_V2[index_V2_older] = runif(
-        initial_V2_last_five_months, -(365+61), -152 #fully vax starts in
-                                                     #mid-december 2020
+        initial_V2 - initial_V2_last_five_months,
+        -(365+61),#fully vax starts in mid-december 2020
+        -152 
     )
     agents$time_last_immunity_event[index_V2] = agents$time_V2[index_V2]
     agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21

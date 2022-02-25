@@ -165,13 +165,9 @@ lambda_home = scenario_parameters$lambda
 #lambda_list = list(work = 0,
 #                   home = lambda_home,
 #                   sleep = 0)
-####
-#following is wrong (TBD: is it still?), but a starting point
-####
 
 ####
-#TBD: Check this is properly systematized
-#TBD: Move this to the contacts generation file
+#TBD (eventually): Move this to the contacts generation file
 ####
 psX_only_size = 1 + workers_per_crew * crews_per_supervisor + n_shift_floaters
 if(supervisors > 1) {
@@ -187,8 +183,11 @@ if(supervisors > 1) {
     on_ps_2 = rep(0, 1 + psX_only_size + n_cleaners + n_all_floaters)
     on_cs = c(1/2, rep(0, psX_only_size), rep(1, n_cleaners),
               rep(1/2, n_all_floaters))
-} 
+}
 
+if(any(on_ps_1 + on_ps_2 + on_cs != rep(1, N))) {
+    stop('Some presences do not add up to 1.')
+}
 
 ###
 #working on proper dormitory_contacts parameters
@@ -198,7 +197,8 @@ if(supervisors > 1) {
 #Because it's actually non-trivial . . . except that I see that the dormitory
 #contacts parameter in the core v1.1.4 version has a small flaw (diagonals are
 #not excluded). So that needs to be fixed there; for now, we can do the simple
-#thing here (TBD: Have fixed the simple thing; is the new thing correct?)
+#thing here (TBD (once farm is merged in): Fix it.)
+#TBD (eventually): Move this crap to ContactsGen and its facility analogue.
 ###
 
 
@@ -350,9 +350,9 @@ for (i in 1:num_sims) {
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
                        boosting_on_time_probability = fraction_boosted,
                        protection_functions = protection_functions)
-    assign('agents', agents, envir = .GlobalEnv)
+    #assign('agents', agents, envir = .GlobalEnv)
     #print(get('agents', .GlobalEnv))
-    stop()
+    #stop()
                                                 
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,

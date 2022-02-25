@@ -98,17 +98,8 @@ hospitalized_dead = function(data) {
 #The following several functions may be combined at some point in the future.
 #main_title is unused in production code, but is kept for consistency with
 #special-purpose internal versions.
-####
-#added na.rm option to allow alternate method of plotting work absences
-#segmented allows carving up discrete shift segments
-#daily_sum adds consecutive trios of shifts (only makes sense for some functions)
-####
-#oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
-#                   summation_mode = FALSE, work_only = FALSE,
-#                   main_title = NULL, use_agentss = FALSE) {
 oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
                    summation_mode = FALSE, work_only = FALSE, main_title = NULL,
-                   na.rm = FALSE, segmented = FALSE, daily_sum = FALSE,
                    mask = NA) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png',
               sep = ''),
@@ -117,17 +108,9 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
     if(work_only) {
         step_index = step_index[work_shifts]
     }
-    smear = (1:(length(step_index) / 3)) * 3
 
     if(!is.na(mask)[1]) {
         step_index = step_index[mask]
-    }
-
-    #TBD: NB: smear and mask not yet implemented (alternatively: TBD: remove
-    #functionality that was decided against)
-
-    if(daily_sum) {
-        step_index = step_index[smear]
     }
 
     #bit of a kludge, but should ensure sane limits
@@ -136,17 +119,9 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
         full_output = readRDS(full_output_filenames[i])
         if(work_only) {
             full_output = full_output[work_shifts,,]
-            if(summation_mode != FALSE){
-                full_output = full_output
-            }
         }
         if(!is.na(mask)[1]) {
             full_output = full_output[mask,,]
-        }
-        if(daily_sum) {
-                full_output = full_output[smear,,] +
-                              full_output[smear - 1,,] +
-                              full_output[smear - 2,,]
         }
         ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn,
                           summation_mode)
@@ -154,31 +129,13 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
     for(i in 1:length(full_output_filenames)) {
         if(i == 1) {
             par(mar = c(5,5,4,2))
-            ####
-            #allowing for use of na.rm = TRUE
-            ####
-            if(segmented) {
-                for(j in 1:length(step_index)) {
-                    if(j == 1) {
-                        plot(c(0, step_index[1]), rep(ys[[i]][1], 2), type = 'l', col = colors[i],
-                             ylim = c(min(ylim[1], min(sapply(ys, function(x) min(x, na.rm = na.rm)))),
-                                      max(ylim[2], max(sapply(ys, function(x) max(x, na.rm = na.rm))))),
-                             xlim = c(0, max(step_index)), lwd = 4,
-                             xlab = "Day", ylab = ylab, cex.axis = 1.5, cex.lab = 1.5,
-                             lty = ltys[i])
-                    } else {
-                        points(step_index[(j-1):j], rep(ys[[i]][j], 2),
-                               col = colors[i], lwd = 4, type = 'l',
-                               lty = ltys[i])
-                    }
-                }
-            } else {
-                plot(step_index, ys[[i]], type = 'l', col = colors[i],
-                     ylim = c(min(ylim[1], min(sapply(ys, function(x) min(x, na.rm = na.rm)))),
-                              max(ylim[2], max(sapply(ys, function(x) max(x, na.rm = na.rm))))), lwd = 4,
-                     xlab = "Day", ylab = ylab, cex.axis = 1.5, cex.lab = 1.5,
-                     lty = ltys[i])
-            }
+            plot(step_index, ys[[i]], type = 'l', col = colors[i],
+                 ylim = c(min(ylim[1], min(sapply(ys, function(x) min(x)))),
+                          max(ylim[2], max(sapply(ys, function(x) max(x))))
+                        ),
+                 lwd = 4,
+                 xlab = "Day", ylab = ylab, cex.axis = 1.5, cex.lab = 1.5,
+                 lty = ltys[i])
             title(main=main_title, cex.main = 3)
             existing_ticks = axTicks(1)
 
@@ -193,17 +150,7 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
                 axis(1, at=days, cex.axis = 1.5)
             }
         } else {
-            if(segmented) {
-                for(j in 1:length(step_index)) {
-                    if(j == 1) {
-                        points(c(0, step_index[1]), rep(ys[[i]][j], 2), col = colors[i], lwd = 4, type = 'l', lty = ltys[i])
-                    } else {
-                        points(step_index[(j-1):j], rep(ys[[i]][j], 2), col = colors[i], lwd = 4, type = 'l', lty = ltys[i])
-                    }
-                }
-            } else {
-                points(step_index, ys[[i]], col = colors[i], lwd = 4, type = 'l', lty = ltys[i])
-            }
+            points(step_index, ys[[i]], col = colors[i], lwd = 4, type = 'l', lty = ltys[i])
         }
     }
     legend("topright",inset = .06, row.names, lwd = 4,

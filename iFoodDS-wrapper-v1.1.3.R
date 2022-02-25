@@ -222,8 +222,8 @@ common_parameters = list(
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
     social_distancing_work = 'Intermediate',
-    n_no_symptoms = '10',        #i.e., exposed 
-    n_mild = '20',
+    n_no_symptoms = '1',        #i.e., exposed 
+    n_mild = '0',
     working_directory = '.',
     folder_name = 'post-scenarios',   # relative to working directory
     variant = 'omicron',
@@ -236,7 +236,7 @@ default_additional_parameters = list(
     fraction_fully_vaccinated = 0.71,
     ffv_last_five_months = 0.09,
     fraction_boosted = 0.45,
-    unique_id = 'default-v8-10-20',
+    unique_id = 'default-v9',
     protection_functions = default_protection_functions
 )
 
