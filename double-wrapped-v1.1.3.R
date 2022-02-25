@@ -43,26 +43,12 @@ double_wrap_rational_testing = TRUE
 double_wrap_initial_recovered = round(fraction_recovered * N)
 
 #below is kinda kludgey, but works
-#TBD: Remember, this needs a fix once things are redefined with swiss-cheese
 double_wrap_initial_V2 = round(N * fraction_fully_vaccinated) 
 double_wrap_initial_V1 = 0 
 
-#TBD: Check if swiss-cheese is handling V2 + R individuals correctly, in terms
-#of setting their vax status!
-#TBD: Fix swiss-cheese's handling of vaccination of (NV, V1) + (R, W)
-#individuals, if this is not already correct (since we will be merging,
-#it should be safe to make this note here)
-
-double_wrap_initial_B = 0#round(N * fraction_boosted) #fix in swiss-cheese
-    #TBD: remove this variable entirely OR rework the handling in AgentGen
-
-if(n_exposed + n_mild + double_wrap_initial_recovered + double_wrap_initial_V2 +
-   double_wrap_initial_B > N) {
-        stop(paste('Exposed + mild + recovered + fully vaccinated  >',
-                   'Total number of employees:\n',
-                    n_exposed, '+', n_mild, '+', double_wrap_initial_recovered,
-                   '+', double_wrap_initial_V2, '+', double_wrap_initial_B, '>',
-                   N))
+if(n_exposed + n_mild > N) {
+    stop(paste('Exposed + mild > Total number of employees:\n',
+               n_exposed, '+', n_mild, '>', N))
 }
 
 temperature_thresholds = c(38)#, 37.5, 37.1)
@@ -166,10 +152,7 @@ if(PARALLEL) {
 
 full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
                                 .verbose = TRUE) %dopar% {
-#for(i in c(6:8,12:13)) {
-#full_output_filenames = foreach(i=c(6:8,12:13), .combine = c, .inorder=TRUE,
-#                                .verbose = TRUE) %dopar% {
-#for(i in 4:4) {
+#for(i in 1:1) {
     parameter_set = parameter_sets[i,]
     double_wrap_reduction = parameter_set$double_wrap_reduction
     double_wrap_temp_test = parameter_set$double_wrap_temp_test

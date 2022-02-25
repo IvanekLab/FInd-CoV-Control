@@ -61,6 +61,9 @@ facility_contacts_gen = function(workers_per_line = 10,
     #production_shift_2 = rbind(cbind(production_shift, other_production_shift),
     #                           cbind(other_production_shift, other_production_shift))
     
+    #TBD (important): Clean up this and other lines that choke on low, but
+    #potentially valid, numbers (e.g., here if n_cleaners is 1, NaNs end up
+    #propagating (and if it's 0, things can get even weirder))
     cleaning_shift_contact_rate = rowSums(production_shift)[1] / (n_cleaners - 1) #19
     
     cleaning_shift = matrix(cleaning_shift_contact_rate, nrow = n_cleaners, ncol = n_cleaners) - diag(cleaning_shift_contact_rate, nrow = n_cleaners)

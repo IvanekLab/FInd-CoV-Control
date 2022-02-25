@@ -60,13 +60,6 @@ VirusParameters = function(p_trans_IP = .0575, relative_trans_IA = .11,
 
 virus_parameters = VirusParameters()
 
-#if(exists('DELTA_VAX') && DELTA_VAX == TRUE) {
-#print('variants')
-#TBD: Previously below, generating vaccine_parameters list, now in
-#yanked-vaccine-parameters.R; this line should eventually be removed entirely
-
-
-#2022-01-16 removed rates
 ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
                               work_testing_rate, isolation_duration,
                               home_vaccination_rate, lambda = 0, crews_by_team,
@@ -152,11 +145,7 @@ cleaning_shift_full = contacts_matrices[['cleaning_shift_full']]
 shift_sum =  contacts_matrices[['shift_sum']]
 N <<- dim(production_shift_1)[1] #little kludgey
 
-####
-#Need to make proper sleep vs. at-home distinction for Shared housing
-#TBD: Check this has been done right
-####
-sleep_contacts = matrix(0, N, N)
+#sleep_contacts = matrix(0, N, N)
 
 #if(scenario_parameters$housing_dormitory) {
 #    dormitory_contacts = matrix(scenario_parameters$dormitory_intensity/N, N, N)
@@ -176,13 +165,9 @@ lambda_home = scenario_parameters$lambda
 #lambda_list = list(work = 0,
 #                   home = lambda_home,
 #                   sleep = 0)
-####
-#following is wrong (TBD: is it still?), but a starting point
-####
 
 ####
-#TBD: Check this is properly systematized
-#TBD: Move this to the contacts generation file
+#TBD (eventually): Move this to the contacts generation file
 ####
 psX_only_size = 1 + workers_per_crew * crews_per_supervisor + n_shift_floaters
 if(supervisors > 1) {
@@ -198,8 +183,11 @@ if(supervisors > 1) {
     on_ps_2 = rep(0, 1 + psX_only_size + n_cleaners + n_all_floaters)
     on_cs = c(1/2, rep(0, psX_only_size), rep(1, n_cleaners),
               rep(1/2, n_all_floaters))
-} 
+}
 
+if(any(on_ps_1 + on_ps_2 + on_cs != rep(1, N))) {
+    stop('Some presences do not add up to 1.')
+}
 
 ###
 #working on proper dormitory_contacts parameters
@@ -209,15 +197,15 @@ if(supervisors > 1) {
 #Because it's actually non-trivial . . . except that I see that the dormitory
 #contacts parameter in the core v1.1.4 version has a small flaw (diagonals are
 #not excluded). So that needs to be fixed there; for now, we can do the simple
-#thing here (TBD: Have fixed the simple thing; is the new thing correct?)
+#thing here (TBD (once farm is merged in): Fix it.)
+#TBD (eventually): Move this crap to ContactsGen and its facility analogue.
 ###
 
 
 ####
-#new parameter
-#putting all between-shift floaters at start of day for testing purposes only
-#TBD should this be fixed, or left alone? Perhaps they might be randomized once,
-#at start of run?
+#Putting all between-shift floaters at start of day for testing and vaccination.
+#An alternative would be to randomize them once, at the start of the run.
+#Will discuss this.
 ####
 agent_presence_list = list(ps_1 = ifelse(ceiling(on_ps_1), TRUE, FALSE),
                            ps_2 = ifelse(floor(on_ps_2), TRUE, FALSE),
@@ -333,12 +321,9 @@ step_length_list = list(ps_1 = 1/3, ps_2 = 1/3, cs = 1/3, weekend_ps_1 = 1/3,
                         weekend_ps_2 = 1/3, weekend_cs = 1/3)
 #testing_rate_list = list(home = 0, work = get('work_testing_rate',
 #                         scenario_parameters), sleep = 0)
-testing_rate_list = list(ps_1 = on_ps_1 * get('work_testing_rate',
-                                              scenario_parameters),
-                         ps_2 = on_ps_2 * get('work_testing_rate',
-                                              scenario_parameters),
-                         cs =   on_cs * get('work_testing_rate',
-                                            scenario_parameters),
+testing_rate_list = list(ps_1 = get('work_testing_rate', scenario_parameters),
+                         ps_2 = get('work_testing_rate', scenario_parameters),
+                         cs =   get('work_testing_rate', scenario_parameters),
                          weekend_ps_1 = 0,
                          weekend_ps_2 = 0,
                          weekend_cs = 0)
@@ -347,9 +332,12 @@ step_index = (1:steps) * (1/3) #step_length
 
 
 ###### code to run simulation with num_sims iterations
+source('safe-random-functions.R')
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
-    set.seed(-778276078) #random 32-bit signed integer generated using
+    safe_set_seed(-778276078)
+    #set.seed(-778276078) #random 32-bit signed integer generated using
                          #atmospheric noise for reproducible output
+    #cat('intervention:', index_i, 'seed set:', runif(1, 0, 1), '\n')
 }
 
 sys_time_start = Sys.time()
@@ -357,7 +345,10 @@ for (i in 1:num_sims) {
     agents <- AgentGen(N, E0 = n_exposed, IA0 = 0, IP0 = 0, IM0 = n_mild,
                        initial_recovered = initial_recovered,
                        initial_V1 = initial_V1, initial_V2 = initial_V2,
-                       SEVERE_MULTIPLIER = SEVERE_MULTIPLIER)
+                       ffv_last_five_months = ffv_last_five_months,
+                       SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
+                       boosting_on_time_probability = fraction_boosted,
+                       protection_functions = protection_functions)
                                                 
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
@@ -370,7 +361,10 @@ for (i in 1:num_sims) {
                  agent_presence_list = agent_presence_list,
                  quantitative_presence_list = quantitative_presence_list,
                  #waning_parameters = waning_parameters,
-                 boosting_rate = boosting_rate)
+                 boosting_rate = boosting_rate,
+                 protection_functions = protection_functions
+    )
+    #cat('intervention:', index_i, 'run:', i, 'ABM completed:', runif(1, 0, 1), '\n')
     agents = model$agents
     output = model$Out1
 
@@ -382,6 +376,10 @@ for (i in 1:num_sims) {
     full_output[,,i] = as.matrix(output) #this works; for whatever reason,
                                          #as.array does not
 } # for (i in 1:num_sims)
+
+#print_rand_state(paste('intervention:', index_i, 'printing state'))
+
+cat('intervention:', index_i, 'All runs completed; Test value:', runif(1, 0, 1), '\n')
 
 sys_time_end = Sys.time()
 cat(sys_time_end - sys_time_start, 'for', row_name,'\n')

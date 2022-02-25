@@ -1,11 +1,13 @@
 #Usage example, with default values:
-#TBD: fill in
+#TBD (eventually): fill in
 
 #Note: Only one of social_distancing_shared_housing and community_transmission
 #will be used; a good practice is to set the other one to something invalid
 #(e.g., NULL) as a failsafe.
 #Set analyze_only to TRUE to reanalyze an existing output set with modified
 #analyze.R
+
+source('general-waning-functions.R')
 
 safe.integer = function(s) {
     i = strtoi(s)
@@ -48,26 +50,16 @@ full_run = function(
                     n_no_symptoms,
                     n_mild,
                     fraction_recovered,
-                    fraction_fully_vaccinated, # TBD: This is defined FOR NOW as
-                                               # fraction fully vax
-                                               #and NOT boosted
-                                               #this is not ideal; it means that
-                                               # we have to work around a bunch
-                                               # of things. but to try to do it
-                    # the other way *before* blending in the swiss cheese fixes
-                    # is to court madness
-                                               #TBD: figure out where the next
-                                               #comment line comes from
-                                               #going to want this to be
-                                               #consistent with 
-                    fraction_boosted, #TBD: finish implementing? (is this done?)
-                    boosting_rate, #.05 arbitrary, probably high
+                    fraction_fully_vaccinated,
+                    ffv_last_five_months,
+                    fraction_boosted, #TBD (eventually): possibly rename?
                     working_directory,
                     folder_name,
                     unique_id, 
                     variant,
                     analyze_only,
-                    PARALLEL
+                    PARALLEL,
+                    protection_functions
 ) {
     setwd(working_directory)
 
@@ -113,7 +105,7 @@ full_run = function(
        n_mild == 0 &&
        fraction_recovered == .116 &&
        fraction_fully_vaccinated == .627) {
-        unique_id = paste(unique_id, 'baseline', sep = '')
+            unique_id = paste(unique_id, 'baseline', sep = '')
     }
 
     crews_by_team = rep(crews_per_supervisor, supervisors) 
@@ -123,8 +115,6 @@ full_run = function(
                            n_shift_floaters) +
                     n_cleaners + n_all_floaters
     
-    #days -- done
-
     if((tolower(employee_housing) == 'private') ||
        (tolower(employee_housing) == 'individual')) {
         housing_dormitory = FALSE
@@ -135,7 +125,7 @@ full_run = function(
         } else if(tolower(community_transmission) == 'intermediate'){
             double_wrap_community_foi = 0.001
         } else if(tolower(community_transmission) == 'high'){
-            double_wrap_community_foi = 0.002
+            double_wrap_community_foi = 0.01
         } else {
             stop(paste('Invalid community_transmission:',
                        community_transmission))
@@ -177,31 +167,22 @@ full_run = function(
     } else {
         stop(paste('Invalid social_distancing_work:', social_distancing_work))
     }
+
     if(variant == 'delta') {
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 2
         #DELTA_VAX = TRUE
     } else if (variant == 'omicron') {
             #double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
-        double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 7/3
+        double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 #* 7/3
         #kludged for sane values aiming for 7; make more precise determination
-        #later
     }
 
-    n_exposed = n_no_symptoms # done, although this should ideally be split up
+    n_exposed = n_no_symptoms # this should perhaps be split up at some point
                               # into exposed, pre-symptomatic, and asymptomatic;
                               # the difference is small, though
-    #n_mild -- done
-    #although note that we might consider in the future allowing initial exposed
-    #and mild to be drawn from the vaccinated
-    #TBD: change the above once swiss-cheesing is fully fixed
-    #fraction_recovered -- done
-    #fraction_fully_vaccinated -- done
 
-    #subdirectory = paste(set_name, '-files/', sep = '')
     subdirectory = paste(folder_name, '/', sep = '')
     dir.create(subdirectory)
-    #wd = getwd()
-    #setwd(subdirectory)
     if(analyze_only) { # these should be saved in a separate file
                        # once we start having more complex schedules
     #    steps = days * 3
@@ -214,12 +195,11 @@ full_run = function(
     step_index = (1:steps) * (1/3)
     source('analyze-v1.1.3.R', local = TRUE)
     analyze_fn()
-    #setwd(wd)
 }
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 1000
+double_wrap_num_sims = 10#00
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -230,34 +210,35 @@ double_wrap_num_sims = 1000
 #copy the relevant signatures to two files, strip out comments, strip out ,s and
 #then run
 #git diff --no-index --word-diff --ignore-all-space a.txt b.txt
-full_run(
-         workers_per_crew = '10', # FM: workers per line
-         crews_per_supervisor = '3', # FM: / lines per shift
-         supervisors = '2', # FM: shifts
-         n_shift_floaters ='10', # FM only (for with farm model,
-                                 # will require NULL/NA)
-         n_cleaners = '10', # FM only (for farm model, will require NULL/NA)
-         n_all_floaters = '10', # FM only (for farm model, will require NULL/NA)
-         days = '90',
-         employee_housing = 'Shared', 
-         social_distancing_shared_housing = 'Intermediate',
-         community_transmission = 'Intermediate',
-         social_distancing_work = 'Intermediate',
-         n_no_symptoms = '1', #i.e., exposed (TBD: not asymp/presymp --
-                              #should perhaps alter language?)
-         n_mild = '0',
-         fraction_recovered = .5,#'.116', # TBD: Swiss Cheese it
-                                      # TBD: For now,
-                                      # do calculations here by hand
-         fraction_fully_vaccinated = .4,#'.627',  #  TBD: (for now: and not boosted?
-                                              #(check))
-         fraction_boosted = .5,
-         boosting_rate = 0,
-         working_directory = '.',
-         folder_name = 'facility-added-interface', # relative to working
-                                                   # directory
-         unique_id = 'Whatever',
-         variant = 'omicron',
-         analyze_only = 'TRUE',
-         PARALLEL = TRUE
+common_parameters = list(
+    workers_per_crew = '10',    # FM: workers per line
+    crews_per_supervisor = '3', # FM: / lines per shift
+    supervisors = '2',          # FM: shifts
+    n_shift_floaters ='10',     # FM only (for farm model, will require NULL/NA)
+    n_cleaners = '10',          # FM only (for farm model, will require NULL/NA)
+    n_all_floaters = '10',      # FM only (for farm model, will require NULL/NA)
+    days = '90',
+    employee_housing = 'Private', 
+    social_distancing_shared_housing = NULL,
+    community_transmission = 'Intermediate',
+    social_distancing_work = 'Intermediate',
+    n_no_symptoms = '1',        #i.e., exposed 
+    n_mild = '0',
+    working_directory = '.',
+    folder_name = 'post-scenarios',   # relative to working directory
+    variant = 'omicron',
+    analyze_only = 'FALSE',
+    PARALLEL = TRUE
 )
+
+default_additional_parameters = list(
+    fraction_recovered = 0.69,
+    fraction_fully_vaccinated = 0.71,
+    ffv_last_five_months = 0.09,
+    fraction_boosted = 0.45,
+    unique_id = 'default-v9',
+    protection_functions = default_protection_functions
+)
+
+do.call(full_run, c(common_parameters, default_additional_parameters))
+
