@@ -203,10 +203,9 @@ if(any(on_ps_1 + on_ps_2 + on_cs != rep(1, N))) {
 
 
 ####
-#new parameter
-#putting all between-shift floaters at start of day for testing purposes only
-#TBD should this be fixed, or left alone? Perhaps they might be randomized once,
-#at start of run?
+#Putting all between-shift floaters at start of day for testing and vaccination.
+#An alternative would be to randomize them once, at the start of the run.
+#Will discuss this.
 ####
 agent_presence_list = list(ps_1 = ifelse(ceiling(on_ps_1), TRUE, FALSE),
                            ps_2 = ifelse(floor(on_ps_2), TRUE, FALSE),
@@ -350,9 +349,6 @@ for (i in 1:num_sims) {
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
                        boosting_on_time_probability = fraction_boosted,
                        protection_functions = protection_functions)
-    #assign('agents', agents, envir = .GlobalEnv)
-    #print(get('agents', .GlobalEnv))
-    #stop()
                                                 
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,

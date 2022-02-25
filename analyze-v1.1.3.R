@@ -377,8 +377,6 @@ end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cl
 end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
 end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Cleaning Shift Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
 
-#TBD: This is *probably* correct for the facility model now, but check
-#with Daisy
 sample_data = function() {
     interventions = length(full_output_filenames)
     for (i in 1:interventions) {
