@@ -130,32 +130,34 @@ lambda_home = scenario_parameters$lambda
 if(farm_or_facility == 'farm') {
     work_contacts <- ContactsGen(scenario_parameters$crews_by_team,
                                  scenario_parameters$crew_sizes,
-                                 scenario_parameters$rates,
+                                 #scenario_parameters$rates,
+                                 example_rates,
                                  scenario_parameters$average)
 
     #sleep_contacts = matrix(0, N, N)
 
-    if(scenario_parameters$housing_dormitory) {
-        dormitory_contacts = matrix(scenario_parameters$dormitory_intensity/N, N, N)
-    } else {
-        dormitory_contacts = sleep_contacts
-    }
+    #if(scenario_parameters$housing_dormitory) {
+    #    dormitory_contacts = matrix(scenario_parameters$dormitory_intensity/N, N, N)
+    #} else {
+    #    dormitory_contacts = sleep_contacts
+    #}
 
-    contacts_list = list(work = work_contacts * 7/5, #to account for two days off
-                                                     #per week
-                         home = dormitory_contacts * 7 / 9, #to account for two
-                                                            #home shifts per day
-                                                            #off
-                        sleep = sleep_contacts)
+    #contacts_list = list(work = work_contacts * 7/5, #to account for two days off
+    #                                                 #per week
+    #                     home = dormitory_contacts * 7 / 9, #to account for two
+    #                                                        #home shifts per day
+    #                                                        #off
+    #                    sleep = sleep_contacts)
 
 
-    lambda_list = list(work = 0,
-                       home = lambda_home,
-                       sleep = 0)
+    #lambda_list = list(work = 0,
+    #                   home = lambda_home,
+    #                   sleep = 0)
 
     production_shift_1 = work_contacts
     production_shift_2 = matrix(0, N, N)
     cleaning_shift_full = matrix(0, N, N)
+    shift_sum = work_contacts
 
     on_ps_1 = rep(1, N)
     on_ps_2 = rep(0, N)
@@ -164,7 +166,7 @@ if(farm_or_facility == 'farm') {
 } else { #only alternative that we allow is facility
 
     source('custom-contacts-gen-general.R')
-
+#print('alpha')
 
     contacts_matrices = facility_contacts_gen(
         workers_per_line = workers_per_crew,
@@ -350,7 +352,7 @@ testing_rate_list = list(ps_1 = get('work_testing_rate', scenario_parameters),
 steps = scenario_parameters$nTime1 * 3
 step_index = (1:steps) * (1/3) #step_length
 
-
+#print('beta')
 ###### code to run simulation with num_sims iterations
 source('safe-random-functions.R')
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
@@ -362,6 +364,7 @@ if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
 
 sys_time_start = Sys.time()
 for (i in 1:num_sims) {
+#print('gamma')
     agents <- AgentGen(N, E0 = n_exposed, IA0 = 0, IP0 = 0, IM0 = n_mild,
                        initial_recovered = initial_recovered,
                        initial_V1 = initial_V1, initial_V2 = initial_V2,
@@ -369,7 +372,7 @@ for (i in 1:num_sims) {
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
                        boosting_on_time_probability = fraction_boosted,
                        protection_functions = protection_functions)
-                                                
+#print('delta')                                                
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
                  virus_parameters, testing_parameters, #vaccine_parameters,
@@ -385,6 +388,7 @@ for (i in 1:num_sims) {
                  protection_functions = protection_functions
     )
     #cat('intervention:', index_i, 'run:', i, 'ABM completed:', runif(1, 0, 1), '\n')
+#print('epsilon')
     agents = model$agents
     output = model$Out1
 
@@ -395,8 +399,9 @@ for (i in 1:num_sims) {
     }
     full_output[,,i] = as.matrix(output) #this works; for whatever reason,
                                          #as.array does not
+#print('zeta')
 } # for (i in 1:num_sims)
-
+#print('eta')
 #print_rand_state(paste('intervention:', index_i, 'printing state'))
 
 cat('intervention:', index_i, 'All runs completed; Test value:', runif(1, 0, 1), '\n')

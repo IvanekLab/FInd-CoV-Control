@@ -145,7 +145,7 @@ two_level_protection = function(level, duration) {
     }
 }
 
-one_one_three_protection_functions = function(level, duration) {
+make_one_one_three = function() {
     V1_net_symptoms = 1 - .37
     V2_susceptibility = 1 - .65
     V2_net_symptoms = 1 - .88
@@ -162,7 +162,7 @@ one_one_three_protection_functions = function(level, duration) {
         two_level_protection(1, Inf)
     )
 
-    protection_functions$infection_protection = function(agents, start_time) {
+   infection_protection = function(agents, start_time) {
         ais = agents$immune_status
         t = (start_time - agents$time_last_immunity_event)
         t = pmax(t, 0) #TBD (eventually): find a way to not need this kludge
@@ -170,9 +170,9 @@ one_one_three_protection_functions = function(level, duration) {
         protection = ifelse(ais == 'FS',
             0,
             ifelse(ais == 'V1',
-                1 - V1_susceptibility,
+                sqrt(1 - V1_susceptibility),
                 ifelse(ais == 'V2',
-                    1 - V2_susceptibility,
+                    sqrt(1 - V2_susceptibility),
                     ifelse(ais == 'B',
                         1,
                         ifelse(ais == 'R',
@@ -197,4 +197,13 @@ one_one_three_protection_functions = function(level, duration) {
         ip = infection_protection(agents, start_time)
         ifelse(nsp == 1, 1, 1 - (1 - nsp) / (1 - ip))
     }
+
+    protection_functions$infection_protection = infection_protection
+    protection_functions$symptom_protection = infection_protection
+
+    #print(protection_functions)
+
+    protection_functions
 }
+
+one_one_three_protection_functions = make_one_one_three()

@@ -35,23 +35,30 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       SEVERE_MULTIPLIER = 1,
                       boosting_on_time_probability = 0,
                       protection_functions) {
-
+#print('g1')
     #TBD (eventually): Either add back in the ability to use these or remove
     #them from the parameter list.
     if(max(IA0, IP0, initial_V1) > 0) {
         stop('Attempt to use buggy functionality in AgentGen.')
     }
+#print('g1.1')
 
     V1_protection = get('V1_protection', protection_functions)
+#print('g1.11')
     V2_protection = get('V2_protection', protection_functions)
+#print('g1.12')
     R_protection = get('R_protection', protection_functions)
+#print('g1.13')
     B_protection = get('B_protection', protection_functions)
+#print('g1.14')
     net_symptomatic_protection = get('net_symptomatic_protection',
                                      protection_functions)
+#print('g1.2')
 
     Age_Categories = c("10-19", "20-29", "30-39", "40-49", "50-59", "60-69",
                        "70-79", "80+")
 
+#print('g1.3')
 
     ##duration_E calculations
     mu = 5.2
@@ -61,7 +68,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     duration_IP = rgamma(N, shape=1.058, scale=2.174)
     duration_E = pmax(rlnorm(N, mulog, sdlog) - duration_IP, 0) 
     #Moghadas et al., 2020 & need for a non-negative duration
-    
+#print('g2')    
     #Create a population of susceptibles 
     agents <- data.frame(ID = 1:N,          #Unique ID number,
                                             #Allows contact tracing
@@ -132,7 +139,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          #"stringsAsFactors = FALSE" is to allow transition into
                          #states that are not present at simulation start
     ) 
-
+#print('g3')
     #pre-calculating all indices for clarity and ease of debugging
     index_E_or_IM = sample(N, E0 + IM0) #1:N %in% sample(N, E0 + IM0)
     #index_E = 1:N %in% sample((1:N)[index_E_or_IM], E0)
@@ -150,7 +157,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
         index_E = numeric()
         index_IM = numeric()
     }
-    
+#print('g4')    
     #TBD (eventually): Take account of immunity in assigning initial infectees
     index_R = 1:N %in% sample(N, initial_recovered)
     index_V2 = 1:N %in% sample(N, initial_V2)
@@ -167,6 +174,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
 
     #Note: these can be allowed to not all be N, as long as they're constant with
             #each interventions parameters
+#print('g5')
 
     #since neither of these is affected by the other factors, it can be left
     #here for now
@@ -205,6 +213,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     agents$previous_immunity[index_V2] = V1_protection(
         (agents$time_V2[index_V2] - agents$time_V1[index_V2])
     )
+#print('g6')
 
     index_B = (agents$vax_status == 'V2' &
                agents$time_V2 < -152 &
@@ -274,6 +283,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #agents$time_last_immunity_event[V2_R_B] #is unchanged
 
     #R_V2_B changes nothing at all
+#print('g7')
 
     #Import text file of disease progression probabilities
     Probability_Matrix <- read.csv('Probability_Matrix.csv')
