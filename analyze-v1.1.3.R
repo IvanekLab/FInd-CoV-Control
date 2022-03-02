@@ -31,32 +31,43 @@ full_output_filenames = list_[[4]]
 #again, this sort of information should be stored in saved files once we have
 #more complex weeks, but for now, it's fine
 
-psX_only_size = 1 + workers_per_crew * crews_per_supervisor + n_shift_floaters
-if(supervisors > 1) {
-    on_ps_1 = c(1/3, rep(1, psX_only_size), rep(0, psX_only_size),
-                rep(0, n_cleaners), rep(1/3, n_all_floaters))
-    on_ps_2 = c(1/3, rep(0, psX_only_size), rep(1, psX_only_size),
-                rep(0, n_cleaners), rep(1/3, n_all_floaters))
-    on_cs = c(1/3, rep(0, 2 * psX_only_size), rep(1, n_cleaners),
-              rep(1/3, n_all_floaters))
-    workday = c('work', 'work', 'work')
+if(farm_or_facility == 'farm') {
+    production_shift_size = N
+    cleaning_shift_size = 0
+    workday = c('work', 'home', 'home')
+    day_off = c('home', 'home', 'home')
+    week = c(rep(workday, 5), rep(day_off, 2))
+    schedule = rep(week, ceiling(days/7))[1:(3 * days)]
+    production_shifts = work_shifts = (schedule == 'work')
+
 } else {
-    on_ps_1 = c(1/2, rep(1, psX_only_size), rep(0, n_cleaners),
+
+    psX_only_size = 1 + workers_per_crew * crews_per_supervisor + n_shift_floaters
+    if(supervisors > 1) {
+        on_ps_1 = c(1/3, rep(1, psX_only_size), rep(0, psX_only_size),
+                    rep(0, n_cleaners), rep(1/3, n_all_floaters))
+        on_ps_2 = c(1/3, rep(0, psX_only_size), rep(1, psX_only_size),
+                    rep(0, n_cleaners), rep(1/3, n_all_floaters))
+        on_cs = c(1/3, rep(0, 2 * psX_only_size), rep(1, n_cleaners),
+                rep(1/3, n_all_floaters))
+        workday = c('work', 'work', 'work')
+    } else {
+        on_ps_1 = c(1/2, rep(1, psX_only_size), rep(0, n_cleaners),
+                    rep(1/2, n_all_floaters))
+        on_ps_2 = rep(0, 1 + psX_only_size + n_cleaners + n_all_floaters)
+        on_cs = c(1/2, rep(0, psX_only_size), rep(1, n_cleaners),
                 rep(1/2, n_all_floaters))
-    on_ps_2 = rep(0, 1 + psX_only_size + n_cleaners + n_all_floaters)
-    on_cs = c(1/2, rep(0, psX_only_size), rep(1, n_cleaners),
-              rep(1/2, n_all_floaters))
-    workday = c('work', 'home', 'work')
-} 
-day_off = c('home', 'home', 'sleep')
-week = c(rep(workday, 5), rep(day_off, 2))
-schedule = rep(week, ceiling(days/7))[1:(3 * days)]
-work_shifts = (schedule == 'work')
-
-production_shift_size = sum(on_ps_1)
-cleaning_shift_size =  sum(on_cs)
-
-
+        workday = c('work', 'home', 'work')
+    } 
+    day_off = c('home', 'home', 'sleep')
+    week = c(rep(workday, 5), rep(day_off, 2))
+    schedule = rep(week, ceiling(days/7))[1:(3 * days)]
+    work_shifts = (schedule == 'work')
+    
+    production_shift_size = sum(on_ps_1)
+    cleaning_shift_size =  sum(on_cs)
+}
+    
 #summary plots
 combine = function(data, outcome_fn, summary_fn, summation_mode) { 
     if(!(summation_mode %in% c(FALSE, 'after', 'before'))) {
@@ -362,20 +373,23 @@ production_shifts = work_shifts & ((1:l) %% 3 != 0)
 cleaning_shifts =  work_shifts & ((1:l) %% 3 == 0)
 
 oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', production_shift_size, ' total)', sep = ''), mask = production_shifts)
-oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)
 
 main_title = ''
 
 end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', production_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts)
-end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', cleaning_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
 
 end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
 
 end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
-end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
 
 end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
-end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Cleaning Shift Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
+
+if(farm_or_facility == 'facility') {
+    oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)
+    end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', cleaning_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
+    end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
+    end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Cleaning Shift Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
+}
 
 sample_data = function() {
     interventions = length(full_output_filenames)

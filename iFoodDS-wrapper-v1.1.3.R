@@ -239,7 +239,7 @@ common_parameters = list(
     n_mild = '0',
     working_directory = '.',
     folder_name = 'post-scenarios',   # relative to working directory
-    analyze_only = 'FALSE',
+    analyze_only = 'TRUE',
     PARALLEL = TRUE
 )
 
