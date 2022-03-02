@@ -191,6 +191,8 @@ full_run = function(
     if(variant == 'delta') {
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 2
         #DELTA_VAX = TRUE
+        print(double_wrap_baseline_work_R0)
+        #stop('Butt this butt')
     } else if (variant == 'omicron') {
             #double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 #* 7/3
@@ -239,8 +241,8 @@ common_parameters = list(
     n_mild = '0',
     working_directory = '.',
     folder_name = 'post-scenarios',   # relative to working directory
-    analyze_only = 'TRUE',
-    PARALLEL = TRUE
+    analyze_only = 'FALSE',
+    PARALLEL = FALSE
 )
 
 additional_facility_parameters = list(

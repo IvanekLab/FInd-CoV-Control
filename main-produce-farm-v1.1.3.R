@@ -289,7 +289,8 @@ home_scaling_factor = ifelse(scenario_parameters$dormitory_intensity == 0,
 #no need for 7/9, since this is directly calculated from the weekly sum
 #but ifelse *is* needed to avoid a 0/0 issue if housing is in the community
 work_scaling_factor = scenario_parameters[['average']] /
-        colSums(shift_sum)[1] *
+        #colSums(shift_sum)[1] *
+        (sum(shift_sum) / N) *
         7/5 #this could (and perhaps should) be done with a weekly sum as well
 contacts_list = list(ps_1 = production_shift_1 * work_scaling_factor +
                             raw_home_contacts_ps_1 * home_scaling_factor,
@@ -304,7 +305,7 @@ contacts_list = list(ps_1 = production_shift_1 * work_scaling_factor +
                      weekend_cs = raw_home_contacts_weekend_cs *
                          home_scaling_factor)
 
-
+cat('\n', net_work_R0, scenario_parameters$average, '\n', sum(work_contacts) / N, '\n', work_scaling_factor, '\n', sum(contacts_list$ps_1) / N, '\n')
 #vaccination_rate_list = list(work = 0,
 #                             home = scenario_parameters$home_vaccination_rate *
 #                                   7 / 9, #to account for two home shifts per
@@ -372,7 +373,28 @@ for (i in 1:num_sims) {
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
                        boosting_on_time_probability = fraction_boosted,
                        protection_functions = protection_functions)
-#print('delta')                                                
+#print('delta')
+    saveRDS(list(agents = agents,
+                 contacts_list = contacts_list,
+                 lambda_list = lambda_list,
+                 schedule = schedule,
+                 virus_parameters = virus_parameters,
+                 testing_parameters = testing_parameters, #vaccine_parameters,
+                 vaccination_interval = vaccination_interval,
+                 scenario_parameters = scenario_parameters,
+                 steps = steps,
+                 step_length_list = step_length_list,
+                 testing_rate_list = testing_rate_list,
+                 vaccination_rate_list = vaccination_rate_list,
+                 agent_presence_list = agent_presence_list,
+                 quantitative_presence_list = quantitative_presence_list,
+                 #waning_parameters = waning_parameters,
+                 boosting_rate = boosting_rate,
+                 protection_functions = protection_functions
+            ),
+            'ABM.rds'
+    )
+    stop('Ass this ass.')
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
                  virus_parameters, testing_parameters, #vaccine_parameters,
