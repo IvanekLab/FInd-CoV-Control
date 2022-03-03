@@ -140,6 +140,8 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     boosting_mask = sbern(N, boosting_rate)
     event_times = sunif(N, start_time, end_time)
 
+    any_vaccination = rep(FALSE, N)
+
     if(sum(vaccination_rate) > 0) {
 
         S_to_V1 = (infection_status_0 == 'NI' &
@@ -204,6 +206,9 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                                immune_status = 'B',
                                vax_status = 'V2'
         )
+
+        any_vaccination = any_vaccination | S_to_V1 | V1_to_V2 | R_to_B_via_V1 |
+            R_to_B_via_V2
     }
 
     x_to_B_on_time = (infection_status_0 == 'NI' &
@@ -223,6 +228,8 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                            vax_status = 'B'
     )
 
+    any_vaccination = any_vaccination | x_to_B_on_time
+
     #boost
     if(sum(boosting_rate) > 0) {
         #time_V2 is only set when receiving second dose
@@ -239,6 +246,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                                immune_status = 'B',
                                vax_status = 'B'
         )
+        any_vaccination = any_vaccination | x_to_B_late
     }
 
 
@@ -257,7 +265,9 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         stop('And here is the failure.')
     }
 
-    agents
+    list(agents = agents,
+         doses = sum(any_vaccination)
+    )
 }
 
 #infection_status_0 is *not* used here, because we want (theoretical, in
@@ -437,11 +447,14 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         symptoms_0 = 1 - symptom_protection(agents, start_time)
         vax_status_0 = agents$vax_status
         
-        agents = vaccinate(agents, N, vaccination_rate, vaccination_interval,
-                           start_time, end_time, boosting_rate,
-                           infection_status_0, immune_status_0, vax_status_0,
-                           isolated_0, immunity_0,
-                           net_symptomatic_protection)
+        vl = vaccinate(agents, N, vaccination_rate, vaccination_interval,
+                       start_time, end_time, boosting_rate,
+                       infection_status_0, immune_status_0, vax_status_0,
+                       isolated_0, immunity_0,
+                       net_symptomatic_protection
+        )
+        agents = vl[['agents']]
+        doses = vl[['doses']]
 
         infectiousness = (!isolated_0) * (
             (infection_status_0 == 'IA') * p_trans_IA +
@@ -495,7 +508,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
         Out1 = update_Out1(Out1, k, agents, infection_status_0, isolated_0,
                            agent_presence, quantitative_presence,
-                           NI_to_E_community, NI_to_E)
+                           NI_to_E_community, NI_to_E, doses)
     
     }
 
@@ -544,13 +557,14 @@ make_Out1 = function(steps) {
         V2E_isolated = rep(0, steps),
         n_scheduled = rep(0, steps),
         n_absent = rep(0, steps),
-        new_infections = rep(0, steps)
+        new_infections = rep(0, steps),
+        doses = rep(0, steps)
     )
 }
 
 update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
                        agent_presence, quantitative_presence,
-                       NI_to_E_community, NI_to_E) {
+                       NI_to_E_community, NI_to_E, doses) {
     #NB: TRUE == 1 for the purpose of summation
     infection_status_1 = agents$infection_status
     immune_status_1 = agents$immune_status
@@ -604,6 +618,7 @@ update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
         Out1$qn_scheduled[k] = sum(quantitative_presence)
         Out1$qn_absent[k] = sum(quantitative_presence * absent)
         Out1$new_infections[k] = sum(NI_to_E_community + NI_to_E)
+        Out1$doses[k] = doses
 
         Out1
 }

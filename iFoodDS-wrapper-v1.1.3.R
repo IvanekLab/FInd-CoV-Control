@@ -238,7 +238,7 @@ common_parameters = list(
     n_no_symptoms = '1',        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'post-scenarios',   # relative to working directory
+    folder_name = 'five-curve',   # relative to working directory
     analyze_only = 'FALSE',
     PARALLEL = TRUE
 )
@@ -281,6 +281,6 @@ additional_farm_parameters = list(
     protection_functions = one_one_three_protection_functions
 )
 
-#do.call(full_run, c(common_parameters, additional_facility_parameters))
+do.call(full_run, c(common_parameters, additional_facility_parameters))
 do.call(full_run, c(common_parameters, additional_farm_parameters))
 

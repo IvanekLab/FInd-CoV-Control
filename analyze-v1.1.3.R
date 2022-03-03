@@ -402,10 +402,12 @@ sample_data = function() {
             unavailable_array = array(0, c(interventions, steps, reps))
             scheduled_array = array(0, c(interventions, steps, reps))
             total_infections_array = array(0, c(interventions, reps))
+            doses_array = array(0, c(interventions, reps))
         }
         unavailable_array[i,,] = shiftwise_unavailable(full_output)
         scheduled_array[i,,] = shiftwise_scheduled(full_output)
         total_infections_array[i,] = apply(full_output[,'new_infections',], 2, sum)
+        doses_array[i,] = apply(full_output[,'doses',], 2, sum)
     }
 
     l = list(N = N,
@@ -413,6 +415,7 @@ sample_data = function() {
              unavailable = unavailable_array,
              scheduled = scheduled_array,
              total_infections = total_infections_array,
+             doses = doses_array,
              intervention_names = row.names,
              work_shifts = work_shifts)
     saveRDS(l, 'sample_data-new.rds')

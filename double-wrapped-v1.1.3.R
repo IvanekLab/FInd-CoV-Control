@@ -65,20 +65,20 @@ row.names<-c(     "Baseline",
                   "Virus Test, p = 0.05 / Working Day",
                   "Virus Test, p = 0.3 / Working Day",
                   "Virus Test, p = 1.0 / Working Day",
-                  "Vaccination, p = 0.01 / Day",
+                  "Vaccination, p = 0.02 / Day",
                   "Vaccination, p = 0.04 / Day",
-                  "Vaccination, p = 0.16 / Day",
                   "Soc. Dist./Biosafety: -20% R₀",
                   "Soc. Dist./Biosafety: -40% R₀",
                   "Soc. Dist./Biosafety: -80% R₀",
+                  'Boosting, p = 0.02 / day', #kludge
                   'Boosting, p = 0.04 / day', #kludge
-                  'Vax + Boosting, p = 0.04/day' #kludge
+                  'Vax + Boosting, p = 0.02/day' #kludge
 )
 if(length(row.names) != k_max) {
     stop('Row names does not have the right length')
 }
 
-c4 = c('black', 'blue3', 'turquoise1', 'red2', 'yellow2')
+c4 = c('black', 'blue3', 'turquoise1', 'red2', '#E0B0FF', 'darkgreen', 'yellow2')
 
 colors = c('black',
            c4[2],
@@ -87,12 +87,13 @@ colors = c('black',
            c4[3],
            c4[4],
            c4[4],
-           c4[4],
            c4[5],
            c4[5],
            c4[5],
-'darkgreen', #kludge
-'darkgreen')
+           c4[6],
+           c4[6], #kludge
+           c4[7]
+)
 
 ltys = c(1,
          1,
@@ -101,12 +102,13 @@ ltys = c(1,
          3,
          1,
          2,
-         3,
          1,
          2,
          3,
-1, #kludge
-2)
+         1, #kludge
+         2,
+         1
+)
 
 parameter_sets = data.frame(double_wrap_reduction = rep(0, k_max),
                             double_wrap_temp_test = rep(FALSE, k_max),
@@ -131,8 +133,9 @@ for(k in (j + 1):(j + length(R0_reductions))) {
     parameter_sets[k, 'double_wrap_reduction'] = R0_reductions[k - j]
 }
 
+parameter_sets[k+1,'double_wrap_boosting_rate'] = 0.02
 parameter_sets[k+1,'double_wrap_boosting_rate'] = 0.04
-parameter_sets[k+2,c('double_wrap_vax_rate','double_wrap_boosting_rate')] = 0.04
+parameter_sets[k+2,c('double_wrap_vax_rate','double_wrap_boosting_rate')] = 0.02
 
 
 DOUBLE_WRAPPED = TRUE
