@@ -221,7 +221,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 1000
+double_wrap_num_sims = 100#0
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -275,14 +275,15 @@ additional_farm_parameters = list(
     community_transmission = NULL,
     
     fraction_recovered = 0.116,
-    fraction_fully_vaccinated = 0.627 / (1 - 0.116),
+    fraction_fully_vaccinated = 0.627,
     ffv_last_five_months = 0, #or whatever
     fraction_boosted = 0,
-    unique_id = 'farm-default',
+    unique_id = 'farm--de-swiss',
     variant = 'delta',
     protection_functions = one_one_three_protection_functions
 )
 
 #do.call(full_run, c(common_parameters, additional_facility_parameters))
 do.call(full_run, c(common_parameters, additional_farm_parameters))
-
+double_wrap_num_sims = 1000
+do.call(full_run, c(common_parameters, additional_farm_parameters))

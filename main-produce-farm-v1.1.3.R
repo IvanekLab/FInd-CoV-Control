@@ -305,7 +305,7 @@ contacts_list = list(ps_1 = production_shift_1 * work_scaling_factor +
                      weekend_cs = raw_home_contacts_weekend_cs *
                          home_scaling_factor)
 
-cat('\n', net_work_R0, scenario_parameters$average, '\n', sum(work_contacts) / N, '\n', work_scaling_factor, '\n', sum(contacts_list$ps_1) / N, '\n')
+#cat('\n', net_work_R0, scenario_parameters$average, '\n', sum(work_contacts) / N, '\n', work_scaling_factor, '\n', sum(contacts_list$ps_1) / N, '\n')
 #vaccination_rate_list = list(work = 0,
 #                             home = scenario_parameters$home_vaccination_rate *
 #                                   7 / 9, #to account for two home shifts per

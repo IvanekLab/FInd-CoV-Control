@@ -141,7 +141,10 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     ) 
 #print('g3')
     #pre-calculating all indices for clarity and ease of debugging
-    index_E_or_IM = sample(N, E0 + IM0) #1:N %in% sample(N, E0 + IM0)
+    #2022-03-04 Huge kludge
+    index_any = sample(N, E0 + IM0 + initial_recovered + initial_V2)
+    index_E_or_IM = index_any[1:(E0 + IM0)]#sample(N, E0 + IM0) #1:N %in% sample(N, E0 + IM0)
+    index_any = index_any[(E0+IM0+1):(E0 + IM0 + initial_recovered + initial_V2)]
     #index_E = 1:N %in% sample((1:N)[index_E_or_IM], E0)
     #There has to be a cleaner way to do this.
     if(E0 > 0 & IM0 > 0) {
@@ -159,8 +162,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     }
 #print('g4')    
     #TBD (eventually): Take account of immunity in assigning initial infectees
-    index_R = 1:N %in% sample(N, initial_recovered)
-    index_V2 = 1:N %in% sample(N, initial_V2)
+    index_R = 1:N %in% index_any[1:initial_recovered]#sample(N, initial_recovered)
+    index_V2 = 1:N %in% index_any[(initial_recovered+1):(initial_recovered+initial_V2)]
     initial_V2_last_five_months = round(ffv_last_five_months * initial_V2)
     if(initial_V2_last_five_months == 0) {
         index_V2_last_five_months = rep(FALSE, N)
