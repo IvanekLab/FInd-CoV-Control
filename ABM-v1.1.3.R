@@ -17,7 +17,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 unisolation_fn = function(agents, start_time) {
-    isolation_duration = 5
+    isolation_duration = 14 #5
 
     x_un_Isol = (
         agents$isolated &

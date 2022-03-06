@@ -162,8 +162,16 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     }
 #print('g4')    
     #TBD (eventually): Take account of immunity in assigning initial infectees
-    index_R = 1:N %in% index_any[1:initial_recovered]#sample(N, initial_recovered)
-    index_V2 = 1:N %in% index_any[(initial_recovered+1):(initial_recovered+initial_V2)]
+    if(initial_recovered > 0) {
+        index_R = 1:N %in% index_any[1:initial_recovered]#sample(N, initial_recovered)
+    } else {
+        index_R = rep(FALSE, N)
+    }
+    if(initial_V2 > 0) {
+        index_V2 = 1:N %in% index_any[(initial_recovered+1):(initial_recovered+initial_V2)]
+    } else {
+        index_V2 = rep(FALSE, N)
+    }
     initial_V2_last_five_months = round(ffv_last_five_months * initial_V2)
     if(initial_V2_last_five_months == 0) {
         index_V2_last_five_months = rep(FALSE, N)
@@ -231,7 +239,11 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     )
 
     #particularly suboptimal at the moment, given the recent massive peak
-    agents$time_R[index_R]= -runif(initial_recovered, 0, 365)
+    #print(index_R)
+    #print(agents$time_R[index_R])
+    x = -runif(initial_recovered, 0, 365)
+    #print(x)
+    agents$time_R[index_R]= x
     only_R = index_R & !index_V2
     agents$immune_status[only_R] = 'R'
     agents$time_last_immunity_event[only_R] = agents$time_R[only_R]

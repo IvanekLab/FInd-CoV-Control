@@ -284,6 +284,11 @@ additional_farm_parameters = list(
 )
 
 #do.call(full_run, c(common_parameters, additional_facility_parameters))
-do.call(full_run, c(common_parameters, additional_farm_parameters))
+#do.call(full_run, c(common_parameters, additional_farm_parameters))
 double_wrap_num_sims = 1000
+additional_farm_parameters[['unique_id']] = 'all_vax_fds'
+additional_farm_parameters[['fraction_recovered']] = 0
+additional_farm_parameters[['fraction_fully_vaccinated']] = 102/103
+common_parameters[['PARALLEL']] = TRUE
+common_parameters[['analyze_only']] = TRUE
 do.call(full_run, c(common_parameters, additional_farm_parameters))

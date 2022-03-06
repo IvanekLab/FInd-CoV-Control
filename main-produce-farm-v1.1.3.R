@@ -374,26 +374,28 @@ for (i in 1:num_sims) {
                        boosting_on_time_probability = fraction_boosted,
                        protection_functions = protection_functions)
 #print('delta')
-    #saveRDS(list(agents = agents,
-    #             contacts_list = contacts_list,
-    #             lambda_list = lambda_list,
-    #             schedule = schedule,
-    #             virus_parameters = virus_parameters,
-    #             testing_parameters = testing_parameters, #vaccine_parameters,
-    #             vaccination_interval = vaccination_interval,
-    #             scenario_parameters = scenario_parameters,
-    #             steps = steps,
-    #             step_length_list = step_length_list,
-    #             testing_rate_list = testing_rate_list,
-    #             vaccination_rate_list = vaccination_rate_list,
-    #             agent_presence_list = agent_presence_list,
-    #             quantitative_presence_list = quantitative_presence_list,
-    #             #waning_parameters = waning_parameters,
-    #             boosting_rate = boosting_rate,
-    #             protection_functions = protection_functions
-    #        ),
-    #        'ABM.rds'
-    #)
+    if(i==1) {
+        saveRDS(list(agents = agents,
+                    contacts_list = contacts_list,
+                    lambda_list = lambda_list,
+                    schedule = schedule,
+                    virus_parameters = virus_parameters,
+                    testing_parameters = testing_parameters, #vaccine_parameters,
+                    vaccination_interval = vaccination_interval,
+                    scenario_parameters = scenario_parameters,
+                    steps = steps,
+                    step_length_list = step_length_list,
+                    testing_rate_list = testing_rate_list,
+                    vaccination_rate_list = vaccination_rate_list,
+                    agent_presence_list = agent_presence_list,
+                    quantitative_presence_list = quantitative_presence_list,
+                    #waning_parameters = waning_parameters,
+                    boosting_rate = boosting_rate,
+                    protection_functions = protection_functions
+                ),
+                'ABM-0-0.rds'
+        )
+    }
     #stop('Ass this ass.')
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
