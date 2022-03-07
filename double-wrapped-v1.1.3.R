@@ -57,8 +57,8 @@ vax_rates = c(0.02, 0.04)
 R0_reductions = c(0.2, 0.4, 0.8)
 
 k_max = 1 + length(temperature_thresholds) + length(viral_test_rates) +
-    length(vax_rates) + length(R0_reductions) + 2 # +2 is a kludge to allow the
-                                                  # final two interventions
+    length(vax_rates) + length(R0_reductions) + 3 # +3 is a kludge to allow the
+                                                  # final three interventions
 
 row.names<-c(     "Baseline",
                   "Temperature Screening, 38.0°C",
