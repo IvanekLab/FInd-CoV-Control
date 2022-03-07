@@ -110,6 +110,15 @@ update_agents = function(agents, mask, ...) {
             stop('Invalid column labels: ',
                 argument_names[!(argument_names %in% column_names)])
         }
+        if(!(is.logical(mask))) { # Guarding against accidental use of numeric
+                                  # indices where logical is meant
+            print('Non-logical mask alert:')
+            print(mask)
+            for(name in names(argv)) {
+                cat(name, ':', argv[[name]], '\n')
+            }
+            stop('Non-logical mask:', mask)
+        }
     
         for(name in names(argv)) {
             argument = argv[[name]]
