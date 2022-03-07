@@ -78,7 +78,7 @@ if(length(row.names) != k_max) {
     stop('Row names does not have the right length')
 }
 
-c4 = c('black', 'blue3', 'lightblue1', 'red2', 'darkslategray', 'darkgreen', 'yellow2')
+c4 = c('black', 'blue3', 'lightblue1', 'red2', 'gray80', 'darkgreen', 'yellow2')
 
 colors = c(c4[1],
            c4[2],

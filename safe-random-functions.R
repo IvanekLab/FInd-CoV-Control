@@ -1,10 +1,12 @@
 #safe versions of runif and rbinom (restricted to a Bernoulli distribution
 #since that's all I actually need) to allow a guarantee that the same number of
 #calls to the underlying PRNG (hence rand() calls) will be made for a given N,
-#regardless of the other parameters used
+#regardless of the other parameters used. This is necessary because otherwise, a
+#call to runif(N, 0, 0), for example, will not actually make any calls to the
+#underlying PRNG, while a call to runif(N, 0, 1) will. This also allows for the
+#possibility of eventually adding some manner of latin hypercube functionality.
 
 
-#alternate approach that is maybe even cleaner
 random_functions_and_counter = function() {
     set_seed = NA
     runif_0_1_calls_counter = NA

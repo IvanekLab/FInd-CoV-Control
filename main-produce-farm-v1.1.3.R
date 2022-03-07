@@ -223,18 +223,12 @@ if(any(on_ps_1 + on_ps_2 + on_cs != rep(1, N))) {
 #TBD (eventually): Move this crap to ContactsGen and its facility analogue.
 ###
 
-
-####
-#Putting all between-shift floaters at start of day for testing and vaccination.
-#An alternative would be to randomize them once, at the start of the run.
-#Will discuss this.
-####
-agent_presence_list = list(ps_1 = ifelse(ceiling(on_ps_1), TRUE, FALSE),
-                           ps_2 = ifelse(floor(on_ps_2), TRUE, FALSE),
-                           cs =   ifelse(floor(on_cs), TRUE, FALSE),
-                           weekend_ps_1 = FALSE,
-                           weekend_ps_2 = FALSE,
-                           weekend_cs = FALSE)
+#agent_presence_list = list(ps_1 = ifelse(ceiling(on_ps_1), TRUE, FALSE),
+#                           ps_2 = ifelse(floor(on_ps_2), TRUE, FALSE),
+#                           cs =   ifelse(floor(on_cs), TRUE, FALSE),
+#                           weekend_ps_1 = FALSE,
+#                           weekend_ps_2 = FALSE,
+#                           weekend_cs = FALSE)
 
 quantitative_presence_list = list(ps_1 = on_ps_1,
                            ps_2 = on_ps_2,
@@ -364,6 +358,24 @@ if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
 
 sys_time_start = Sys.time()
 for (i in 1:num_sims) {
+
+    floater_randomizers = runif(N, 0, 1)
+    on_ps_1_randomized = floater_randomizers <= on_ps_1
+    on_ps_2_randomized = on_ps_1 < floater_randomizers &
+                         floater_randomizers <= on_ps_1 + on_ps_2
+    on_cs_randomized = on_ps_1 + on_ps_2 < floater_randomizers 
+    #on_ps_1 + on_ps_2 + on_cs was already checked to == rep(1, N)
+    if(any(on_ps_1_randomized + on_ps_2_randomized + on_cs_randomized != 1)) {
+        stop('Shift randomization for vaccination and testing somehow failed.')
+    }
+
+    agent_presence_list = list(ps_1 = on_ps_1_randomized,
+                           ps_2 = on_ps_2_randomized,
+                           cs = on_cs_randomized,
+                           weekend_ps_1 = FALSE,
+                           weekend_ps_2 = FALSE,
+                           weekend_cs = FALSE)
+
 #print('gamma')
     agents <- AgentGen(N, E0 = n_exposed, IA0 = 0, IP0 = 0, IM0 = n_mild,
                        initial_recovered = initial_recovered,
