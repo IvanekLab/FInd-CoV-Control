@@ -240,7 +240,13 @@ common_parameters = list(
     working_directory = '.',
     folder_name = 'five-curve',   # relative to working directory
     analyze_only = 'FALSE',
-    PARALLEL = TRUE
+    PARALLEL = TRUE,
+    fraction_recovered = 0.69,
+    fraction_fully_vaccinated = 0.71,
+    ffv_last_five_months = 0.09,
+    fraction_boosted = 0.45,
+    protection_functions = default_protection_functions,
+    variant = 'omicron'
 )
 
 additional_facility_parameters = list(
@@ -253,13 +259,7 @@ additional_facility_parameters = list(
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
     
-    fraction_recovered = 0.69,
-    fraction_fully_vaccinated = 0.71,
-    ffv_last_five_months = 0.09,
-    fraction_boosted = 0.45,
-    unique_id = 'default-v10',
-    variant = 'omicron',
-    protection_functions = default_protection_functions
+    unique_id = 'facility-default-v12'
 )
 
 additional_farm_parameters = list(
@@ -272,13 +272,7 @@ additional_farm_parameters = list(
     social_distancing_shared_housing = 'Intermediate',
     community_transmission = NULL,
     
-    fraction_recovered = 0.116,
-    fraction_fully_vaccinated = 0.627 / (1 - 0.116),
-    ffv_last_five_months = 0, #or whatever
-    fraction_boosted = 0,
-    unique_id = 'farm-default',
-    variant = 'delta',
-    protection_functions = one_one_three_protection_functions
+    unique_id = 'farm-default-v12' #actually lower, but going for consistency
 )
 
 do.call(full_run, c(common_parameters, additional_facility_parameters))
