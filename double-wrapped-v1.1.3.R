@@ -53,7 +53,7 @@ if(n_exposed + n_mild > N) {
 
 temperature_thresholds = c(38)#, 37.5, 37.1)
 viral_test_rates = c(0.05, 0.3, 1.0)
-vax_rates = c(0.01, 0.04, 0.16) 
+vax_rates = c(0.02, 0.04) 
 R0_reductions = c(0.2, 0.4, 0.8)
 
 k_max = 1 + length(temperature_thresholds) + length(viral_test_rates) +
@@ -78,9 +78,9 @@ if(length(row.names) != k_max) {
     stop('Row names does not have the right length')
 }
 
-c4 = c('black', 'blue3', 'turquoise1', 'red2', '#E0B0FF', 'darkgreen', 'yellow2')
+c4 = c('black', 'blue3', 'lightblue1', 'red2', 'darkslategray', 'darkgreen', 'yellow2')
 
-colors = c('black',
+colors = c(c4[1],
            c4[2],
            c4[3],
            c4[3],
@@ -134,8 +134,8 @@ for(k in (j + 1):(j + length(R0_reductions))) {
 }
 
 parameter_sets[k+1,'double_wrap_boosting_rate'] = 0.02
-parameter_sets[k+1,'double_wrap_boosting_rate'] = 0.04
-parameter_sets[k+2,c('double_wrap_vax_rate','double_wrap_boosting_rate')] = 0.02
+parameter_sets[k+2,'double_wrap_boosting_rate'] = 0.04
+parameter_sets[k+3,c('double_wrap_vax_rate','double_wrap_boosting_rate')] = 0.02
 
 
 DOUBLE_WRAPPED = TRUE
