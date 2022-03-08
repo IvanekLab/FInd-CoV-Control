@@ -205,6 +205,9 @@ full_run = function(
 
     subdirectory = paste(folder_name, '/', sep = '')
     dir.create(subdirectory)
+
+    double_wrap_community_foi = double_wrap_baseline_work_R0 = dormitory_R0 = 0
+
     if(analyze_only) { # these should be saved in a separate file
                        # once we start having more complex schedules
     #    steps = days * 3
@@ -285,10 +288,27 @@ additional_farm_parameters = list(
 
 #do.call(full_run, c(common_parameters, additional_facility_parameters))
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
-double_wrap_num_sims = 1000
+double_wrap_num_sims = 100#0
 #additional_farm_parameters[['unique_id']] = 'all_vax_fds'
 #additional_farm_parameters[['fraction_recovered']] = 0
 #additional_farm_parameters[['fraction_fully_vaccinated']] = 102/103
 common_parameters[['PARALLEL']] = TRUE
-common_parameters[['analyze_only']] = TRUE
+#common_parameters[['analyze_only']] = TRUE
+common_parameters[['n_no_symptoms']] = 103 - (round(103 * 0.116) + round(103 * 0.627))
+additional_farm_parameters[['unique_id']] = 'max_infected_mixed_no_transmission'
 do.call(full_run, c(common_parameters, additional_farm_parameters))
+
+common_parameters[['n_no_symptoms']] = 103
+additional_farm_parameters[['fraction_recovered']] = 0
+additional_farm_parameters[['fraction_fully_vaccinated']] = 0
+additional_farm_parameters[['unique_id']] = 'all_infected_no_transmission'
+do.call(full_run, c(common_parameters, additional_farm_parameters))
+
+additional_farm_parameters[['unique_id']] = 'no_infected_no_transmission'
+common_parameters[['n_no_symptoms']] = 0
+do.call(full_run, c(common_parameters, additional_farm_parameters))
+
+additional_farm_parameters[['unique_id']] = 'half_infected_no_transmission'
+common_parameters[['n_no_symptoms']] = 52
+do.call(full_run, c(common_parameters, additional_farm_parameters))
+
