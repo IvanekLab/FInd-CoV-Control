@@ -133,7 +133,6 @@ if(farm_or_facility == 'farm') {
                                  #scenario_parameters$rates,
                                  example_rates,
                                  scenario_parameters$average)
-
     #sleep_contacts = matrix(0, N, N)
 
     #if(scenario_parameters$housing_dormitory) {
@@ -288,10 +287,12 @@ home_scaling_factor = ifelse(scenario_parameters$dormitory_intensity == 0,
 )
 #no need for 7/9, since this is directly calculated from the weekly sum
 #but ifelse *is* needed to avoid a 0/0 issue if housing is in the community
-work_scaling_factor = scenario_parameters[['average']] /
-        #colSums(shift_sum)[1] *
-        (sum(shift_sum) / N) *
-        7/5 #this could (and perhaps should) be done with a weekly sum as well
+print(scenario_parameters$average)
+work_scaling_factor = ifelse(scenario_parameters$average == 0,
+    0,
+    scenario_parameters[['average']] / (sum(shift_sum) / N) * 7/5
+)    #this could (and perhaps should) be done with a weekly sum as well
+
 contacts_list = list(ps_1 = production_shift_1 * work_scaling_factor +
                             raw_home_contacts_ps_1 * home_scaling_factor,
                      ps_2 = production_shift_2 * work_scaling_factor +

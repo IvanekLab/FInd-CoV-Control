@@ -191,7 +191,7 @@ full_run = function(
     if(variant == 'delta') {
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 2
         #DELTA_VAX = TRUE
-        print(double_wrap_baseline_work_R0)
+        #print(double_wrap_baseline_work_R0)
         #stop('Butt this butt')
     } else if (variant == 'omicron') {
             #double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
@@ -288,7 +288,7 @@ additional_farm_parameters = list(
 
 #do.call(full_run, c(common_parameters, additional_facility_parameters))
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
-double_wrap_num_sims = 100#0
+double_wrap_num_sims = 1000
 #additional_farm_parameters[['unique_id']] = 'all_vax_fds'
 #additional_farm_parameters[['fraction_recovered']] = 0
 #additional_farm_parameters[['fraction_fully_vaccinated']] = 102/103
