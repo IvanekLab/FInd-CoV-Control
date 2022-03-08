@@ -366,17 +366,17 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
 }
 
 
-oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))
+oneplot('Infected', infected, mean, c(0,12), paste('People Infectious (out of ', N, ' total)', sep = ''))
 
 l = length(work_shifts)
 production_shifts = work_shifts & ((1:l) %% 3 != 0)
 cleaning_shifts =  work_shifts & ((1:l) %% 3 == 0)
 
-oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', production_shift_size, ' total)', sep = ''), mask = production_shifts)
+oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,4), paste('People Unavailable to Work their Scheduled Production Shift (out of ', production_shift_size, ' total)', sep = ''), mask = production_shifts)
 
 main_title = ''
 
-end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', production_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts)
+end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', production_shift_size, ' workers)'), xlim = c(0,6), average = TRUE, main_title = main_title, mask = production_shifts)
 
 end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
 

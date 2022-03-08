@@ -53,7 +53,7 @@ if(n_exposed + n_mild > N) {
 
 temperature_thresholds = c(38)#, 37.5, 37.1)
 viral_test_rates = c(0.05, 0.3, 1.0)
-vax_rates = numeric()#c(0.01, 0.04, 0.16) 
+vax_rates = c(0.01, 0.04, 0.16) 
 R0_reductions = c(0.2, 0.4, 0.8)
 
 k_max = 1 + length(temperature_thresholds) + length(viral_test_rates) +
@@ -65,9 +65,9 @@ row.names<-c(     "Baseline",
                   "Virus Test, p = 0.05 / Working Day",
                   "Virus Test, p = 0.3 / Working Day",
                   "Virus Test, p = 1.0 / Working Day",
-                  #"Vaccination, p = 0.01 / Day",
-                  #"Vaccination, p = 0.04 / Day",
-                  #"Vaccination, p = 0.16 / Day",
+                  "Vaccination, p = 0.01 / Day",
+                  "Vaccination, p = 0.04 / Day",
+                  "Vaccination, p = 0.16 / Day",
                   "Soc. Dist./Biosafety: -20% R₀",
                   "Soc. Dist./Biosafety: -40% R₀",
                   "Soc. Dist./Biosafety: -80% R₀"#,
@@ -85,9 +85,9 @@ colors = c('black',
            c4[3],
            c4[3],
            c4[3],
-           #c4[4],
-           #c4[4],
-           #c4[4],
+           c4[4],
+           c4[4],
+           c4[4],
            c4[5],
            c4[5],
            c4[5]#,
@@ -100,9 +100,9 @@ ltys = c(1,
          1,
          2,
          3,
-         #1,
-         #2,
-         #3,
+         1,
+         2,
+         3,
          1,
          2,
          3#,
@@ -123,12 +123,12 @@ for(h in 2:(1 + length(temperature_thresholds))) {
 for(i in (h + 1):(h + length(viral_test_rates))) {
     parameter_sets[i, 'double_wrap_viral_test_rate'] = viral_test_rates[i - h]
 }
-#for(j in (i + 1):(i + length(vax_rates))) {
+for(j in (i + 1):(i + length(vax_rates))) {
 #i = 1
 #for(j in 2:4) {
-#    parameter_sets[j, 'double_wrap_vax_rate'] = vax_rates[j - i]
-#}
-j = i
+    parameter_sets[j, 'double_wrap_vax_rate'] = vax_rates[j - i]
+}
+#j = i
 #k = j
 for(k in (j + 1):(j + length(R0_reductions))) {
     parameter_sets[k, 'double_wrap_reduction'] = R0_reductions[k - j]

@@ -240,7 +240,7 @@ common_parameters = list(
     n_no_symptoms = '1',        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'post-scenarios',   # relative to working directory
+    folder_name = 'post-scenarios-copied',   # relative to working directory
     analyze_only = 'FALSE',
     PARALLEL = FALSE
 )
@@ -286,9 +286,9 @@ additional_farm_parameters = list(
 #do.call(full_run, c(common_parameters, additional_facility_parameters))
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
 double_wrap_num_sims = 1000
-additional_farm_parameters[['unique_id']] = 'all_vax_fds'
-additional_farm_parameters[['fraction_recovered']] = 0
-additional_farm_parameters[['fraction_fully_vaccinated']] = 102/103
+#additional_farm_parameters[['unique_id']] = 'all_vax_fds'
+#additional_farm_parameters[['fraction_recovered']] = 0
+#additional_farm_parameters[['fraction_fully_vaccinated']] = 102/103
 common_parameters[['PARALLEL']] = TRUE
 common_parameters[['analyze_only']] = TRUE
 do.call(full_run, c(common_parameters, additional_farm_parameters))
