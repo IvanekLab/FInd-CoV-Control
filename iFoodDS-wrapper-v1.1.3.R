@@ -191,7 +191,7 @@ full_run = function(
     if(variant == 'delta') {
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 2
         #DELTA_VAX = TRUE
-        #print(double_wrap_baseline_work_R0)
+        print(double_wrap_baseline_work_R0)
         #stop('Butt this butt')
     } else if (variant == 'omicron') {
             #double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
@@ -206,7 +206,7 @@ full_run = function(
     subdirectory = paste(folder_name, '/', sep = '')
     dir.create(subdirectory)
 
-    double_wrap_community_foi = double_wrap_baseline_work_R0 = dormitory_R0 = 0
+    #double_wrap_community_foi = double_wrap_baseline_work_R0 = dormitory_R0 = 0
 
     if(analyze_only) { # these should be saved in a separate file
                        # once we start having more complex schedules
@@ -224,7 +224,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '1.1.3'
-double_wrap_num_sims = 100#0
+double_wrap_num_sims = 1000
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -295,10 +295,10 @@ double_wrap_num_sims = 1000
 common_parameters[['PARALLEL']] = TRUE
 common_parameters[['analyze_only']] = TRUE
 
-common_parameters[['n_no_symptoms']] = 103
-additional_farm_parameters[['fraction_recovered']] = 0
-additional_farm_parameters[['fraction_fully_vaccinated']] = 0
-additional_farm_parameters[['unique_id']] = 'all_infected_no_transmission_ignore_symptoms_underped_again'
+#common_parameters[['n_no_symptoms']] = 103
+#additional_farm_parameters[['fraction_recovered']] = 0
+#additional_farm_parameters[['fraction_fully_vaccinated']] = 0
+additional_farm_parameters[['unique_id']] = 'farm_default_post_fixes_2022-03-08'
 do.call(full_run, c(common_parameters, additional_farm_parameters))
 
 #additional_farm_parameters[['unique_id']] = 'no_infected_no_transmission_ignore_symptoms'
