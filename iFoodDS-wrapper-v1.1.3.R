@@ -293,22 +293,21 @@ double_wrap_num_sims = 1000
 #additional_farm_parameters[['fraction_recovered']] = 0
 #additional_farm_parameters[['fraction_fully_vaccinated']] = 102/103
 common_parameters[['PARALLEL']] = TRUE
-#common_parameters[['analyze_only']] = TRUE
-common_parameters[['n_no_symptoms']] = 103 - (round(103 * 0.116) + round(103 * 0.627))
-additional_farm_parameters[['unique_id']] = 'max_infected_mixed_no_transmission'
-do.call(full_run, c(common_parameters, additional_farm_parameters))
+common_parameters[['analyze_only']] = TRUE
 
 common_parameters[['n_no_symptoms']] = 103
 additional_farm_parameters[['fraction_recovered']] = 0
 additional_farm_parameters[['fraction_fully_vaccinated']] = 0
-additional_farm_parameters[['unique_id']] = 'all_infected_no_transmission'
+additional_farm_parameters[['unique_id']] = 'all_infected_no_transmission_ignore_symptoms_underped_again'
 do.call(full_run, c(common_parameters, additional_farm_parameters))
 
-additional_farm_parameters[['unique_id']] = 'no_infected_no_transmission'
-common_parameters[['n_no_symptoms']] = 0
-do.call(full_run, c(common_parameters, additional_farm_parameters))
+#additional_farm_parameters[['unique_id']] = 'no_infected_no_transmission_ignore_symptoms'
+#common_parameters[['n_no_symptoms']] = 0
+#do.call(full_run, c(common_parameters, additional_farm_parameters))
 
-additional_farm_parameters[['unique_id']] = 'half_infected_no_transmission'
-common_parameters[['n_no_symptoms']] = 52
-do.call(full_run, c(common_parameters, additional_farm_parameters))
+#common_parameters[['n_no_symptoms']] = 103 - (round(103 * 0.116) + round(103 * 0.627))
+#additional_farm_parameters[['fraction_recovered']] = 0.116
+#additional_farm_parameters[['fraction_fully_vaccinated']] = 0.627
+#additional_farm_parameters[['unique_id']] = 'max_infected_mixed_no_transmission_ignore_symptoms'
+#do.call(full_run, c(common_parameters, additional_farm_parameters))
 

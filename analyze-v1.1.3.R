@@ -372,7 +372,7 @@ l = length(work_shifts)
 production_shifts = work_shifts & ((1:l) %% 3 != 0)
 cleaning_shifts =  work_shifts & ((1:l) %% 3 == 0)
 
-oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,4), paste('People Unavailable to Work their Scheduled Production Shift (out of ', production_shift_size, ' total)', sep = ''), mask = production_shifts)
+oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', production_shift_size, ' total)', sep = ''), mask = production_shifts)
 
 main_title = ''
 
