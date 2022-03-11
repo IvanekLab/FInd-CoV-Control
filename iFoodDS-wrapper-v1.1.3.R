@@ -293,12 +293,20 @@ double_wrap_num_sims = 1000
 #additional_farm_parameters[['fraction_recovered']] = 0
 #additional_farm_parameters[['fraction_fully_vaccinated']] = 102/103
 common_parameters[['PARALLEL']] = TRUE
-common_parameters[['analyze_only']] = TRUE
+common_parameters[['analyze_only']] = FALSE
 
 #common_parameters[['n_no_symptoms']] = 103
-#additional_farm_parameters[['fraction_recovered']] = 0
-#additional_farm_parameters[['fraction_fully_vaccinated']] = 0
-additional_farm_parameters[['unique_id']] = 'farm_default_post_fixes_2022-03-08'
+additional_farm_parameters[['fraction_recovered']] = 0
+additional_farm_parameters[['fraction_fully_vaccinated']] = 0
+additional_farm_parameters[['unique_id']] = 'fdpf_max'
+common_parameters[['social_distancing_work']] = 'Low'
+additional_farm_parameters[['social_distancing_shared_housing']] = 'Low'
+#do.call(full_run, c(common_parameters, additional_farm_parameters))
+
+additional_farm_parameters[['employee_housing']] = 'Private'
+additional_farm_parameters[['unique_id']] = 'fdpf_max_private'
+additional_farm_parameters[['social_distancing_shared_housing']] = 'NULL'
+additional_farm_parameters[['community_transmission']] = 'High'
 do.call(full_run, c(common_parameters, additional_farm_parameters))
 
 #additional_farm_parameters[['unique_id']] = 'no_infected_no_transmission_ignore_symptoms'
