@@ -145,7 +145,7 @@ full_run = function(
         } else if(tolower(community_transmission) == 'intermediate'){
             double_wrap_community_foi = 0.001
         } else if(tolower(community_transmission) == 'high'){
-            double_wrap_community_foi = 0.01
+            double_wrap_community_foi = 0.002
         } else {
             stop(paste('Invalid community_transmission:',
                        community_transmission))
@@ -301,13 +301,13 @@ additional_farm_parameters[['fraction_fully_vaccinated']] = 0
 additional_farm_parameters[['unique_id']] = 'fdpf_max'
 common_parameters[['social_distancing_work']] = 'Low'
 additional_farm_parameters[['social_distancing_shared_housing']] = 'Low'
-#do.call(full_run, c(common_parameters, additional_farm_parameters))
+do.call(full_run, c(common_parameters, additional_farm_parameters))
 
 additional_farm_parameters[['employee_housing']] = 'Private'
 additional_farm_parameters[['unique_id']] = 'fdpf_max_private'
 additional_farm_parameters[['social_distancing_shared_housing']] = 'NULL'
 additional_farm_parameters[['community_transmission']] = 'High'
-do.call(full_run, c(common_parameters, additional_farm_parameters))
+#do.call(full_run, c(common_parameters, additional_farm_parameters))
 
 #additional_farm_parameters[['unique_id']] = 'no_infected_no_transmission_ignore_symptoms'
 #common_parameters[['n_no_symptoms']] = 0
