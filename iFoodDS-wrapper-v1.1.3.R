@@ -145,7 +145,7 @@ full_run = function(
         } else if(tolower(community_transmission) == 'intermediate'){
             double_wrap_community_foi = 0.001
         } else if(tolower(community_transmission) == 'high'){
-            double_wrap_community_foi = 0.002
+            double_wrap_community_foi = 0.01
         } else {
             stop(paste('Invalid community_transmission:',
                        community_transmission))
@@ -191,8 +191,6 @@ full_run = function(
     if(variant == 'delta') {
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 2
         #DELTA_VAX = TRUE
-        print(double_wrap_baseline_work_R0)
-        #stop('Butt this butt')
     } else if (variant == 'omicron') {
             #double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 #* 7/3
@@ -205,9 +203,6 @@ full_run = function(
 
     subdirectory = paste(folder_name, '/', sep = '')
     dir.create(subdirectory)
-
-    #double_wrap_community_foi = double_wrap_baseline_work_R0 = dormitory_R0 = 0
-
     if(analyze_only) { # these should be saved in a separate file
                        # once we start having more complex schedules
     #    steps = days * 3
@@ -243,9 +238,9 @@ common_parameters = list(
     n_no_symptoms = '1',        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'post-scenarios-copied',   # relative to working directory
-    analyze_only = 'FALSE',
-    PARALLEL = FALSE
+    folder_name = 'post-scenarios',   # relative to working directory
+    analyze_only = 'TRUE',
+    PARALLEL = TRUE
 )
 
 additional_facility_parameters = list(
@@ -278,44 +273,14 @@ additional_farm_parameters = list(
     community_transmission = NULL,
     
     fraction_recovered = 0.116,
-    fraction_fully_vaccinated = 0.627,
+    fraction_fully_vaccinated = 0.627 / (1 - 0.116),
     ffv_last_five_months = 0, #or whatever
     fraction_boosted = 0,
-    unique_id = 'farm--de-swiss',
+    unique_id = 'farm-default',
     variant = 'delta',
     protection_functions = one_one_three_protection_functions
 )
 
 #do.call(full_run, c(common_parameters, additional_facility_parameters))
-#do.call(full_run, c(common_parameters, additional_farm_parameters))
-double_wrap_num_sims = 1000
-#additional_farm_parameters[['unique_id']] = 'all_vax_fds'
-#additional_farm_parameters[['fraction_recovered']] = 0
-#additional_farm_parameters[['fraction_fully_vaccinated']] = 102/103
-common_parameters[['PARALLEL']] = TRUE
-common_parameters[['analyze_only']] = FALSE
-
-#common_parameters[['n_no_symptoms']] = 103
-additional_farm_parameters[['fraction_recovered']] = 0
-additional_farm_parameters[['fraction_fully_vaccinated']] = 0
-additional_farm_parameters[['unique_id']] = 'fdpf_max'
-common_parameters[['social_distancing_work']] = 'Low'
-additional_farm_parameters[['social_distancing_shared_housing']] = 'Low'
-#do.call(full_run, c(common_parameters, additional_farm_parameters))
-
-additional_farm_parameters[['employee_housing']] = 'Private'
-additional_farm_parameters[['unique_id']] = 'fdpfss_max_private'
-additional_farm_parameters[['social_distancing_shared_housing']] = 'NULL'
-additional_farm_parameters[['community_transmission']] = 'High'
 do.call(full_run, c(common_parameters, additional_farm_parameters))
-
-#additional_farm_parameters[['unique_id']] = 'no_infected_no_transmission_ignore_symptoms'
-#common_parameters[['n_no_symptoms']] = 0
-#do.call(full_run, c(common_parameters, additional_farm_parameters))
-
-#common_parameters[['n_no_symptoms']] = 103 - (round(103 * 0.116) + round(103 * 0.627))
-#additional_farm_parameters[['fraction_recovered']] = 0.116
-#additional_farm_parameters[['fraction_fully_vaccinated']] = 0.627
-#additional_farm_parameters[['unique_id']] = 'max_infected_mixed_no_transmission_ignore_symptoms'
-#do.call(full_run, c(common_parameters, additional_farm_parameters))
 

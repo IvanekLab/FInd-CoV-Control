@@ -17,12 +17,12 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 unisolation_fn = function(agents, start_time) {
-    isolation_duration = 14 #5
+    isolation_duration = 5
 
     x_un_Isol = (
         agents$isolated &
-        start_time - agents$time_isolated >= isolation_duration #&
-        #agents$infection_status %in% c('NI', 'E', 'IA', 'IP')
+        start_time - agents$time_isolated >= isolation_duration &
+        agents$infection_status %in% c('NI', 'E', 'IA', 'IP')
     )
     agents$isolated[x_un_Isol] = FALSE
     agents
@@ -298,8 +298,8 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
     agents$infection_status[IP_to_IM] = 'IM'
     agents$time_IM[IP_to_IM] = agents$time_IP[IP_to_IM] +
         agents$duration_IP[IP_to_IM]
-    #agents$time_isolated[IP_to_IM & isolated_0] =
-    #    agents$time_IM[IP_to_IM & isolated_0] #resetting isolation duration upon
+    agents$time_isolated[IP_to_IM & isolated_0] =
+        agents$time_IM[IP_to_IM & isolated_0] #resetting isolation duration upon
                                               #symptom onset
     agents$infection_status[xE_to_IP] = 'IP'
 
