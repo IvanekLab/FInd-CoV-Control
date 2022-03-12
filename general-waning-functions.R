@@ -162,6 +162,8 @@ make_one_one_three = function() {
         two_level_protection(1, Inf)
     )
 
+    net_symptomatic_protection = protection_functions$net_symptomatic_protection
+
    infection_protection = function(agents, start_time) {
         ais = agents$immune_status
         t = (start_time - agents$time_last_immunity_event)
@@ -170,9 +172,9 @@ make_one_one_three = function() {
         protection = ifelse(ais == 'FS',
             0,
             ifelse(ais == 'V1',
-                sqrt(1 - V1_susceptibility),
+                1 - V1_susceptibility,
                 ifelse(ais == 'V2',
-                    sqrt(1 - V2_susceptibility),
+                    1 - V2_susceptibility,
                     ifelse(ais == 'B',
                         1,
                         ifelse(ais == 'R',
@@ -199,7 +201,7 @@ make_one_one_three = function() {
     }
 
     protection_functions$infection_protection = infection_protection
-    protection_functions$symptom_protection = infection_protection
+    protection_functions$symptom_protection = symptom_protection
 
     #print(protection_functions)
 

@@ -22,7 +22,7 @@ unisolation_fn = function(agents, start_time) {
     x_un_Isol = (
         agents$isolated &
         start_time - agents$time_isolated >= isolation_duration &
-        agents$infection_status %in% c('NI', 'E', 'IA')
+        agents$infection_status %in% c('NI', 'E', 'IA', 'IP')
     )
     agents$isolated[x_un_Isol] = FALSE
     agents
@@ -56,7 +56,7 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
 
     if(sum(testing_rate) > 0) {
         if(max(testing_rate) == 1) {
-                testing_mask = agent_presence
+                testing_mask = agent_presence & !isolated
         } else if(rational_testing) {
             indices = order(agents$time_tested, randomize_ties) 
             eligible = (
@@ -80,6 +80,12 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
         agents$time_tested[testing_mask] = start_time
 
         x_to_Isol = testing_mask & conditional_detection_mask
+        if(testing_rate < 1 && any(x_to_Isol & !eligible)) {
+            stop('ineligible')
+        }
+        if(any(x_to_Isol & agents$isolated)) {
+            stop('double counting')
+        }
         agents$isolated[x_to_Isol] = TRUE
         agents$time_isolated[x_to_Isol] = start_time
     }
@@ -584,7 +590,8 @@ update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
         }
         sum(
             infection_status_1 == infection_status &
-            immune_status_1 == immune_status
+            immune_status_1 == immune_status &
+            mask
         )
     }
 
@@ -605,9 +612,9 @@ update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
         Out1$BE[k] <- f('E', 'B')
         Out1$S_isolated[k] <-  f('NI', 'FS',  isolated_0)
         Out1$E_isolated[k] <-  f('E', 'FS',  isolated_0)
-        Out1$IA_isolated[k] <- f('IA', isolated_0)
-        Out1$IP_isolated[k] <- f('IP', isolated_0)
-        Out1$IM_isolated[k] <- f('IM', isolated_0)
+        Out1$IA_isolated[k] <- f('IA', NULL, isolated_0)
+        Out1$IP_isolated[k] <- f('IP', NULL, isolated_0)
+        Out1$IM_isolated[k] <- f('IM', NULL, isolated_0)
         Out1$R_isolated[k] <-  f('NI', 'R',  isolated_0)
         Out1$RE_isolated[k] <-  f('E', 'R',  isolated_0)
         Out1$V1_isolated[k] <-  f('NI', 'V1',  isolated_0)

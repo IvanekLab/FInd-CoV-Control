@@ -133,7 +133,6 @@ if(farm_or_facility == 'farm') {
                                  #scenario_parameters$rates,
                                  example_rates,
                                  scenario_parameters$average)
-
     #sleep_contacts = matrix(0, N, N)
 
     #if(scenario_parameters$housing_dormitory) {
@@ -282,9 +281,11 @@ home_scaling_factor = ifelse(scenario_parameters$dormitory_intensity == 0,
 )
 #no need for 7/9, since this is directly calculated from the weekly sum
 #but ifelse *is* needed to avoid a 0/0 issue if housing is in the community
-work_scaling_factor = scenario_parameters[['average']] /
-        (sum(shift_sum) / N) *
-        7/5 #this could (and perhaps should) be done with a weekly sum as well
+work_scaling_factor = ifelse(scenario_parameters$average == 0,
+    0,
+    scenario_parameters[['average']] / (sum(shift_sum) / N) * 7/5
+)    #this could (and perhaps should) be done with a weekly sum as well
+
 contacts_list = list(ps_1 = production_shift_1 * work_scaling_factor +
                             raw_home_contacts_ps_1 * home_scaling_factor,
                      ps_2 = production_shift_2 * work_scaling_factor +
@@ -297,7 +298,6 @@ contacts_list = list(ps_1 = production_shift_1 * work_scaling_factor +
                          home_scaling_factor,
                      weekend_cs = raw_home_contacts_weekend_cs *
                          home_scaling_factor)
-
 
 #vaccination_rate_list = list(work = 0,
 #                             home = scenario_parameters$home_vaccination_rate *
@@ -351,6 +351,7 @@ step_index = (1:steps) * (1/3) #step_length
 source('safe-random-functions.R')
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
     safe_set_seed(-778276078)
+    #safe_set_seed(-528236667) # a different truly random number, for comparison
     #set.seed(-778276078) #random 32-bit signed integer generated using
                          #atmospheric noise for reproducible output
     #cat('intervention:', index_i, 'seed set:', runif(1, 0, 1), '\n')
@@ -384,7 +385,7 @@ for (i in 1:num_sims) {
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
                        boosting_on_time_probability = fraction_boosted,
                        protection_functions = protection_functions)
-#print('delta')                                                
+#print('delta')
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
                  virus_parameters, testing_parameters, #vaccine_parameters,
