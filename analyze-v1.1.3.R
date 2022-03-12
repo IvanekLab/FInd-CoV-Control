@@ -403,11 +403,13 @@ sample_data = function() {
             scheduled_array = array(0, c(interventions, steps, reps))
             total_infections_array = array(0, c(interventions, reps))
             doses_array = array(0, c(interventions, reps))
+            tests_array = array(0, c(interventions, reps))
         }
         unavailable_array[i,,] = shiftwise_unavailable(full_output)
         scheduled_array[i,,] = shiftwise_scheduled(full_output)
         total_infections_array[i,] = apply(full_output[,'new_infections',], 2, sum)
         doses_array[i,] = apply(full_output[,'doses',], 2, sum)
+        tests_array[i,] = apply(full_output[,'tests',], 2, sum)
     }
 
     l = list(N = N,

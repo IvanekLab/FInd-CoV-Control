@@ -88,9 +88,11 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
         }
         agents$isolated[x_to_Isol] = TRUE
         agents$time_isolated[x_to_Isol] = start_time
+    } else {
+        x_to_Isol = rep(FALSE, N)
     }
     
-    list(agents = agents, fractional_test_carried = fractional_test_carried)
+    list(agents = agents, tests_performed = sum(x_to_Isol), fractional_test_carried = fractional_test_carried)
 }
 
 # In a technical sense, the following function is totally redundant (and with
@@ -439,6 +441,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                            fractional_test_carried, N, IA_FNR, IP_FNR, IM_FNR, 
                            FPR, agent_presence)
         agents = ifl[['agents']]
+        tests_performed = ifl[['tests_performed']]
         fractional_test_carried = ifl[['fractional_test_carried']]
 
         #2022-02-10: pulling out repeated calls that are intended to resolve on
@@ -523,7 +526,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
         Out1 = update_Out1(Out1, k, agents, infection_status_0, isolated_0,
                            agent_presence, quantitative_presence,
-                           NI_to_E_community, NI_to_E, doses)
+                           NI_to_E_community, NI_to_E, doses, tests_performed)
     
     }
 
@@ -573,13 +576,14 @@ make_Out1 = function(steps) {
         n_scheduled = rep(0, steps),
         n_absent = rep(0, steps),
         new_infections = rep(0, steps),
-        doses = rep(0, steps)
+        doses = rep(0, steps),
+        tests = rep(0, steps)
     )
 }
 
 update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
                        agent_presence, quantitative_presence,
-                       NI_to_E_community, NI_to_E, doses) {
+                       NI_to_E_community, NI_to_E, doses, tests_performed) {
     #NB: TRUE == 1 for the purpose of summation
     infection_status_1 = agents$infection_status
     immune_status_1 = agents$immune_status
@@ -635,6 +639,7 @@ update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
         Out1$qn_absent[k] = sum(quantitative_presence * absent)
         Out1$new_infections[k] = sum(NI_to_E_community + NI_to_E)
         Out1$doses[k] = doses
+        Out1$tests[k] = tests_performed
 
         Out1
 }
