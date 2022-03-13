@@ -402,14 +402,14 @@ sample_data = function() {
             unavailable_array = array(0, c(interventions, steps, reps))
             scheduled_array = array(0, c(interventions, steps, reps))
             total_infections_array = array(0, c(interventions, reps))
-            doses_array = array(0, c(interventions, reps))
-            tests_array = array(0, c(interventions, reps))
+            doses_array = array(0, c(interventions, steps, reps))
+            tests_array = array(0, c(interventions, steps, reps))
         }
         unavailable_array[i,,] = shiftwise_unavailable(full_output)
         scheduled_array[i,,] = shiftwise_scheduled(full_output)
         total_infections_array[i,] = apply(full_output[,'new_infections',], 2, sum)
-        doses_array[i,] = apply(full_output[,'doses',], 2, sum)
-        tests_array[i,] = apply(full_output[,'tests',], 2, sum)
+        doses_array[i,,] = full_output[,'doses',]
+        tests_array[i,,] = full_output[,'tests',]
     }
 
     l = list(N = N,
@@ -418,12 +418,13 @@ sample_data = function() {
              scheduled = scheduled_array,
              total_infections = total_infections_array,
              doses = doses_array,
+             tests = tests_array,
              intervention_names = row.names,
              work_shifts = work_shifts)
-    saveRDS(l, 'sample_data-new.rds')
+    saveRDS(l, 'sample_data-farm.rds')
 }
 
-sample_data()
+#sample_data() #restore to generate more data for daisy's econ model
 
 ANALYZE = FALSE
 
