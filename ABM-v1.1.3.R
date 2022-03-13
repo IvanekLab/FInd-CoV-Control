@@ -135,6 +135,8 @@ update_agents = function(agents, mask, ...) {
                 agents[mask, name] = argument[mask] 
             } else if(length(argument) == 1) {
                 agents[mask, name] = argument
+            } else {
+                stop('Invalid mask: ', mask)
             }
         }
     }
