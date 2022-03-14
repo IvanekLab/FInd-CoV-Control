@@ -32,7 +32,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
                                             0.01, 0),
                       SEVERE_MULTIPLIER = 1,
-                      boosting_on_time_probability = 0,
+                      fraction_boosted_ever = 0,
+                      fraction_boosted_last_five_months = 0,
                       protection_functions) {
     #TBD (eventually): Either add back in the ability to use these or remove
     #them from the parameter list.
@@ -87,10 +88,12 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          time_V1 = Inf,
                          time_V2 = Inf,
                          time_B = Inf,
-                         boosting_on_time = 1:N %in% sample(
-                            N,
-                            round(N * boosting_on_time_probability)
-                         ),
+                         boosting_on_time = NA, # will be replaced later for
+                                                # everyone
+                         #boosting_on_time = 1:N %in% sample(
+                         #   N,
+                         #   round(N * boosting_on_time_probability)
+                         #),
                          time_isolated = Inf,  #setup for time in Isolation
                                                #unlike some of the states listed
                                                #above, this is not a mutually
@@ -158,6 +161,39 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     }
     index_V2_older = index_V2 & !index_V2_last_five_months
 
+    n_V2_older = sum(index_V2_older)
+    n_boosted_ever = round(n_V2_older * fraction_boosted_ever)
+    n_boosted_last_five_months = round(n_V2_older * fraction_boosted_last_five_months)
+    n_boosted_older = n_boosted_ever - n_boosted_last_five_months
+
+    if(n_boosted_ever == 0) {
+        index_B = rep(FALSE, N) #= index_B_older = index_B_last_five_months
+    } else if(n_boosted_ever == n_V2_older) {
+        index_B = index_V2_older
+    } else {#implies sum(index_V2_older) > 1, so this sample() call is safe
+        index_B = 1:N %in% sample((1:N)[index_V2_older], n_boosted_ever)
+    }
+
+    if(n_boosted_last_five_months == 0) {
+        index_B_last_five_months = rep(FALSE, N)
+    } else if(n_boosted_ever == n_V2_older) {
+        index_B_last_five_months = index_B
+    } else {#implies sum(index_B_ever) > 1, so this sample() call is safe
+        index_B_last_five_months = 1:N %in% sample((1:N)[index_B],
+                                                   n_boosted_last_five_months)
+    }
+
+    index_B_older = index_B & !index_B_last_five_months
+
+    agents$boosting_on_time = ifelse(index_B,
+        TRUE,
+        ifelse(index_V2_older,
+            FALSE,
+            rbinom(N, 1, fraction_boosted_ever)
+        )
+    )
+
+
     #Note: these can be allowed to not all be N, without eliminating the common
     #random variables benefits, as long as the number of calls remains constant
     #across all interventions.
@@ -192,6 +228,27 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
         -(365+61),#fully vax starts in mid-december 2020
         -152 
     )
+
+    #Adjusting timing of vaccinations to match boosting_on_time and boosting
+    #timing. Ideally, this would be handled in a more sophisticated fashion
+    #(that would cluster fewer times right around multiples of 5 months), but
+    #this will do for now.
+    agents$time_V2[index_B_older] = pmin(
+        agents$time_V2[index_B_older],
+        rep(-(2*152+1), n_boosted_older)
+    )
+    agents$time_V2[index_B_last_five_months] = pmax(
+        pmin(
+            agents$time_V2[index_B_last_five_months],
+            rep(-152, n_boosted_last_five_months)
+        ),
+        rep(-2*152, n_boosted_last_five_months)
+    )
+    agents$time_V2[agents$boosting_on_time & !index_B] = pmax(
+        agents$time_V2[agents$boosting_on_time & !index_B],
+        rep(-152, sum(agents$boosting_on_time & !index_B))
+    )
+
     agents$time_last_immunity_event[index_V2] = agents$time_V2[index_V2]
     agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21
     #again, not perfect, but doesn't actually matter
@@ -200,12 +257,12 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
         (agents$time_V2[index_V2] - agents$time_V1[index_V2])
     )
 
-    index_B = (agents$vax_status == 'V2' &
-               agents$time_V2 < -152 &
-               agents$boosting_on_time)
+    #index_B = (agents$vax_status == 'V2' &
+    #           agents$time_V2 < -152 &
+    #           agents$boosting_on_time)
     agents$immune_status[index_B] = 'B'
     agents$vax_status[index_B] = 'B'
-    agents$time_B[index_B] = pmax(agents$time_V2[index_B] + 152, -152)
+    agents$time_B[index_B] = agents$time_V2[index_B] + 152 #was: pmax(agents$time_V2[index_B] + 152, -152)
     agents$time_last_immunity_event[index_B] = agents$time_B[index_B]
     agents$previous_immunity[index_B] = V2_protection(
         agents$time_B[index_B] - agents$time_V2[index_B],

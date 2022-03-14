@@ -53,7 +53,8 @@ full_run = function(
                     fraction_recovered,
                     fraction_fully_vaccinated,
                     ffv_last_five_months,
-                    fraction_boosted, #TBD (eventually): possibly rename?
+                    fraction_boosted_ever,
+                    fraction_boosted_last_five_months,
                     working_directory,
                     folder_name,
                     unique_id, 
@@ -248,7 +249,8 @@ common_parameters = list(
     fraction_recovered = 0.69,
     fraction_fully_vaccinated = 0.71,
     ffv_last_five_months = 0.09,
-    fraction_boosted = 0.45,
+    fraction_boosted_ever = 0.45,
+    fraction_boosted_last_five_months = 0.45,
     protection_functions = default_protection_functions,
     variant = 'omicron'
 )

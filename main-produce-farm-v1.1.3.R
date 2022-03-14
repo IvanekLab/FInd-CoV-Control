@@ -323,7 +323,9 @@ for (i in 1:num_sims) {
                        initial_V1 = initial_V1, initial_V2 = initial_V2,
                        ffv_last_five_months = ffv_last_five_months,
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
-                       boosting_on_time_probability = fraction_boosted,
+                       fraction_boosted_ever = fraction_boosted_ever,
+                       fraction_boosted_last_five_months =
+                           fraction_boosted_last_five_months,
                        protection_functions = protection_functions)
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
