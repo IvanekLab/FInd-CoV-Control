@@ -89,10 +89,10 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
         agents$isolated[x_to_Isol] = TRUE
         agents$time_isolated[x_to_Isol] = start_time
     } else {
-        x_to_Isol = rep(FALSE, N)
+        x_to_Isol = testing_mask = rep(FALSE, N)
     }
     
-    list(agents = agents, tests_performed = sum(x_to_Isol), fractional_test_carried = fractional_test_carried)
+    list(agents = agents, tests_performed = sum(testing_mask), fractional_test_carried = fractional_test_carried)
 }
 
 # In a technical sense, the following function is totally redundant (and with

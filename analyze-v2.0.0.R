@@ -390,10 +390,10 @@ sample_data = function() {
              tests = tests_array,
              intervention_names = row.names,
              work_shifts = work_shifts)
-    saveRDS(l, 'sample_data-farm.rds')
+    saveRDS(l, 'sample_data-facility.rds')
 }
 
-#sample_data() #restore to generate more data for daisy's econ model
+sample_data() #restore to generate more data for daisy's econ model
 
 ANALYZE = FALSE
 
