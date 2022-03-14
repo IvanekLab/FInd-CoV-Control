@@ -1,3 +1,21 @@
+# safe-random-functions-v2.0.0.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 2.0.0.
+# Copyright (C) 2020-2022 Cornell University.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 #safe versions of runif and rbinom (restricted to a Bernoulli distribution
 #since that's all I actually need) to allow a guarantee that the same number of
 #calls to the underlying PRNG (hence rand() calls) will be made for a given N,

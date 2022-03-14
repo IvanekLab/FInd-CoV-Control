@@ -2,7 +2,7 @@ library(viridis)
 library(fields)
 civ = cividis(1000)
 civ[1] = '#000000'
-source('ContactsGen-v1.1.3.R')
+source('ContactsGen-v2.0.0.R')
 farm = ContactsGen(rep(3,3), rep(10,9), example_rates, 1)
 #so farm structure is 1,(2,(3,4:13),(14,15:24),(25))
 #leaving farm structure alone for now

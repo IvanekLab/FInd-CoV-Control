@@ -1,6 +1,6 @@
-# ContactsGen-v1.1.3.R is part of Food INdustry CoViD Control Tool
-# (FInd CoV Control), version 1.1.3.
-# Copyright (C) 2020-2021 Cornell University.
+# ContactsGen-v2.0.0.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 2.0.0.
+# Copyright (C) 2020-2022 Cornell University.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

@@ -1,3 +1,21 @@
+# iFoodDS-wrapper-v2.0.0.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 2.0.0.
+# Copyright (C) 2020-2022 Cornell University.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 #Usage example, with default values:
 #TBD (eventually): fill in
 
@@ -217,18 +235,18 @@ full_run = function(
     #    steps = days * 3
     #    step_index = (1:steps) * (1/3)
     } else {
-        source('double-wrapped-v1.1.3.R', local = TRUE)
+        source('double-wrapped-v2.0.0.R', local = TRUE)
         double_wrapped_fn()
     }
     steps = days * 3
     step_index = (1:steps) * (1/3)
-    source('analyze-v1.1.3.R', local = TRUE)
+    source('analyze-v2.0.0.R', local = TRUE)
     analyze_fn()
 }
 
 FIXED_SEED = TRUE
-VERSION = '1.1.3'
-double_wrap_num_sims = 1000
+VERSION = '2.0.0'
+double_wrap_num_sims = 5#1000
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing

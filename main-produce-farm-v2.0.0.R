@@ -1,6 +1,6 @@
-# main-produce-farm-v1.1.3.R is part of Food INdustry CoViD Control Tool
-# (FInd CoV Control), version 1.1.3.
-# Copyright (C) 2020-2021 Cornell University.
+# main-produce-farm-v2.0.0.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 2.0.0.
+# Copyright (C) 2020-2022 Cornell University.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@
 main_produce_farm_fn = function() { #goal: get more meaningful debug data
 library(Rlab)
  
-source("AgentGen-v1.1.3.R")
-source("ContactsGen-v1.1.3.R")
-source("ABM-v1.1.3.R")
+source("AgentGen-v2.0.0.R")
+source("ContactsGen-v2.0.0.R")
+source("ABM-v2.0.0.R")
 
 #General note: foo = get('bar', baz) is similar to foo = baz[['bar']], *except*
 #that it will throw an error if baz has no element named 'bar', instead of
