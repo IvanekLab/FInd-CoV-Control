@@ -62,6 +62,10 @@ full_run = function(
                     PARALLEL,
                     protection_functions
 ) {
+    if(ffv_last_five_months > fraction_fully_vaccinated) {
+        stop('Fraction fully vaccinated within the last five months cannot ',
+             'exceed fraction fully vaccinated ever.')
+    }
     setwd(working_directory)
 
     workers_per_crew = safe.integer(workers_per_crew)
@@ -259,7 +263,7 @@ additional_facility_parameters = list(
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
     
-    unique_id = 'facility-default-v14'
+    unique_id = 'facility-default-v15'
 )
 
 additional_farm_parameters = list(
@@ -272,7 +276,7 @@ additional_farm_parameters = list(
     social_distancing_shared_housing = 'Intermediate',
     community_transmission = NULL,
     
-    unique_id = 'farm-default-v14' #actually lower, but going for consistency
+    unique_id = 'farm-default-v15' #actually lower, but going for consistency
 )
 
 do.call(full_run, c(common_parameters, additional_farm_parameters))

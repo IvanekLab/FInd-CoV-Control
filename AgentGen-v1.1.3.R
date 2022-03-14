@@ -161,7 +161,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #TBD (eventually): Take account of immunity in assigning initial infectees
     index_R = 1:N %in% sample(N, initial_recovered)
     index_V2 = 1:N %in% sample(N, initial_V2)
-    initial_V2_last_five_months = round(ffv_last_five_months * initial_V2)
+    initial_V2_last_five_months = round(ffv_last_five_months * N)
     if(initial_V2_last_five_months == 0) {
         index_V2_last_five_months = rep(FALSE, N)
     } else if(sum(index_V2) == initial_V2_last_five_months) {
