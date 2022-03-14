@@ -203,8 +203,6 @@ make_one_one_three = function() {
     protection_functions$infection_protection = infection_protection
     protection_functions$symptom_protection = symptom_protection
 
-    #print(protection_functions)
-
     protection_functions
 }
 

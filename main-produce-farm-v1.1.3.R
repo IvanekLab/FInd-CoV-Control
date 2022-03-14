@@ -165,7 +165,6 @@ if(farm_or_facility == 'farm') {
 } else { #only alternative that we allow is facility
 
     source('custom-contacts-gen-general.R')
-#print('alpha')
 
     contacts_matrices = facility_contacts_gen(
         workers_per_line = workers_per_crew,
@@ -304,7 +303,6 @@ contacts_list = list(ps_1 = production_shift_1 * work_scaling_factor +
 #                                   7 / 9, #to account for two home shifts per
 #                                          #day off
 #                             sleep = 0)
-#print('step 3')
 
 ####
 #going to regularize this to 1/7 chance each day, the shift after work
@@ -327,7 +325,6 @@ vaccination_interval = 21
 
 #workday = c('work', 'home', 'sleep')
 #day_off = c('home', 'home', 'sleep')
-#print('step 4')
 workday = c('ps_1', 'ps_2', 'cs')
 day_off = c('weekend_ps_1', 'weekend_ps_2', 'weekend_cs')
 week = c(rep(workday, 5), rep(day_off, 2))
@@ -346,7 +343,6 @@ testing_rate_list = list(ps_1 = get('work_testing_rate', scenario_parameters),
 steps = scenario_parameters$nTime1 * 3
 step_index = (1:steps) * (1/3) #step_length
 
-#print('beta')
 ###### code to run simulation with num_sims iterations
 source('safe-random-functions.R')
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
@@ -377,7 +373,6 @@ for (i in 1:num_sims) {
                            weekend_ps_2 = FALSE,
                            weekend_cs = FALSE)
 
-#print('gamma')
     agents <- AgentGen(N, E0 = n_exposed, IA0 = 0, IP0 = 0, IM0 = n_mild,
                        initial_recovered = initial_recovered,
                        initial_V1 = initial_V1, initial_V2 = initial_V2,
@@ -385,10 +380,9 @@ for (i in 1:num_sims) {
                        SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
                        boosting_on_time_probability = fraction_boosted,
                        protection_functions = protection_functions)
-#print('delta')
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
-                 virus_parameters, testing_parameters, #vaccine_parameters,
+                 virus_parameters, testing_parameters,
                  vaccination_interval,
                  scenario_parameters,
                  steps = steps, step_length_list = step_length_list,
@@ -396,12 +390,9 @@ for (i in 1:num_sims) {
                  vaccination_rate_list = vaccination_rate_list,
                  agent_presence_list = agent_presence_list,
                  quantitative_presence_list = quantitative_presence_list,
-                 #waning_parameters = waning_parameters,
                  boosting_rate = boosting_rate,
                  protection_functions = protection_functions
     )
-    #cat('intervention:', index_i, 'run:', i, 'ABM completed:', runif(1, 0, 1), '\n')
-#print('epsilon')
     agents = model$agents
     output = model$Out1
 
@@ -412,9 +403,7 @@ for (i in 1:num_sims) {
     }
     full_output[,,i] = as.matrix(output) #this works; for whatever reason,
                                          #as.array does not
-#print('zeta')
 } # for (i in 1:num_sims)
-#print('eta')
 #print_rand_state(paste('intervention:', index_i, 'printing state'))
 
 cat('intervention:', index_i, 'All runs completed; Test value:', runif(1, 0, 1), '\n')
