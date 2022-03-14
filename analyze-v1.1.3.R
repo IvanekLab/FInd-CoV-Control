@@ -260,7 +260,7 @@ count_consecutive_without = function(v, so_far = 0) {
     }
 }
 
-first_x_boxplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_only = FALSE, default = days + 1, xlim = NULL, consecutive_without = FALSE) {
+first_x_boxplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_only = FALSE, default = days + 1, xlim = NULL, consecutive_without = FALSE, mask = NA) {
     if(!is.null(filename)) {
         png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
     }
@@ -268,11 +268,19 @@ first_x_boxplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, w
         step_index = step_index[work_shifts]
     }
 
+    if(!is.na(mask)[1]) {
+        step_index = step_index[mask]
+    }
+
     means = numeric(length(full_output_filenames))
     for (i in 1:length(full_output_filenames)) {
         full_output = readRDS(full_output_filenames[i])
         if(work_only) {
             full_output = full_output[work_shifts,,]
+        }
+
+        if(!is.na(mask)[1]) {
+            full_output = full_output[mask,,]
         }
 
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
@@ -384,11 +392,14 @@ end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of 
 
 end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
 
+first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', default = NA, xlim = c(1, days), mask = production_shifts)
+
 if(farm_or_facility == 'facility') {
     oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)
     end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', cleaning_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
     end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
     end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Cleaning Shift Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
+    first_x_boxplot('First-Day-Short-cleaning', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', default = NA, xlim = c(1, days), mask = cleaning_shifts)
 }
 
 sample_data = function() {
