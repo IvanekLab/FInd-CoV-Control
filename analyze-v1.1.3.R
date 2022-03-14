@@ -69,10 +69,7 @@ if(farm_or_facility == 'farm') {
 }
     
 #summary plots
-combine = function(data, outcome_fn, summary_fn, summation_mode) { 
-    if(!(summation_mode %in% c(FALSE, 'after', 'before'))) {
-        stop('Invalid summation mode')
-    }
+combine = function(data, outcome_fn, summary_fn) { 
     dimnames(data) = list(rep(NA, dim(data)[1]),
                           colnames(data),
                           rep(NA, dim(data)[3])
@@ -80,19 +77,7 @@ combine = function(data, outcome_fn, summary_fn, summation_mode) {
     #above is a bit kludgey, but it works -- at some point in the future,
     #we may explicitly save data with dimnames
     outcomes = outcome_fn(data)
-    if(summation_mode == 'before') {
-        outcomes = apply(outcomes, 2, cumsum) / (steps / days)
-        #slightly awkward "phrasing", but may guard against future errors better
-        #than a simple "3"
-    }
     summarized = apply(outcomes, 1, summary_fn)
-    if(summation_mode == 'after') { #unlikely to be a good idea (and will not
-                                    #occur if the code is run unmodified)
-        print('Are you sure this is a good idea?')
-        summarized = cumsum(summarized) / (steps / days)
-        #slightly awkward "phrasing", but may guard against future errors better
-        #than a simple "3"
-    }
     summarized
 }
 
@@ -101,24 +86,22 @@ infected = function(data) {
     data[,'IA',] + data[,'IP',] + data[,'IM',] + data[,'IS',] + data[,'IC',]
 }
 
-hospitalized_dead = function(data) {
-    data[,'IS',] + data[,'IC',] + data[,'D',]
-}
-
 
 #The following several functions may be combined at some point in the future.
 #main_title is unused in production code, but is kept for consistency with
 #special-purpose internal versions.
-oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
-                   summation_mode = FALSE, work_only = FALSE, main_title = NULL,
-                   mask = NA) {
+oneplot = function(
+                   filename,
+                   outcome_fn,
+                   primary_summary_fn,
+                   ylim,
+                   ylab,
+                   main_title = NULL,
+                   mask = NA
+                   ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png',
               sep = ''),
         height = 1000, width = 1000)
-
-    if(work_only) {
-        step_index = step_index[work_shifts]
-    }
 
     if(!is.na(mask)[1]) {
         step_index = step_index[mask]
@@ -128,14 +111,11 @@ oneplot = function(filename, outcome_fn, primary_summary_fn, ylim, ylab,
     ys = list()
     for (i in 1:length(full_output_filenames)) {
         full_output = readRDS(full_output_filenames[i])
-        if(work_only) {
-            full_output = full_output[work_shifts,,]
-        }
+
         if(!is.na(mask)[1]) {
             full_output = full_output[mask,,]
         }
-        ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn,
-                          summation_mode)
+        ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn)
     }
     for(i in 1:length(full_output_filenames)) {
         if(i == 1) {
@@ -192,11 +172,17 @@ new_infections = function(data) {
     data[,'new_infections',]
 }
 
-end_boxplot = function(filename, outcome_fn, xlab, summation_mode = 'before', work_only = FALSE, average = FALSE, xlim = NULL, percent = FALSE, main_title = NULL, mask = NA) {
+end_boxplot = function(
+                       filename,
+                       outcome_fn,
+                       xlab,
+                       average = FALSE,
+                       xlim = NULL,
+                       percent = FALSE,
+                       main_title = NULL,
+                       mask = NA
+                       ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
-    if(work_only) {
-        step_index = step_index[work_shifts]
-    }
 
     if(!is.na(mask)[1]) {
         step_index = step_index[mask]
@@ -205,27 +191,22 @@ end_boxplot = function(filename, outcome_fn, xlab, summation_mode = 'before', wo
     means = numeric(length(full_output_filenames))
     for (i in 1:length(full_output_filenames)) {
         full_output = readRDS(full_output_filenames[i])
-        if(work_only) {
-            full_output = full_output[work_shifts,,]
-        }
+        
         if(!is.na(mask)[1]) {
             full_output = full_output[mask,,]
         }
 
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
         outcomes = outcome_fn(full_output)
-        if(summation_mode == 'before') {
-            outcomes = apply(outcomes, 2, cumsum)
-        }
+        outcomes = apply(outcomes, 2, cumsum)
+
         final = as.vector(outcomes[dim(full_output)[1],])
         if(average) {
             final = final / length(step_index)
         }
         
         means[i] = mean(final, na.rm = TRUE)
-        if(summation_mode == 'after') { #unlikely to be a good idea (and will not occur if the code is run unmodified)
-            stop('Invalid for this function.')
-        }
+
         if(i == 1) {
             all_outcomes = data.frame(intervention = row.names[i], outcome = final)
         } else {
@@ -249,23 +230,15 @@ end_boxplot = function(filename, outcome_fn, xlab, summation_mode = 'before', wo
     dev.off()
 }
 
-count_consecutive_without = function(v, so_far = 0) {
-    if(length(v) == 0) {
-        return(so_far)
-    }
-    if(v[1]) {
-        return(max(so_far, count_consecutive_without(v[-1])))
-    } else {
-        return(count_consecutive_without(v[-1], so_far + 1))
-    }
-}
-
-first_x_boxplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_only = FALSE, default = days + 1, xlim = NULL, consecutive_without = FALSE, mask = NA) {
+first_x_boxplot = function(
+                           filename,
+                           outcome_fn,
+                           xlab,
+                           xlim = NULL,
+                           mask = NA
+                           ) {
     if(!is.null(filename)) {
         png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
-    }
-    if(work_only) {
-        step_index = step_index[work_shifts]
     }
 
     if(!is.na(mask)[1]) {
@@ -275,9 +248,6 @@ first_x_boxplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, w
     means = numeric(length(full_output_filenames))
     for (i in 1:length(full_output_filenames)) {
         full_output = readRDS(full_output_filenames[i])
-        if(work_only) {
-            full_output = full_output[work_shifts,,]
-        }
 
         if(!is.na(mask)[1]) {
             full_output = full_output[mask,,]
@@ -285,15 +255,11 @@ first_x_boxplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, w
 
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
         outcomes = outcome_fn(full_output)
-        if(consecutive_without) {
-            first = apply(outcomes, 2, count_consecutive_without)
-        } else {
-            first = apply(outcomes, 2, function(v) ifelse(length(which(v)) > 0, step_index[which(v)[1]], default))
-        }
+        
+        first = apply(outcomes, 2, function(v) ifelse(length(which(v)) > 0, step_index[which(v)[1]], NA))
+        
         means[i] = mean(first, na.rm = TRUE)
-        if(summation_mode != FALSE) { #unlikely to be a good idea (and will not occur if the code is run unmodified)
-            stop('Invalid for this function.')
-        }
+
         if(i == 1) {
             all_outcomes = data.frame(intervention = row.names[i], outcome = first)
         } else {
@@ -313,16 +279,18 @@ first_x_boxplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, w
     }
 }
 
-anti_max = function(v) {
-    !(max(v))
-}
 
-end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_only = FALSE, default = days + 1, average = FALSE, xlim = NULL, percent = FALSE, anti_this = FALSE, mask = NA) {
+end_barplot = function(
+                       filename, 
+                       outcome_fn, 
+                       xlab, 
+                       average = FALSE, 
+                       xlim = NULL, 
+                       percent = FALSE, 
+                       mask = NA
+                       ) {
     if(!is.null(filename)) {
         png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
-    }
-    if(work_only) {
-        step_index = step_index[work_shifts]
     }
     
     if(!is.na(mask)[1]) {
@@ -333,9 +301,6 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
     names(all_outcomes) = row.names
     for (i in 1:length(full_output_filenames)) {
         full_output = readRDS(full_output_filenames[i])
-        if(work_only) {
-            full_output = full_output[work_shifts,,]
-        }
 
         if(!is.na(mask)[1]) {
             full_output = full_output[mask,,]
@@ -343,20 +308,13 @@ end_barplot = function(filename, outcome_fn, xlab, summation_mode = FALSE, work_
 
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
         outcomes = outcome_fn(full_output)
-        if(anti_this) {
-            thing_to_call = anti_max
-        } else {
-            thing_to_call = max
-        }
 
         if(average) {
-            fraction = mean(apply(outcomes, 2, thing_to_call)) #kludge, should ideally be joined to another thing (but works adequately for now)
+            fraction = mean(apply(outcomes, 2, max)) #kludge, should ideally be joined to another thing (but works adequately for now)
         } else {
-            fraction = sum(apply(outcomes, 2, thing_to_call)) #kludge, should be joined to another thing, extra kludgey with this name (but works adequately for now)
+            fraction = sum(apply(outcomes, 2, max)) #kludge, should be joined to another thing, extra kludgey with this name (but works adequately for now)
         }
-        if(summation_mode != FALSE) { #unlikely to be a good idea (and will not occur if the code is run unmodified)
-            stop('Invalid for this function.')
-        }
+        
         all_outcomes[i] = fraction
     }
     par(mar = c(5,23,4,2))
@@ -392,14 +350,14 @@ end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of 
 
 end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
 
-first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', default = NA, xlim = c(1, days), mask = production_shifts)
+first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = production_shifts)
 
 if(farm_or_facility == 'facility') {
     oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)
     end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', cleaning_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
     end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
     end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Cleaning Shift Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
-    first_x_boxplot('First-Day-Short-cleaning', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', default = NA, xlim = c(1, days), mask = cleaning_shifts)
+    first_x_boxplot('First-Day-Short-cleaning', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = cleaning_shifts)
 }
 
 sample_data = function() {
