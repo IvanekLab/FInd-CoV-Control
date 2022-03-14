@@ -1,13 +1,3 @@
-
-#symptomatic = function(agents) {
-#    (agents$immune_status == 'FS' & agents$symptomatic) |
-#        (agents$immune_status == 'V1' & agents$V1_symptomatic) |
-#        (agents$immune_status == 'V2' & agents$V2_symptomatic) |
-#        (agents$immune_status == 'R' & agents$R_symptomatic) |
-#        (agents$immune_status == 'W' & agents$W_symptomatic) |
-#        (agents$immune_status == 'B' & agents$B_symptomatic)
-#}
-
 default_V2_decay = function(t) {
     0.91157392 * exp(-0.08904459 / 7 * t)
 }
@@ -145,6 +135,7 @@ two_level_protection = function(level, duration) {
     }
 }
 
+#For use when comparing results with v1.1.3
 make_one_one_three = function() {
     V1_net_symptoms = 1 - .37
     V2_susceptibility = 1 - .65

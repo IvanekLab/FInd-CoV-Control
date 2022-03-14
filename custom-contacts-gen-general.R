@@ -50,17 +50,7 @@ facility_contacts_gen = function(workers_per_line = 10,
     
     production_shift = rbind(cbind(team, shift_floater_tall),
                              cbind(shift_floater_wide, shift_floaters))
-    
-    #empty_ps = matrix(0, nrow = 72, ncol = 72)
-    
-    #other_production_shift = matrix(0, ncol = 72, nrow = 72)
-    
-    #production_shift_1 = rbind(cbind(production_shift, other_production_shift),
-    #                           cbind(other_production_shift, other_production_shift))
-    
-    #production_shift_2 = rbind(cbind(production_shift, other_production_shift),
-    #                           cbind(other_production_shift, other_production_shift))
-    
+        
     #TBD (important): Clean up this and other lines that choke on low, but
     #potentially valid, numbers (e.g., here if n_cleaners is 1, NaNs end up
     #propagating (and if it's 0, things can get even weirder))

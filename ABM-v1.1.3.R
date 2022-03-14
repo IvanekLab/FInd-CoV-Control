@@ -97,10 +97,10 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
 
 # In a technical sense, the following function is totally redundant (and with
 # the "exploded" style of listing numerous arguments to a function, it's not
-# event shorter), *but* it helps to ensure that all subscripting is consistent,
+# even shorter), *but* it helps to ensure that all subscripting is consistent,
 # etc.
 #
-# Note that setting mask = TRUE will update the indicate values for all agents
+# Note that setting mask = TRUE will update the indicated values for all agents
 update_agents = function(agents, mask, ...) {
     if(any(mask)) {
 
@@ -386,11 +386,11 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
 }
 
 ABM <- function(agents, contacts_list, lambda_list, schedule,
-                virus_parameters, testing_parameters, #vaccine_parameters,
+                virus_parameters, testing_parameters,
                 vaccination_interval,
                 scenario_parameters, steps, step_length_list, testing_rate_list,
                 vaccination_rate_list,  agent_presence_list,
-                quantitative_presence_list, #waning_parameters,
+                quantitative_presence_list, 
                 boosting_rate,
                 protection_functions) {
 

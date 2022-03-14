@@ -60,6 +60,7 @@ VirusParameters = function(p_trans_IP = .0575, relative_trans_IA = .11,
 
 virus_parameters = VirusParameters()
 
+#some of these are redundant steps that should be eliminated
 ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
                               work_testing_rate, isolation_duration,
                               home_vaccination_rate, lambda = 0, crews_by_team,
@@ -74,15 +75,14 @@ ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
     duration_IA = 5
     duration_IP = 1.058 * 2.174
     duration_IM = 8
-    #p_trans_IS = .89 * .0575, #from Moghadas et al. 2020, but
-                #irrelevant (for now, at least), since we are assuming all
-                #severe cases are hospitalized
+    #p_trans_IS = .89 * .0575, # from Moghadas et al. 2020, but irrelevant
+                               # (for now, at least) since we are assuming all
+                               # severe cases are hospitalized
 
-    #R0 per contact per day
+    #R0 per contact per day, = 0.2349583
     r0pcpd = p_symptomatic * (duration_IP * p_trans_IP +
                               duration_IM * p_trans_IM) +
             (1 - p_symptomatic) * duration_IA * p_trans_IA
-    #r0pcpd = 0.2349583
 
     work_contacts = work_R0 / r0pcpd
     dormitory_contacts = dormitory_R0 / r0pcpd
@@ -130,28 +130,8 @@ lambda_home = scenario_parameters$lambda
 if(farm_or_facility == 'farm') {
     work_contacts <- ContactsGen(scenario_parameters$crews_by_team,
                                  scenario_parameters$crew_sizes,
-                                 #scenario_parameters$rates,
                                  example_rates,
                                  scenario_parameters$average)
-    #sleep_contacts = matrix(0, N, N)
-
-    #if(scenario_parameters$housing_dormitory) {
-    #    dormitory_contacts = matrix(scenario_parameters$dormitory_intensity/N, N, N)
-    #} else {
-    #    dormitory_contacts = sleep_contacts
-    #}
-
-    #contacts_list = list(work = work_contacts * 7/5, #to account for two days off
-    #                                                 #per week
-    #                     home = dormitory_contacts * 7 / 9, #to account for two
-    #                                                        #home shifts per day
-    #                                                        #off
-    #                    sleep = sleep_contacts)
-
-
-    #lambda_list = list(work = 0,
-    #                   home = lambda_home,
-    #                   sleep = 0)
 
     production_shift_1 = work_contacts
     production_shift_2 = matrix(0, N, N)
@@ -168,7 +148,7 @@ if(farm_or_facility == 'farm') {
 
     contacts_matrices = facility_contacts_gen(
         workers_per_line = workers_per_crew,
-        #keeping old names for analogous parameters in full_run *for now*
+        #keeping old names for analogous parameters in full_run
         n_lines = crews_per_supervisor,
         n_production_shifts = supervisors,
         n_shift_floaters = n_shift_floaters,
@@ -181,7 +161,6 @@ if(farm_or_facility == 'farm') {
     cleaning_shift_full = contacts_matrices[['cleaning_shift_full']]
     shift_sum =  contacts_matrices[['shift_sum']]
 
-    #N <<- dim(production_shift_1)[1] #little kludgey
 
     ####
     #TBD (eventually): Move this to the contacts generation file
@@ -213,20 +192,10 @@ if(any(on_ps_1 + on_ps_2 + on_cs != rep(1, N))) {
 #working on proper dormitory_contacts parameters
 #treating dormitory as the shift after work (or work shift and shift after work
 #on the weekend)
-#Actually, this really belongs in ContactsGen or its replacement
-#Because it's actually non-trivial . . . except that I see that the dormitory
-#contacts parameter in the core v1.1.4 version has a small flaw (diagonals are
-#not excluded). So that needs to be fixed there; for now, we can do the simple
-#thing here (TBD (once farm is merged in): Fix it.)
+#Actually, this really belongs in ContactsGen or its replacement, because it's
+#actually non-trivial.
 #TBD (eventually): Move this crap to ContactsGen and its facility analogue.
 ###
-
-#agent_presence_list = list(ps_1 = ifelse(ceiling(on_ps_1), TRUE, FALSE),
-#                           ps_2 = ifelse(floor(on_ps_2), TRUE, FALSE),
-#                           cs =   ifelse(floor(on_cs), TRUE, FALSE),
-#                           weekend_ps_1 = FALSE,
-#                           weekend_ps_2 = FALSE,
-#                           weekend_cs = FALSE)
 
 quantitative_presence_list = list(ps_1 = on_ps_1,
                            ps_2 = on_ps_2,
@@ -235,9 +204,6 @@ quantitative_presence_list = list(ps_1 = on_ps_1,
                            weekend_ps_2 = 0,
                            weekend_cs = 0)
 
-####
-#
-####
 lambda_list = list(ps_1 = on_cs * lambda_home,
                    ps_2 = on_ps_1 * lambda_home,
                    cs = on_ps_2 * lambda_home,
@@ -245,9 +211,6 @@ lambda_list = list(ps_1 = on_cs * lambda_home,
                    weekend_ps_2 = (on_ps_1 + on_ps_2) * lambda_home,
                    weekend_cs = (on_ps_2 + on_cs) * lambda_home)
 
-###
-#2022-02-08
-###
 make_contact_matrix = function(v) {
     v = matrix(v)
     M = v %*% t(v)
@@ -269,6 +232,7 @@ average_raw_home_contacts_per_day = (5 * (raw_home_contacts_ps_1 +
                                           raw_home_contacts_weekend_ps_2 +
                                           raw_home_contacts_weekend_cs)
                                      ) / 7
+
 #a quick sanity check suggested the dominant eigenvalue is actually pretty close
 #to the mean of the rowSums, so we'll use the latter for now, for consistency
 #with work_R0
@@ -298,19 +262,6 @@ contacts_list = list(ps_1 = production_shift_1 * work_scaling_factor +
                      weekend_cs = raw_home_contacts_weekend_cs *
                          home_scaling_factor)
 
-#vaccination_rate_list = list(work = 0,
-#                             home = scenario_parameters$home_vaccination_rate *
-#                                   7 / 9, #to account for two home shifts per
-#                                          #day off
-#                             sleep = 0)
-
-####
-#going to regularize this to 1/7 chance each day, the shift after work
-#(or 1/21 chance every shift for between-shift floaters)
-#this is needed for sanity
-#(and might not be a bad idea to retcon on produce farm)
-####
-
 
 vaccination_rate_list = list(
         ps_1 = on_cs * scenario_parameters$home_vaccination_rate,
@@ -323,17 +274,12 @@ vaccination_rate_list[['weekend_cs']] = vaccination_rate_list[['cs']]
 
 vaccination_interval = 21
 
-#workday = c('work', 'home', 'sleep')
-#day_off = c('home', 'home', 'sleep')
 workday = c('ps_1', 'ps_2', 'cs')
 day_off = c('weekend_ps_1', 'weekend_ps_2', 'weekend_cs')
 week = c(rep(workday, 5), rep(day_off, 2))
 schedule = rep(week, ceiling(days/7))[1:(3 * days)]
-#step_length_list = list(home = 1/3, work = 1/3, sleep = 1/3)
 step_length_list = list(ps_1 = 1/3, ps_2 = 1/3, cs = 1/3, weekend_ps_1 = 1/3,
                         weekend_ps_2 = 1/3, weekend_cs = 1/3)
-#testing_rate_list = list(home = 0, work = get('work_testing_rate',
-#                         scenario_parameters), sleep = 0)
 testing_rate_list = list(ps_1 = get('work_testing_rate', scenario_parameters),
                          ps_2 = get('work_testing_rate', scenario_parameters),
                          cs =   get('work_testing_rate', scenario_parameters),
@@ -346,10 +292,9 @@ step_index = (1:steps) * (1/3) #step_length
 ###### code to run simulation with num_sims iterations
 source('safe-random-functions.R')
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
-    safe_set_seed(-778276078)
+    safe_set_seed(-778276078) #random 32-bit signed integer generated using
+                              #atmospheric noise for reproducible output
     #safe_set_seed(-528236667) # a different truly random number, for comparison
-    #set.seed(-778276078) #random 32-bit signed integer generated using
-                         #atmospheric noise for reproducible output
     #cat('intervention:', index_i, 'seed set:', runif(1, 0, 1), '\n')
 }
 

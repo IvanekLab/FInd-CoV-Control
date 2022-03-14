@@ -21,8 +21,7 @@
 #beta distribution that best fits age category data on agricultural workers
 
 #replaced $state with $infection_status (NI rather than S), $immune_status (FS
-#rather than S), $vax_status (currently same as immune status for fully
-#unvaccinated)
+#rather than S), $vax_status (NV for fully unvaccinated)
 
 AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       initial_recovered = 0, initial_V1 = 0, initial_V2 = 0,
@@ -72,10 +71,6 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          infector_ID = 0,    
                          infector_state = '', #state of source of infection
                                               #(if any)
-                         mixing_propensity = 1, #leaving this in as a trivial
-                                                #property, for easier
-                                                #reintroduction later
-                                                #currently, it is unused
                          #The following are conceptualized as time *of*
                          #transition into the state in question, not time
                          #*since* transition. Thus, the value for a state that
@@ -97,10 +92,10 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                             round(N * boosting_on_time_probability)
                          ),
                          time_isolated = Inf,  #setup for time in Isolation
-                                               #unlike the states listed above,
-                                               #this is not a mutually exclusive
-                                               #state, e.g., someone who can be
-                                               #both IM and isolated.
+                                               #unlike some of the states listed
+                                               #above, this is not a mutually
+                                               #exclusive state, e.g., someone
+                                               #can be both IM and isolated.
                          time_tested = -Inf,
                          #Unlike most times, we want the "last time at which
                          #this person was tested," for someone who has never
@@ -118,7 +113,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          duration_E = duration_E,
                          duration_IA = rgamma(N, shape=5, scale=1),
                          # Moghadas et al., 2020
-                         duration_IP = duration_IP, # Moghadas et al., 2020
+                         duration_IP = duration_IP,
                          duration_IM = rgamma(N, shape=16, scale=0.5),
                          #Michelle based on Kerr et al
                          duration_IS = rgamma(N, shape=34.0278, scale=0.4114),
@@ -130,8 +125,11 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          #states that are not present at simulation start
     ) 
     #pre-calculating all indices for clarity and ease of debugging
-    index_E_or_IM = sample(N, E0 + IM0) #1:N %in% sample(N, E0 + IM0)
-    #index_E = 1:N %in% sample((1:N)[index_E_or_IM], E0)
+
+    #This block is based on the need to insure that any(index_E & index_IM) ==
+    #FALSE . Its complexity is based on the R misfeature that if a == 0, then
+    #1:a is not, as one might expect, numeric(), but c(1,0) .
+    index_E_or_IM = sample(N, E0 + IM0)
     #There has to be a cleaner way to do this.
     if(E0 > 0 & IM0 > 0) {
         index_E = index_E_or_IM[1:E0]
@@ -160,8 +158,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     }
     index_V2_older = index_V2 & !index_V2_last_five_months
 
-    #Note: these can be allowed to not all be N, as long as they're constant with
-            #each interventions parameters
+    #Note: these can be allowed to not all be N, without eliminating the common
+    #random variables benefits, as long as the number of calls remains constant
+    #across all interventions.
 
     #since neither of these is affected by the other factors, it can be left
     #here for now
@@ -240,8 +239,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
               agents$time_R < agents$time_V1
     )
     agents$previous_immunity[R_V1_V2] = B_protection(21, 0)
-        #0 often not technically correct, but doesn't matter for any of the fn
-        #we're considering
+        #0 is often not technically correct, but doesn't matter for any of the
+        #immunity functions we're considering
     #agents$time_last_immunity_event[R_V1_V2] #is unchanged
     agents$immune_status[R_V1_V2] = 'B'
 
