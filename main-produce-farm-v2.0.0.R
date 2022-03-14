@@ -144,7 +144,7 @@ if(farm_or_facility == 'farm') {
 
 } else { #only alternative that we allow is facility
 
-    source('custom-contacts-gen-general.R')
+    source('custom-contacts-gen-general-v2.0.0.R')
 
     contacts_matrices = facility_contacts_gen(
         workers_per_line = workers_per_crew,
@@ -290,7 +290,7 @@ steps = scenario_parameters$nTime1 * 3
 step_index = (1:steps) * (1/3) #step_length
 
 ###### code to run simulation with num_sims iterations
-source('safe-random-functions.R')
+source('safe-random-functions-v2.0.0.R')
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
     safe_set_seed(-778276078) #random 32-bit signed integer generated using
                               #atmospheric noise for reproducible output

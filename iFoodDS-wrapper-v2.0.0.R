@@ -25,7 +25,7 @@
 #Set analyze_only to TRUE to reanalyze an existing output set with modified
 #analyze.R
 
-source('general-waning-functions.R')
+source('general-waning-functions-v2.0.0.R')
 
 safe.integer = function(s) {
     i = strtoi(s)
@@ -246,7 +246,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.0.0'
-double_wrap_num_sims = 5#1000
+double_wrap_num_sims = 1000
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
