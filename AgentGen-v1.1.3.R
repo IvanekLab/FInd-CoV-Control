@@ -128,7 +128,6 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          #states that are not present at simulation start
     ) 
     #pre-calculating all indices for clarity and ease of debugging
-
     #This block is based on the need to insure that any(index_E & index_IM) ==
     #FALSE . Its complexity is based on the R misfeature that if a == 0, then
     #1:a is not, as one might expect, numeric(), but c(1,0) .
@@ -148,6 +147,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
         index_IM = numeric()
     }
     #TBD (eventually): Take account of immunity in assigning initial infectees
+
     index_R = 1:N %in% sample(N, initial_recovered)
     index_V2 = 1:N %in% sample(N, initial_V2)
     initial_V2_last_five_months = round(ffv_last_five_months * N)
@@ -176,9 +176,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
 
     if(n_boosted_last_five_months == 0) {
         index_B_last_five_months = rep(FALSE, N)
-    } else if(n_boosted_ever == n_V2_older) {
+    } else if(n_boosted_last_five_months == n_boosted_ever) {
         index_B_last_five_months = index_B
-    } else {#implies sum(index_B_ever) > 1, so this sample() call is safe
+    } else {#implies sum(index_B) > 1, so this sample() call is safe
         index_B_last_five_months = 1:N %in% sample((1:N)[index_B],
                                                    n_boosted_last_five_months)
     }
@@ -229,25 +229,12 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
         -152 
     )
 
-    #Adjusting timing of vaccinations to match boosting_on_time and boosting
-    #timing. Ideally, this would be handled in a more sophisticated fashion
-    #(that would cluster fewer times right around multiples of 5 months), but
+    #Adjusting timing of vaccinations to match boosting timing.
+    #Ideally, this would be handled in a more sophisticated fashion, but
     #this will do for now.
-    agents$time_V2[index_B_older] = pmin(
-        agents$time_V2[index_B_older],
-        rep(-(2*152+1), n_boosted_older)
-    )
-    agents$time_V2[index_B_last_five_months] = pmax(
-        pmin(
-            agents$time_V2[index_B_last_five_months],
-            rep(-152, n_boosted_last_five_months)
-        ),
-        rep(-2*152, n_boosted_last_five_months)
-    )
-    agents$time_V2[agents$boosting_on_time & !index_B] = pmax(
-        agents$time_V2[agents$boosting_on_time & !index_B],
-        rep(-152, sum(agents$boosting_on_time & !index_B))
-    )
+    agents$time_V2[index_B_older] = runif(n_boosted_older, -(365+61), -(2*152+1))
+    agents$time_V2[index_B_last_five_months] = runif(n_boosted_last_five_months,
+                                                     -2*152, -152)
 
     agents$time_last_immunity_event[index_V2] = agents$time_V2[index_V2]
     agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21
