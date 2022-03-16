@@ -1,4 +1,4 @@
-# custom-contacts-gen-general-v2.0.0.R is part of Food INdustry CoViD Control
+# custom-contacts-gen-general-v2.0.1.R is part of Food INdustry CoViD Control
 # Tool (FInd CoV Control), version 2.0.0.
 # Copyright (C) 2020-2022 Cornell University.
 #

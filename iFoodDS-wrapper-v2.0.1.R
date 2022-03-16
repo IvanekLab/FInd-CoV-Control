@@ -1,4 +1,4 @@
-# iFoodDS-wrapper-v2.0.0.R is part of Food INdustry CoViD Control Tool
+# iFoodDS-wrapper-v2.0.1.R is part of Food INdustry CoViD Control Tool
 # (FInd CoV Control), version 2.0.0.
 # Copyright (C) 2020-2022 Cornell University.
 #
@@ -25,7 +25,7 @@
 #Set analyze_only to TRUE to reanalyze an existing output set with modified
 #analyze.R
 
-source('general-waning-functions-v2.0.0.R')
+source('general-waning-functions-v2.0.1.R')
 
 safe.integer = function(s) {
     i = strtoi(s)
@@ -235,18 +235,18 @@ full_run = function(
     #    steps = days * 3
     #    step_index = (1:steps) * (1/3)
     } else {
-        source('double-wrapped-v2.0.0.R', local = TRUE)
+        source('double-wrapped-v2.0.1.R', local = TRUE)
         double_wrapped_fn()
     }
     steps = days * 3
     step_index = (1:steps) * (1/3)
-    source('analyze-v2.0.0.R', local = TRUE)
+    source('analyze-v2.0.1.R', local = TRUE)
     analyze_fn()
 }
 
 FIXED_SEED = TRUE
 VERSION = '2.0.0'
-double_wrap_num_sims = 1000
+double_wrap_num_sims = 100#0
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -287,7 +287,7 @@ additional_facility_parameters = list(
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
     
-    unique_id = 'facility-default-v16'
+    unique_id = 'facility-default-v17'
 )
 
 additional_farm_parameters = list(
@@ -300,10 +300,10 @@ additional_farm_parameters = list(
     social_distancing_shared_housing = 'Intermediate',
     community_transmission = NULL,
     
-    unique_id = 'farm-default-v16' #actually lower, but going for consistency
+    unique_id = 'farm-default-v17' #actually lower, but going for consistency
 )
 
-do.call(full_run, c(common_parameters, additional_farm_parameters))
+#do.call(full_run, c(common_parameters, additional_farm_parameters))
 do.call(full_run, c(common_parameters, additional_facility_parameters))
 
 

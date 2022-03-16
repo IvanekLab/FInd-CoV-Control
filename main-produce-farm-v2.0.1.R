@@ -1,4 +1,4 @@
-# main-produce-farm-v2.0.0.R is part of Food INdustry CoViD Control Tool
+# main-produce-farm-v2.0.1.R is part of Food INdustry CoViD Control Tool
 # (FInd CoV Control), version 2.0.0.
 # Copyright (C) 2020-2022 Cornell University.
 #
@@ -24,9 +24,9 @@
 main_produce_farm_fn = function() { #goal: get more meaningful debug data
 library(Rlab)
  
-source("AgentGen-v2.0.0.R")
-source("ContactsGen-v2.0.0.R")
-source("ABM-v2.0.0.R")
+source("AgentGen-v2.0.1.R")
+source("ContactsGen-v2.0.1.R")
+source("ABM-v2.0.1.R")
 
 #General note: foo = get('bar', baz) is similar to foo = baz[['bar']], *except*
 #that it will throw an error if baz has no element named 'bar', instead of
@@ -144,7 +144,7 @@ if(farm_or_facility == 'farm') {
 
 } else { #only alternative that we allow is facility
 
-    source('custom-contacts-gen-general-v2.0.0.R')
+    source('custom-contacts-gen-general-v2.0.1.R')
 
     contacts_matrices = facility_contacts_gen(
         workers_per_line = workers_per_crew,
@@ -268,9 +268,18 @@ vaccination_rate_list = list(
         ps_2 = on_ps_1 * scenario_parameters$home_vaccination_rate,
         cs   = on_ps_2 * scenario_parameters$home_vaccination_rate
 )
+boosting_rate_list = list(
+        ps_1 = on_cs * boosting_rate,
+        ps_2 = on_ps_1 * boosting_rate,
+        cs   = on_ps_2 * boosting_rate
+)
 vaccination_rate_list[['weekend_ps_1']] = vaccination_rate_list[['ps_1']]
 vaccination_rate_list[['weekend_ps_2']] = vaccination_rate_list[['ps_2']]
 vaccination_rate_list[['weekend_cs']] = vaccination_rate_list[['cs']]
+
+boosting_rate_list[['weekend_ps_1']] = boosting_rate_list[['ps_1']]
+boosting_rate_list[['weekend_ps_2']] = boosting_rate_list[['ps_2']]
+boosting_rate_list[['weekend_cs']] = boosting_rate_list[['cs']]
 
 vaccination_interval = 21
 
@@ -290,7 +299,7 @@ steps = scenario_parameters$nTime1 * 3
 step_index = (1:steps) * (1/3) #step_length
 
 ###### code to run simulation with num_sims iterations
-source('safe-random-functions-v2.0.0.R')
+source('safe-random-functions-v2.0.1.R')
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
     safe_set_seed(-778276078) #random 32-bit signed integer generated using
                               #atmospheric noise for reproducible output
@@ -337,7 +346,7 @@ for (i in 1:num_sims) {
                  vaccination_rate_list = vaccination_rate_list,
                  agent_presence_list = agent_presence_list,
                  quantitative_presence_list = quantitative_presence_list,
-                 boosting_rate = boosting_rate,
+                 boosting_rate_list = boosting_rate_list,
                  protection_functions = protection_functions
     )
     agents = model$agents

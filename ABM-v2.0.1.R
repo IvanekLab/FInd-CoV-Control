@@ -1,4 +1,4 @@
-# ABM-v2.0.0.R is part of Food INdustry CoViD Control Tool
+# ABM-v2.0.1.R is part of Food INdustry CoViD Control Tool
 # (FInd CoV Control), version 2.0.0.
 # Copyright (C) 2020-2022 Cornell University.
 #
@@ -391,7 +391,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                 scenario_parameters, steps, step_length_list, testing_rate_list,
                 vaccination_rate_list,  agent_presence_list,
                 quantitative_presence_list, 
-                boosting_rate,
+                boosting_rate_list,
                 protection_functions) {
 
     N <-nrow(agents)
@@ -430,6 +430,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         step_length = get(schedule[k], step_length_list)
         testing_rate = get(schedule[k], testing_rate_list)
         vaccination_rate = get(schedule[k], vaccination_rate_list)
+        boosting_rate = get(schedule[k], boosting_rate_list)
         agent_presence = get(schedule[k], agent_presence_list)
         quantitative_presence = get(schedule[k], quantitative_presence_list)
 

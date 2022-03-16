@@ -1,4 +1,4 @@
-# analyze-v2.0.0.R is part of Food INdustry CoViD Control Tool
+# analyze-v2.0.1.R is part of Food INdustry CoViD Control Tool
 # (FInd CoV Control), version 2.0.0.
 # Copyright (C) 2020-2022 Cornell University.
 #
@@ -21,7 +21,7 @@ analyze_fn = function() {  #this may, in the future, be revised to provide
                            #to provide more meaningful debugging data
 
 ANALYZE = TRUE
-source('double-wrapped-v2.0.0.R', local = TRUE)
+source('double-wrapped-v2.0.1.R', local = TRUE)
 list_ = double_wrapped_fn()
 row.names = list_[[1]]
 colors = list_[[2]]
@@ -390,7 +390,7 @@ sample_data = function() {
              tests = tests_array,
              intervention_names = row.names,
              work_shifts = work_shifts)
-    saveRDS(l, 'sample_data-facility.rds')
+    saveRDS(l, paste(subdirectory, unique_id, '_econ_data_', VERSION, '.rds', sep = '') )
 }
 
 sample_data() #restore to generate more data for daisy's econ model
