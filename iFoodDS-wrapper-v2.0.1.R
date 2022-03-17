@@ -246,7 +246,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.0.1'
-double_wrap_num_sims = 100#0
+double_wrap_num_sims = 1000
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -303,7 +303,7 @@ additional_farm_parameters = list(
     unique_id = 'farm-default-v17' #actually lower, but going for consistency
 )
 
-#do.call(full_run, c(common_parameters, additional_farm_parameters))
+do.call(full_run, c(common_parameters, additional_farm_parameters))
 do.call(full_run, c(common_parameters, additional_facility_parameters))
 
 
