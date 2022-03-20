@@ -273,7 +273,7 @@ common_parameters = list(
     ffv_last_five_months = 0.09,
     fraction_boosted_ever = 0.45,
     fraction_boosted_last_five_months = 0.45,
-    protection_functions = default_protection_functions,
+    protection_functions = protection_functions_45,
     variant = 'omicron'
 )
 
@@ -287,7 +287,7 @@ additional_facility_parameters = list(
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
     
-    unique_id = 'facility-default-v18'
+    unique_id = 'facility-default-v19'
 )
 
 additional_farm_parameters = list(
@@ -300,14 +300,12 @@ additional_farm_parameters = list(
     social_distancing_shared_housing = 'Intermediate',
     community_transmission = NULL,
     
-    unique_id = 'farm-default-v18' #actually lower, but going for consistency
+    unique_id = 'farm-default-v19' #actually lower, but going for consistency
 )
 
 do.call(full_run, c(common_parameters, additional_farm_parameters))
 do.call(full_run, c(common_parameters, additional_facility_parameters))
 
-additional_facility_parameters[['unique_id']] = 'facility_45_v18'
-common_parameters[['protection_functions']] = protection_functions_45
 
 #test values for edge case debugging:
 #common_parameters[['workers_per_crew']] = 2    # FM: workers per line

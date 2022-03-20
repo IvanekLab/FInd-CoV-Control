@@ -62,7 +62,7 @@ default_R_protection = function(t, prev) {
 }
 
 R_decay_45 = function(t) {
-    min(1, default_R_decay(t - 45 + 14))
+    pmin(1, default_R_decay(t - 45 + 14))
 }
 
 R_protection_45 = function(t, prev) {
