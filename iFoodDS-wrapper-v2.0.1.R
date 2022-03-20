@@ -177,10 +177,10 @@ full_run = function(
             stop(paste('Invalid community_transmission:',
                        community_transmission))
         }
-        if(variant == 'delta') {
+        if(variant == 'delta' || variant == 'omicron') {
             double_wrap_community_foi = 2 * double_wrap_community_foi
-        } else if (variant == 'omicron') {
-            double_wrap_community_foi = 4 * double_wrap_community_foi
+        #} else if (variant == 'omicron') {
+        #    double_wrap_community_foi = 4 * double_wrap_community_foi
         }
     } else if(tolower(employee_housing) == 'shared') {
         housing_dormitory = TRUE
@@ -196,10 +196,10 @@ full_run = function(
             stop(paste('Invalid social_distancing_shared_housing:',
                        social_distancing_shared_housing))
         }
-        if(variant == 'delta') {
+        if(variant == 'delta' || variant == 'omicron') {
             dormitory_R0 = 2 * dormitory_R0
-        } else if (variant == 'omicron') {
-            dormitory_R0 = 4 * dormitory_R0
+        #} else if (variant == 'omicron') {
+        #    dormitory_R0 = 4 * dormitory_R0
         }
     } else {
         stop(paste('Invalid employee_housing:', employee_housing))
@@ -215,13 +215,13 @@ full_run = function(
         stop(paste('Invalid social_distancing_work:', social_distancing_work))
     }
 
-    if(variant == 'delta') {
+    if(variant == 'delta' || variant == 'omicron') {
         double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 2
         #DELTA_VAX = TRUE
-    } else if (variant == 'omicron') {
-            #double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
-        double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 #* 7/3
-        #kludged for sane values aiming for 7; make more precise determination
+    #} else if (variant == 'omicron') {
+    #        #double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 * 4
+    #    double_wrap_baseline_work_R0 = double_wrap_baseline_work_R0 #* 7/3
+    #    #kludged for sane values aiming for 7; make more precise determination
     }
 
     n_exposed = n_no_symptoms # this should perhaps be split up at some point
@@ -287,7 +287,7 @@ additional_facility_parameters = list(
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
     
-    unique_id = 'facility-default-v17'
+    unique_id = 'facility-default-v18'
 )
 
 additional_farm_parameters = list(
@@ -300,12 +300,14 @@ additional_farm_parameters = list(
     social_distancing_shared_housing = 'Intermediate',
     community_transmission = NULL,
     
-    unique_id = 'farm-default-v17' #actually lower, but going for consistency
+    unique_id = 'farm-default-v18' #actually lower, but going for consistency
 )
 
 do.call(full_run, c(common_parameters, additional_farm_parameters))
 do.call(full_run, c(common_parameters, additional_facility_parameters))
 
+additional_facility_parameters[['unique_id']] = 'facility_45_v18'
+common_parameters[['protection_functions']] = protection_functions_45
 
 #test values for edge case debugging:
 #common_parameters[['workers_per_crew']] = 2    # FM: workers per line

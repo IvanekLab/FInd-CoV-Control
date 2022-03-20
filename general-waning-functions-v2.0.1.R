@@ -61,6 +61,18 @@ default_R_protection = function(t, prev) {
     )
 }
 
+R_decay_45 = function(t) {
+    min(1, default_R_decay(t - 45 + 14))
+}
+
+R_protection_45 = function(t, prev) {
+    #prev unused; included for consistent interface
+    ifelse(t < 45,
+        1,
+        R_decay_45(t)
+    )
+}
+
 #R_protection = B_protection
 #default_B_protection = default_R_protection
 
@@ -127,6 +139,10 @@ default2_protection_functions = make_protection_functions(default_V1_protection,
                                                           default_R_protection,
                                                           default_R_protection)
 
+protection_functions_45 = make_protection_functions(default_V1_protection,
+                                                    default_V2_protection,
+                                                    default_B_protection,
+                                                    R_protection_45)
 #old debugging check; may no longer be valid
 #immune_status = c(rep('FS', 28), rep('V1', 28), rep('V2', 56), rep('B', 56),
 #                  rep('R', 28))
