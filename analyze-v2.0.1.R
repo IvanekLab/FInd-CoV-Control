@@ -168,6 +168,15 @@ shiftwise_short = function(data) {
     shiftwise_unavailable_fraction(data) > .15
 }
 
+shiftwise_production_loss = function(data) {
+    fraction_available = 1 - shiftwise_unavailable_fraction(data)
+    adjusted_fraction_available = pmin(fraction_available / 0.85, 1)
+    fractional_production = adjusted_fraction_available^0.437
+    fractional_loss = 1 - fractional_production
+
+    fractional_loss * output_per_shift
+}
+
 new_infections = function(data) {
     data[,'new_infections',]
 }
@@ -351,6 +360,8 @@ main_title = ''
 #end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
 
 #first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = production_shifts)
+
+end_boxplot('TPL', shiftwise_production_loss, xlab = 'Total Production Loss ($)', mask = production_shifts)
 
 if(farm_or_facility == 'facility') {
     #oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)
