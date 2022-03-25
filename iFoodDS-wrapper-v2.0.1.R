@@ -266,7 +266,7 @@ common_parameters = list(
     n_mild = '0',
     working_directory = '.',
     folder_name = 'debugging-tests',   # relative to working directory
-    analyze_only = 'FALSE',
+    analyze_only = 'TRUE',
     PARALLEL = TRUE,
     fraction_recovered = 0.69,
     fraction_fully_vaccinated = 0.71,
@@ -287,7 +287,7 @@ additional_facility_parameters = list(
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
     
-    unique_id = 'facility-default-v19'
+    unique_id = 'facility-default-v18'
 )
 
 additional_farm_parameters = list(
@@ -303,7 +303,7 @@ additional_farm_parameters = list(
     unique_id = 'farm-default-v19' #actually lower, but going for consistency
 )
 
-do.call(full_run, c(common_parameters, additional_farm_parameters))
+#do.call(full_run, c(common_parameters, additional_farm_parameters))
 do.call(full_run, c(common_parameters, additional_facility_parameters))
 
 
