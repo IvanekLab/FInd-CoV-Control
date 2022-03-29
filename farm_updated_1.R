@@ -154,6 +154,6 @@ f_farm <- function(subdirectory, unique_id, VERSION, output_per_week, hourly_wag
   
 }
   
-#f_farm('debugging-tests/', 'farm-default-v17', '2.0.1', output_per_week =
+#f_farm('debugging-tests/', 'farm-default-v17', '2.1.0', output_per_week =
 #        data$N * 60.1 * 40, hourly_wage <- 13.89)
   
