@@ -84,28 +84,26 @@ full_run = function(
                     hourly_wage, # = 13.89
                     size# = 1000
 ) {
-    if(ffv_last_five_months > fraction_fully_vaccinated) {
-        stop('Fraction fully vaccinated within the last five months cannot ',
-             'exceed fraction fully vaccinated ever.')
-    }
-    if(fraction_boosted_last_five_months > fraction_boosted_ever) {
-        stop('Fraction boosted within the last five months cannot ',
-             'exceed fraction boosted ever.')
-    }
     setwd(working_directory)
 
     workers_per_crew = safe.integer(workers_per_crew)
     crews_per_supervisor = safe.integer(crews_per_supervisor)
     supervisors = safe.integer(supervisors)
-    n_shift_floaters = safe.integer(n_shift_floaters)
-    n_cleaners = safe.integer(n_cleaners)
-    n_all_floaters = safe.integer(n_all_floaters)
     days = safe.integer(days)
     n_no_symptoms = safe.integer(n_no_symptoms)
     n_mild = safe.integer(n_mild)
 
     fraction_recovered = safe.numeric(fraction_recovered)
     fraction_fully_vaccinated = safe.numeric(fraction_fully_vaccinated)
+    ffv_last_five_months = safe.numeric(ffv_last_five_months)
+    fraction_boosted_ever = safe.numeric(fraction_boosted_ever)
+    fraction_boosted_last_five_months = safe.numeric(fraction_boosted_last_five_months)
+    output_per_week = safe.numeric(output_per_week)
+    hourly_wage = safe.numeric(hourly_wage)
+    size = safe.numeric(size)
+
+    analyze_only = safe.logical(analyze_only)
+    PARALLEL = safe.logical(PARALLEL)
 
     variant = tolower(variant)
     if(variant == 'delta') {
@@ -120,27 +118,30 @@ full_run = function(
     } else {
         stop(paste('Unsupported variant:', variant))
     }
-
-    analyze_only = safe.logical(analyze_only)
-    PARALLEL = safe.logical(PARALLEL)
-
     
     farm_or_facility == tolower(farm_or_facility)
     if(farm_or_facility == 'farm') {
-
         if(
             workers_per_crew == 10 &&
             crews_per_supervisor == 3 &&
             supervisors == 3 &&
+            #n_shift_floaters == NULL &&
+            #n_cleaners == NULL &&
+            #n_all_floaters == NULL &&
             days == 90 &&
-            employee_housing == 'Shared' &&
-            social_distancing_shared_housing == 'Intermediate' &&
+            tolower(employee_housing) == 'shared' &&
+            tolower(social_distancing_shared_housing) == 'intermediate' &&
             #community_transmission == NULL &&
-            social_distancing_work == 'Intermediate' &&
+            tolower(social_distancing_work) == 'intermediate' &&
             n_no_symptoms == 1 &&
             n_mild == 0 &&
-            fraction_recovered == .116 &&
-            fraction_fully_vaccinated == .627
+            fraction_recovered == 0.69 &&
+            fraction_fully_vaccinated == 0.71 &&
+            ffv_last_five_months = 0.09 &&
+            fraction_boosted_ever = 0.45 &&
+            fraction_boosted_last_five_months = 0.45
+            ### Provisionally ignoring output_per_week, hourly_wage, and, iff
+            ### applicable, size when assessing "defaultness"
         ) {
             unique_id = paste(unique_id, 'baseline', sep = '')
         }
@@ -150,6 +151,35 @@ full_run = function(
 
         N = sum(crew_sizes) + length(crew_sizes) + supervisors + 1 
     } else if(farm_or_facility == 'facility') {
+        
+        n_shift_floaters = safe.integer(n_shift_floaters)
+        n_cleaners = safe.integer(n_cleaners)
+        n_all_floaters = safe.integer(n_all_floaters) - 1 #because the internal mechanics of the code are a holdover from a definition that excluded the manager
+
+        if(
+            workers_per_crew == 10 &&
+            crews_per_supervisor == 3 &&
+            supervisors == 2 &&
+            n_shift_floaters == 10 &&
+            n_cleaners == 10 &&
+            n_all_floaters == 10 &&
+            days == 90 &&
+            tolower(employee_housing) %in% c('individual', 'private') &&
+            #social_distancing_shared_housing == NULL &&
+            tolower(community_transmission) == 'intermediate' &&
+            tolower(social_distancing_work) == 'intermediate' &&
+            n_no_symptoms == 1 &&
+            n_mild == 0 &&
+            fraction_recovered == 0.69 &&
+            fraction_fully_vaccinated == 0.71 &&
+            ffv_last_five_months = 0.09 &&
+            fraction_boosted_ever = 0.45 &&
+            fraction_boosted_last_five_months = 0.45
+            ### Provisionally ignoring output_per_week, hourly_wage, and, iff
+            ### applicable, size when assessing "defaultness"
+        ) {
+            unique_id = paste(unique_id, 'baseline', sep = '')
+        }
 
         #TBD (eventually): add "default" facility conditions
 
@@ -249,7 +279,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.0.1'
-double_wrap_num_sims = 10#00
+double_wrap_num_sims = 1000
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -269,7 +299,7 @@ common_parameters = list(
     n_mild = '0',
     working_directory = '.',
     folder_name = 'debugging-tests',   # relative to working directory
-    analyze_only = 'TRUE',
+    analyze_only = 'FALSE',
     PARALLEL = TRUE,
     fraction_recovered = 0.69,
     fraction_fully_vaccinated = 0.71,
@@ -277,7 +307,7 @@ common_parameters = list(
     fraction_boosted_ever = 0.45,
     fraction_boosted_last_five_months = 0.45,
     protection_functions = protection_functions_45,
-    variant = 'omicron',
+    variant = 'omicron'
 )
 
 additional_facility_parameters = list(
