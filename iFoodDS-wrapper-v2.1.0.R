@@ -137,9 +137,9 @@ full_run = function(
             n_mild == 0 &&
             fraction_recovered == 0.69 &&
             fraction_fully_vaccinated == 0.71 &&
-            ffv_last_five_months = 0.09 &&
-            fraction_boosted_ever = 0.45 &&
-            fraction_boosted_last_five_months = 0.45
+            ffv_last_five_months == 0.09 &&
+            fraction_boosted_ever == 0.45 &&
+            fraction_boosted_last_five_months == 0.45
             ### Provisionally ignoring output_per_week, hourly_wage, and, iff
             ### applicable, size when assessing "defaultness"
         ) {
@@ -172,9 +172,9 @@ full_run = function(
             n_mild == 0 &&
             fraction_recovered == 0.69 &&
             fraction_fully_vaccinated == 0.71 &&
-            ffv_last_five_months = 0.09 &&
-            fraction_boosted_ever = 0.45 &&
-            fraction_boosted_last_five_months = 0.45
+            ffv_last_five_months == 0.09 &&
+            fraction_boosted_ever == 0.45 &&
+            fraction_boosted_last_five_months == 0.45
             ### Provisionally ignoring output_per_week, hourly_wage, and, iff
             ### applicable, size when assessing "defaultness"
         ) {
