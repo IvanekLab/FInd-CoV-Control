@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+output_per_shift = output_per_week / (5 * (1 + (supervisors > 1))) #N * 60.1 * 4 #wrong, but it's okay
+#hourly_wage = 13.89
+#size = 1000
+
+
 ######## analyze model predictions
 analyze_fn = function() {  #this may, in the future, be revised to provide
                            #better encapsulation; for now, it simply serves
@@ -117,6 +123,7 @@ oneplot = function(
         }
         ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn)
     }
+    #print(max(unlist(ys)))
     for(i in 1:length(full_output_filenames)) {
         if(i == 1) {
             par(mar = c(5,5,4,2))
@@ -181,6 +188,94 @@ new_infections = function(data) {
     data[,'new_infections',]
 }
 
+temperature_screening_cost = function(data) {
+    thermometer_cost_each <- 20 # $20 per thermometer 
+    KN95_cost <- 1 # $1 per mask per day 
+    face_shield_cost <- 3 # $3 per face shield. Changing every 30 days. ($0.1/day) 
+    ts_time <- 3 # 3 seconds for each screening
+    ts_limit <- 5 #screening should be completed under 5 minute
+
+    scheduled = shiftwise_scheduled(data)
+    available = scheduled - shiftwise_unavailable(data)
+    screeners = ceiling(scheduled) / (ts_limit * 60 / ts_time)
+    ts_time <- available * ts_time / screeners / 3600   # Actual daily screening time in hours
+    compensation <- ts_time * screeners * hourly_wage * 2 # have to pay the screeners, and the people being screened
+    screener_training_cost = max(screeners) * hourly_wage # 1hour training cost for screeners
+    thermometer_cost <- max(screeners) * thermometer_cost_each
+
+    initial_cost = screener_training_cost + thermometer_cost
+    ongoing_cost = compensation + (KN95_cost + face_shield_cost/30) * screeners
+
+    ongoing_cost[1] = ongoing_cost[1] + initial_cost
+
+    ifelse(is.na(ongoing_cost), 0, ongoing_cost) #needs modification if we ever end up plotting over time
+}
+
+virus_testing_cost = function(data) {
+    #array(0, c(dim(data)[1], dim(data)[3]))
+    vt_kit <- 10 # $10 per test
+    vt_time <- 1/4 # 15 minutes waiting assumed
+    #vt_prod <- output_per_week / 5 / 8 * vt_time #production value during 15 min ts_time (5days/wk, 8hr/day)
+
+    # Average wage compensation + kit cost over simulation
+    vt <- data[,'tests',] # number of tests
+    vt_cost <- vt * (vt_time * hourly_wage + vt_kit) # total cost
+
+    vt_cost
+}
+
+vaccination_cost = function(data) {
+    #array(0, c(dim(data)[1], dim(data)[3]))
+    ############## Vaccination ############
+    # 0.75 hour paid sick leave per vaccination  
+    # no production loss
+    data[,'doses',] * hourly_wage * 0.75
+}
+
+R0_reduction_cost = function(data, kludge_index) {
+    face_shield <- 3 # $3 per face shield. Changing every month (30 days)
+    KN95 <- 1 # $1 per N95 per shift
+    air_cleaner <- 1000 # 1 air cleaner per 1000 sqft
+    life <- 3 * 365 # 3year life of air_cleaner
+    bi_available <- shiftwise_scheduled(data) - shiftwise_unavailable(data)
+    bi_avilable = ifelse(is.na(bi_available), 0, bi_available)
+#    array(0, c(dim(data)[1], dim(data)[3]))
+    if(kludge_index == 8) {
+        bi_cost = KN95 * bi_available
+    } else if(kludge_index == 9 || (kludge_index == 10 && farm_or_facility == 'farm')) {
+        bi_cost = ((KN95 + face_shield/30) * bi_available)
+    } else if(kludge_index == 10) {
+        bi_cost = ((KN95 + face_shield/30) * bi_available) + size/1000 * air_cleaner / life 
+    } else {
+        stop(i)
+    }
+    #print(dim(bi_cost))
+
+    bi_cost
+}
+
+#the shameful part being the explicit coding of what ought to be handled
+#algorithmically
+shameful_kludge = function() {
+    i = 0
+
+    function(data) {
+        i <<- i + 1
+        print(i)
+        if(i == 1) {
+            array(0, c(dim(data)[1], dim(data)[3]))
+        } else if(i == 2) {
+            temperature_screening_cost(data)
+        } else if(i %in% 3:5) {
+            virus_testing_cost(data)
+        } else if(i %in% c(6:7, 11:13)) {
+            vaccination_cost(data)
+        } else {
+            R0_reduction_cost(data, i)
+        }
+    }
+}
+
 end_boxplot = function(
                        filename,
                        outcome_fn,
@@ -208,13 +303,16 @@ end_boxplot = function(
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
         outcomes = outcome_fn(full_output)
         outcomes = apply(outcomes, 2, cumsum)
+        #cat('max of outcomes is:', max(outcomes), '\n')
 
         final = as.vector(outcomes[dim(full_output)[1],])
         if(average) {
             final = final / length(step_index)
         }
+        #cat('max of final is:', max(final), '\n')
         
         means[i] = mean(final, na.rm = TRUE)
+        #cat('max of means is:', max(means), '\n')
 
         if(i == 1) {
             all_outcomes = data.frame(intervention = row.names[i], outcome = final)
@@ -229,6 +327,9 @@ end_boxplot = function(
     if(percent) {
         par(xaxt="n")
     }
+    cat('max value:', max(all_outcomes$outcome),'\n')
+    cat('sum:', sum(all_outcomes$outcome), '\n')
+    cat('mean:', mean(all_outcomes$outcome), '\n')
     boxplot(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
     title(main=main_title, cex.main = 3)
     if(percent) {
@@ -238,6 +339,93 @@ end_boxplot = function(
     points(means, 1:length(full_output_filenames), cex =2, pch = 8)
     dev.off()
 }
+
+
+scatter_plot = function(filename,
+                       outcome_fn_x,
+                       xlab,
+                       mask_x = NA,
+                       outcome_fn_y,
+                       ylab,
+                       mask_y = NA,
+                       main_title = NULL
+                       ) {
+    png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
+
+    step_index_x = step_index_y = step_index
+
+    if(!is.na(mask_x)[1]) {
+        step_index_x = step_index[mask_x]
+    }
+    if(!is.na(mask_y)[1]) {
+        step_index_y = step_index[mask_y]
+    }
+
+    ###
+        
+    means_x = numeric(length(full_output_filenames))        
+    means_y = numeric(length(full_output_filenames))
+    for (i in 1:length(full_output_filenames)) {
+        full_output_x = full_output_y = readRDS(full_output_filenames[i])
+        
+        if(!is.na(mask_x)[1]) {
+            full_output_x = full_output_x[mask_x,,]
+        }
+        if(!is.na(mask_y)[1]) {
+            full_output_y = full_output_y[mask_y,,]
+        }
+
+        dimnames(full_output_x) = list(rep(NA, dim(full_output_x)[1]), colnames(full_output_x), rep(NA, dim(full_output_x)[3])) #kludge
+        dimnames(full_output_y) = list(rep(NA, dim(full_output_y)[1]), colnames(full_output_y), rep(NA, dim(full_output_y)[3])) #kludge
+        outcomes_x = outcome_fn_x(full_output_x)
+        outcomes_x = apply(outcomes_x, 2, cumsum)
+        outcomes_y = outcome_fn_y(full_output_y)
+        outcomes_y = apply(outcomes_y, 2, cumsum)
+        #cat('max of outcomes is:', max(outcomes), '\n')
+
+        final_x = as.vector(outcomes_x[dim(full_output_x)[1],])
+        final_y = as.vector(outcomes_y[dim(full_output_y)[1],])
+        #if(average) {
+        #    final = final / length(step_index)
+        #}
+        #cat('max of final is:', max(final), '\n')
+        
+        means_x[i] = mean(final_x, na.rm = TRUE)
+        means_y[i] = mean(final_y, na.rm = TRUE)
+        #cat('max of means is:', max(means), '\n')
+
+        #if(i == 1) {
+        #    all_outcomes = data.frame(intervention = row.names[i], outcome = final)
+        #} else {
+        #    all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final))
+        #}
+    }
+
+    #all_outcomes$intervention = factor(all_outcomes$intervention, levels = unique(all_outcomes$intervention), ordered = TRUE)
+
+    #par(mar = c(5,23,4,2))
+    #if(percent) {
+    #    par(xaxt="n")
+    #}
+    #cat('max value:', max(all_outcomes$outcome),'\n')
+    #cat('sum:', sum(all_outcomes$outcome), '\n')
+    #cat('mean:', mean(all_outcomes$outcome), '\n')
+    plot(means_x, means_y, xlab = xlab, ylab = ylab, col = colors, cex.axis = 1.5, #cex.names=1.5,
+         cex.lab=1.5, pch = ltys, lwd = 8)
+    #boxplot(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
+    title(main=main_title, cex.main = 3)
+    #if(percent) {
+    #    par(xaxt='s')
+    #    axis(1, at=pretty(all_outcomes$outcome), paste0(lab=pretty(all_outcomes$outcome) * 100, ' %'), las=TRUE, cex.axis = 1.5, cex.lab=1.5)
+    #}
+    #points(means, 1:length(full_output_filenames), cex =2, pch = 8)
+    legend("topright",inset = .06, row.names, lty = 0, lwd = 8,
+           col = colors, pch = ltys, y.intersp = 1, cex = 1.5)
+    dev.off()
+
+}
+
+
 
 first_x_boxplot = function(
                            filename,
@@ -361,7 +549,37 @@ main_title = ''
 
 #first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = production_shifts)
 
+#print(output_per_shift)
+
+oneplot('PL', shiftwise_production_loss, mean, c(0,0), 'Production Loss ($/production shift)', mask = production_shifts)
 end_boxplot('TPL', shiftwise_production_loss, xlab = 'Total Production Loss ($)', mask = production_shifts)
+end_boxplot('TC', shameful_kludge(), xlab = 'Total Direct Cost ($)')
+
+f = shameful_kludge()
+#below is massively kludged, to deal with production loss fn not handling
+#cleaning shifts, and cost needing to handle all shifts
+#follow by the need to have two dimensions for handling in end_boxplot
+g = function(data) {
+    fd = shiftwise_production_loss(data[production_shifts,,])
+    #fd = ifelse(is.na(fd), 0, fd)
+    #cat('blorp\n')
+    r = f(data)
+    r[production_shifts] = r[production_shifts] + fd
+    #r = rbind(apply(fd,2,sum) + apply(f(data),2,sum))
+    #print(dim(r))
+    r
+}
+end_boxplot('NC', g, xlab = 'Net Cost (Total Production Loss + Total Direct Cost) ($)')
+
+scatter_plot(filename = 'Scatter',
+                       outcome_fn_x = shiftwise_production_loss,
+                       xlab = 'Total Production Loss ($)',
+                       mask_x = production_shifts,
+                       outcome_fn_y = function(data) data[,'new_infections',],
+                       ylab = 'Total Infections',
+                       mask_y = NA,
+                       main_title = NULL
+                       ) 
 
 if(farm_or_facility == 'facility') {
     #oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)

@@ -28,16 +28,16 @@ f_farm <- function(output_per_week, hourly_wage, size) {
     work_shifts <- data$work_shifts
     shift = ifelse(data$work_shifts[2], 2, 1) #kludge
     if (shift == 1) {
-        production_shifts <- rep(c(rep(c("TRUE", "FALSE", "FALSE"), times = 5), rep("FALSE", times = 6)), 
+        production_shifts <- rep(c(rep(c(TRUE, FALSE, FALSE), times = 5), rep(FALSE, times = 6)), 
                                  length.out = length(work_shifts))
     } else { 
-        production_shifts <- rep(c(rep(c("TRUE", "TRUE", "FALSE"), times = 5), rep("FALSE", times = 6)), 
+        production_shifts <- rep(c(rep(c(TRUE, TRUE, FALSE), times = 5), rep(FALSE, times = 6)), 
                                  length.out = length(work_shifts))
     }
     available <- scheduled - unavailable 
     avoided_infection <- -sweep(infections[,],2,infections[1,])
     absence_rate <- unavailable/scheduled
-    absence_rate_1 <- absence_rate[,which(production_shifts == "TRUE"),]  #absence rate- production shift only
+    absence_rate_1 <- absence_rate[,which(production_shifts),]  #absence rate- production shift only
     work_days <- sum(rep(c(1,1,1,1,1,0,0),length.out = days)) #number of work days in the simulated period
 
   
@@ -47,20 +47,21 @@ f_farm <- function(output_per_week, hourly_wage, size) {
 
 
     ##################### Output (no overtime) #################
+    print(output_per_week / 5 / shift)
     f_production <- function(a) {
         if (a <= 0.15) {
             return(0)
         } else {
-            return((a - 0.15) * alpha_L * (output_per_week / 5 / shift))
+            return((1 - ((1 - a)/.85)^alpha_L) * (output_per_week / 5 / shift))
         }
     }
     out_loss <- apply(absence_rate_1, c(1,2,3) , f_production) 
     out1 <- apply(out_loss, c(1,2), mean) # 13 x (work day*shift), average daily output loss over iterations
-    if (shift == 2) {
-        out1 <- sapply(seq(1,work_days*shift-1, by= shift),function(i) rowSums(out1[,i:(i+1)]))
-    }
+    #if (shift == 2) {
+    #    out1 <- sapply(seq(1,work_days*shift-1, by= shift),function(i) rowSums(out1[,i:(i+1)]))
+    #}
   
-    out2 <- apply(out_loss,c(3), rowMeans) # 13 x iteration, total output loss per iteration 
+    out2 <- apply(out_loss,c(3), rowSums) # 13 x iteration, total output loss per iteration 
   
   
   
@@ -70,10 +71,14 @@ f_farm <- function(output_per_week, hourly_wage, size) {
   
     png(paste(subdirectory, unique_id, '_', 'Production_Loss', '_', VERSION, '.png',
               sep = ''), width=1000, height = 1000)
-    par(mar = c(4,4,4,10),xpd=TRUE)
-    plot(0, type = 'n',xlim = c(1,work_days), ylim = c(0, max(out1)), xlab = "Work Days", ylab = "Estimated Production Loss in Dollar($)", cex.axis = 1.5, cex.lab = 1.5)
+    #par(mar = c(4,4,4,10),xpd=TRUE)
+    plot(0, type = 'n',xlim = c(1,days), ylim = c(0, max(out1)), xlab = "Work Days", ylab = "Estimated Production Loss in Dollar($)", cex.axis = 1.5, cex.lab = 1.5)
+    print(production_shifts)
+    print('derp')
+    print(is.logical(production_shifts))
+    print(max(out1))
     for (i in 1:13){
-        lines(c(1:work_days), out1[i,], col = color[i], lty = type[i], type = 'l', lwd = 4)
+        lines(which(production_shifts)/3, out1[i,], col = color[i], lty = type[i], type = 'l', lwd = 4)
     }
     legend("topright", legend = data$intervention_names, lty = type, col = color, cex = 1.5, lwd =4)
     dev.off()
@@ -81,8 +86,8 @@ f_farm <- function(output_per_week, hourly_wage, size) {
     # Plot 2 - Box plot
     png(paste(subdirectory, unique_id, '_', 'Total_Production_Loss', '_', VERSION, '.png',
                 sep = ''), width=1000, height = 1000)
-    par(mar = c(4,15,4,4),xpd=TRUE)
-    boxplot(t(out2),  names = data$intervention_names, horizontal = TRUE, las = 1, col = color)
+    par(mar = c(5,23,4,2),xpd=TRUE)
+    boxplot(t(out2),  names = data$intervention_names, horizontal = TRUE, las = 1, col = color, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, na.action = na.pass)
     title("Estimated Total Production Loss in Dollar($)")
     dev.off()
     

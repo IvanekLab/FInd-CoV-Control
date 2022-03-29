@@ -79,7 +79,10 @@ full_run = function(
                     variant,
                     analyze_only,
                     PARALLEL,
-                    protection_functions
+                    protection_functions,
+                    output_per_week, #= 1680000, # / (5 * (1 + (supervisors > 1))) #N * 60.1 * 4 #wrong, but it's okay
+                    hourly_wage, # = 13.89
+                    size# = 1000
 ) {
     if(ffv_last_five_months > fraction_fully_vaccinated) {
         stop('Fraction fully vaccinated within the last five months cannot ',
@@ -246,7 +249,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.0.1'
-double_wrap_num_sims = 1000
+double_wrap_num_sims = 10#00
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -274,7 +277,7 @@ common_parameters = list(
     fraction_boosted_ever = 0.45,
     fraction_boosted_last_five_months = 0.45,
     protection_functions = protection_functions_45,
-    variant = 'omicron'
+    variant = 'omicron',
 )
 
 additional_facility_parameters = list(
@@ -286,8 +289,11 @@ additional_facility_parameters = list(
     employee_housing = 'Private', 
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
-    
-    unique_id = 'facility-default-v18'
+    unique_id = 'facility-default-v20',
+    output_per_week = 1680000 , #N * 60.1 * 4 #wrong, but it's okay
+    hourly_wage = 13.89,
+    size = 1000
+
 )
 
 additional_farm_parameters = list(
@@ -299,8 +305,10 @@ additional_farm_parameters = list(
     employee_housing = 'Shared', 
     social_distancing_shared_housing = 'Intermediate',
     community_transmission = NULL,
-    
-    unique_id = 'farm-default-v19' #actually lower, but going for consistency
+    unique_id = 'farm-default-v20', #actually lower, but going for consistency
+    output_per_week = 1680000, #/ (5 * (1 + (supervisors > 1))) #N * 60.1 * 4 #wrong, but it's okay
+    hourly_wage = 13.89,
+    size = NA
 )
 
 #do.call(full_run, c(common_parameters, additional_farm_parameters))

@@ -47,6 +47,7 @@ f_farm <- function(subdirectory, unique_id, VERSION, output_per_week, hourly_wag
     png(paste(subdirectory, unique_id, '_', 'Production_Loss', '_', VERSION, '.png',
               sep = ''), width=1000, height = 1000)
     plot(0, type = 'n',xlim = c(1,days), ylim = c(0, max(out1)), xlab = "Work Days", ylab = "Estimated Production Loss in Dollar($)")
+    print(max(out1))
     for (i in 1:13){
         lines(which(work_shifts)/3, out1[i,], col = color[i], lty = type[i], type = 'l', lwd = 4)
     }
