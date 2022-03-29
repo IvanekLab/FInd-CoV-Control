@@ -100,7 +100,6 @@ full_run = function(
     fraction_boosted_last_five_months = safe.numeric(fraction_boosted_last_five_months)
     output_per_week = safe.numeric(output_per_week)
     hourly_wage = safe.numeric(hourly_wage)
-    size = safe.numeric(size)
 
     analyze_only = safe.logical(analyze_only)
     PARALLEL = safe.logical(PARALLEL)
@@ -155,6 +154,7 @@ full_run = function(
         n_shift_floaters = safe.integer(n_shift_floaters)
         n_cleaners = safe.integer(n_cleaners)
         n_all_floaters = safe.integer(n_all_floaters) - 1 #because the internal mechanics of the code are a holdover from a definition that excluded the manager
+        size = safe.numeric(size)
 
         if(
             workers_per_crew == 10 &&
@@ -315,7 +315,7 @@ additional_facility_parameters = list(
     supervisors = '2',          # FM: shifts
     n_shift_floaters ='10',     # FM only (for farm model, will require NULL/NA)
     n_cleaners = '10',          # FM only (for farm model, will require NULL/NA)
-    n_all_floaters = '10',      # FM only (for farm model, will require NULL/NA)
+    n_all_floaters = '11',      # FM only (for farm model, will require NULL/NA)
     employee_housing = 'Private', 
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
@@ -342,14 +342,5 @@ additional_farm_parameters = list(
 )
 
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
-do.call(full_run, c(common_parameters, additional_facility_parameters))
-
-
-#test values for edge case debugging:
-#common_parameters[['workers_per_crew']] = 2    # FM: workers per line
-#common_parameters[['crews_per_supervisor']] = 1
-#additional_facility_parameters[['supervisors']] = 1          # FM: shifts
-#additional_facility_parameters[['n_shift_floaters']] =0     # FM only (for farm model, will require NULL/NA)
-#additional_facility_parameters[['n_cleaners']] = 2          # FM only (for farm model, will require NULL/NA)
-#additional_facility_parameters[['n_all_floaters']] = 0
+#do.call(full_run, c(common_parameters, additional_facility_parameters))
 

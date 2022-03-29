@@ -261,7 +261,7 @@ shameful_kludge = function() {
 
     function(data) {
         i <<- i + 1
-        print(i)
+        #print(i)
         if(i == 1) {
             array(0, c(dim(data)[1], dim(data)[3]))
         } else if(i == 2) {
@@ -327,9 +327,9 @@ end_boxplot = function(
     if(percent) {
         par(xaxt="n")
     }
-    cat('max value:', max(all_outcomes$outcome),'\n')
-    cat('sum:', sum(all_outcomes$outcome), '\n')
-    cat('mean:', mean(all_outcomes$outcome), '\n')
+    #cat('max value:', max(all_outcomes$outcome),'\n')
+    #cat('sum:', sum(all_outcomes$outcome), '\n')
+    #cat('mean:', mean(all_outcomes$outcome), '\n')
     boxplot(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
     title(main=main_title, cex.main = 3)
     if(percent) {
@@ -535,19 +535,19 @@ l = length(work_shifts)
 production_shifts = work_shifts & ((1:l) %% 3 != 0)
 cleaning_shifts =  work_shifts & ((1:l) %% 3 == 0)
 
-#oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', production_shift_size, ' total)', sep = ''), mask = production_shifts)
+oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', production_shift_size, ' total)', sep = ''), mask = production_shifts)
 
 main_title = ''
 
-#end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', production_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts)
+end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', production_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts)
 
 #end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
 
-#end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
+end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
 
-#end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
+end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
 
-#first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = production_shifts)
+first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = production_shifts)
 
 #print(output_per_shift)
 
@@ -582,54 +582,54 @@ scatter_plot(filename = 'Scatter',
                        ) 
 
 if(farm_or_facility == 'facility') {
-    #oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)
-    #end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', cleaning_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
-    #end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
-    #end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Cleaning Shift Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
-    #first_x_boxplot('First-Day-Short-cleaning', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = cleaning_shifts)
+    oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)
+    end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', cleaning_shift_size, ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
+    end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
+    end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Cleaning Shift Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
+    first_x_boxplot('First-Day-Short-cleaning', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = cleaning_shifts)
 }
 
-sample_data = function() {
-    interventions = length(full_output_filenames)
-    for (i in 1:interventions) {
-        full_output = readRDS(full_output_filenames[i])
+#sample_data = function() {
+#    interventions = length(full_output_filenames)
+#    for (i in 1:interventions) {
+#        full_output = readRDS(full_output_filenames[i])
+#
+#        if(i == 1) {
+#            steps = dim(full_output)[1]
+#            reps = dim(full_output)[3]
+#            unavailable_array = array(0, c(interventions, steps, reps))
+#            scheduled_array = array(0, c(interventions, steps, reps))
+#            total_infections_array = array(0, c(interventions, reps))
+#            doses_array = array(0, c(interventions, steps, reps))
+#            tests_array = array(0, c(interventions, steps, reps))
+#        }
+#        unavailable_array[i,,] = shiftwise_unavailable(full_output)
+#        scheduled_array[i,,] = shiftwise_scheduled(full_output)
+#        total_infections_array[i,] = apply(full_output[,'new_infections',], 2, sum)
+#        doses_array[i,,] = full_output[,'doses',]
+#        tests_array[i,,] = full_output[,'tests',]
+#    }
+#
+#    l = list(N = N,
+#             days = days,
+#             unavailable = unavailable_array,
+#             scheduled = scheduled_array,
+#             total_infections = total_infections_array,
+#             doses = doses_array,
+#             tests = tests_array,
+#             intervention_names = row.names,
+#             work_shifts = work_shifts)
+#    saveRDS(l, paste(subdirectory, unique_id, '_econ_data_', VERSION, '.rds', sep = '') )
+#}
 
-        if(i == 1) {
-            steps = dim(full_output)[1]
-            reps = dim(full_output)[3]
-            unavailable_array = array(0, c(interventions, steps, reps))
-            scheduled_array = array(0, c(interventions, steps, reps))
-            total_infections_array = array(0, c(interventions, reps))
-            doses_array = array(0, c(interventions, steps, reps))
-            tests_array = array(0, c(interventions, steps, reps))
-        }
-        unavailable_array[i,,] = shiftwise_unavailable(full_output)
-        scheduled_array[i,,] = shiftwise_scheduled(full_output)
-        total_infections_array[i,] = apply(full_output[,'new_infections',], 2, sum)
-        doses_array[i,,] = full_output[,'doses',]
-        tests_array[i,,] = full_output[,'tests',]
-    }
+#sample_data() #restore to generate more data for daisy's econ model
 
-    l = list(N = N,
-             days = days,
-             unavailable = unavailable_array,
-             scheduled = scheduled_array,
-             total_infections = total_infections_array,
-             doses = doses_array,
-             tests = tests_array,
-             intervention_names = row.names,
-             work_shifts = work_shifts)
-    saveRDS(l, paste(subdirectory, unique_id, '_econ_data_', VERSION, '.rds', sep = '') )
-}
-
-sample_data() #restore to generate more data for daisy's econ model
-
-if(farm_or_facility == 'farm') {
-    source('farm_updated_1.R', local = TRUE)
-    f_farm(subdirectory, unique_id, VERSION, output_per_week = N * 60.1 * 40, hourly_wage = 13.89)
-} else { #i.e., facility
-    source('processing.R', local = TRUE)
-}
+#if(farm_or_facility == 'farm') {
+#    source('farm_updated_1.R', local = TRUE)
+#    f_farm(subdirectory, unique_id, VERSION, output_per_week = N * 60.1 * 40, hourly_wage = 13.89)
+#} else { #i.e., facility
+#    source('processing.R', local = TRUE)
+#}
 
 ANALYZE = FALSE
 
