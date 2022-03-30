@@ -1,5 +1,5 @@
-# general-waning-functions-v2.1.0.R is part of Food INdustry CoViD Control Tool
-# (FInd CoV Control), version 2.1.0.
+# general-waning-functions-v2.1.1.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 2.1.1.
 # Copyright (C) 2020-2022 Cornell University.
 #
 # This program is free software; you can redistribute it and/or modify

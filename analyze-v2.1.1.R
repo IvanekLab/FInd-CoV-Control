@@ -1,5 +1,5 @@
-# analyze-v2.1.0.R is part of Food INdustry CoViD Control Tool
-# (FInd CoV Control), version 2.1.0.
+# analyze-v2.1.1.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 2.1.1.
 # Copyright (C) 2020-2022 Cornell University.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ analyze_fn = function() {  #this may, in the future, be revised to provide
                            #to provide more meaningful debugging data
 
 ANALYZE = TRUE
-source('double-wrapped-v2.1.0.R', local = TRUE)
+source('double-wrapped-v2.1.1.R', local = TRUE)
 list_ = double_wrapped_fn()
 row.names = list_[[1]]
 colors = list_[[2]]
@@ -350,7 +350,7 @@ scatter_plot = function(filename,
                        mask_y = NA,
                        main_title = NULL
                        ) {
-    png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
+    png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1300)
 
     step_index_x = step_index_y = step_index
 
@@ -367,13 +367,18 @@ scatter_plot = function(filename,
     means_y = numeric(length(full_output_filenames))
     for (i in 1:length(full_output_filenames)) {
         full_output_x = full_output_y = readRDS(full_output_filenames[i])
-        
+        #print('one')
+        #print(dim(full_output_x))
         if(!is.na(mask_x)[1]) {
             full_output_x = full_output_x[mask_x,,]
         }
+        #print('two')
+        #print(dim(full_output_x))
         if(!is.na(mask_y)[1]) {
             full_output_y = full_output_y[mask_y,,]
         }
+        #print('three')
+        #print(dim(full_output_y))
 
         dimnames(full_output_x) = list(rep(NA, dim(full_output_x)[1]), colnames(full_output_x), rep(NA, dim(full_output_x)[3])) #kludge
         dimnames(full_output_y) = list(rep(NA, dim(full_output_y)[1]), colnames(full_output_y), rep(NA, dim(full_output_y)[3])) #kludge
@@ -410,6 +415,7 @@ scatter_plot = function(filename,
     #cat('max value:', max(all_outcomes$outcome),'\n')
     #cat('sum:', sum(all_outcomes$outcome), '\n')
     #cat('mean:', mean(all_outcomes$outcome), '\n')
+    par(mar = c(5,5,4,24), xpd=TRUE)
     plot(means_x, means_y, xlab = xlab, ylab = ylab, col = colors, cex.axis = 1.5, #cex.names=1.5,
          cex.lab=1.5, pch = ltys, lwd = 8)
     #boxplot(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
@@ -419,8 +425,8 @@ scatter_plot = function(filename,
     #    axis(1, at=pretty(all_outcomes$outcome), paste0(lab=pretty(all_outcomes$outcome) * 100, ' %'), las=TRUE, cex.axis = 1.5, cex.lab=1.5)
     #}
     #points(means, 1:length(full_output_filenames), cex =2, pch = 8)
-    legend("topright",inset = .06, row.names, lty = 0, lwd = 8,
-           col = colors, pch = ltys, y.intersp = 1, cex = 1.5)
+    legend("topright", row.names, lty = 0, lwd = 8,
+           col = colors, pch = ltys, y.intersp = 1, cex = 1.5, inset = c(-0.38,0))
     dev.off()
 
 }
@@ -551,9 +557,9 @@ first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day
 
 #print(output_per_shift)
 
-oneplot('PL', shiftwise_production_loss, mean, c(0,0), 'Production Loss ($/production shift)', mask = production_shifts)
-end_boxplot('TPL', shiftwise_production_loss, xlab = 'Total Production Loss ($)', mask = production_shifts)
-end_boxplot('TC', shameful_kludge(), xlab = 'Total Direct Cost ($)')
+oneplot('Production-Loss', shiftwise_production_loss, mean, c(0,0), 'Production Loss (Dollars ($) per production shift)', mask = production_shifts)
+end_boxplot('Total-Production-Loss', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts)
+end_boxplot('Total-Intervention-Expenses', shameful_kludge(), xlab = 'Total intervention expenses in Dollars ($)"')
 
 f = shameful_kludge()
 #below is massively kludged, to deal with production loss fn not handling
@@ -569,17 +575,44 @@ g = function(data) {
     #print(dim(r))
     r
 }
-end_boxplot('NC', g, xlab = 'Net Cost (Total Production Loss + Total Direct Cost) ($)')
-
-scatter_plot(filename = 'Scatter',
+end_boxplot('Total-Cost', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)')
+#print('before')
+scatter_plot(filename = 'Scatterplot--Production-Losses',
                        outcome_fn_x = shiftwise_production_loss,
-                       xlab = 'Total Production Loss ($)',
+                       xlab = "Total Production Losses in Dollars ($)",
                        mask_x = production_shifts,
                        outcome_fn_y = function(data) data[,'new_infections',],
                        ylab = 'Total Infections',
                        mask_y = NA,
                        main_title = NULL
                        ) 
+f = shameful_kludge()
+g = function(data) {
+    #print('barrier')
+    #print(dim(data))
+    fd = shiftwise_production_loss(data[production_shifts,,])
+    #print(length(fd))
+    #print(length(production_shifts))
+    #fd = ifelse(is.na(fd), 0, fd)
+    #cat('blorp\n')
+    r = f(data)
+    #print(length(r))
+    r[production_shifts] = r[production_shifts] + fd
+    #r = rbind(apply(fd,2,sum) + apply(f(data),2,sum))
+    #print(dim(r))
+    r
+}
+#print('mid')
+scatter_plot(filename = 'Scatterplot--Total-Cost',
+                       outcome_fn_x = g,
+                       xlab = "Total Cost (Intervention Expenses + Production Losses) in Dollars ($)",
+                       mask_x = NA, #production_shifts,
+                       outcome_fn_y = function(data) data[,'new_infections',],
+                       ylab = 'Total Infections',
+                       mask_y = NA,
+                       main_title = NULL
+                       ) 
+#print('post')
 
 if(farm_or_facility == 'facility') {
     oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', cleaning_shift_size, ' total)', sep = ''), mask = cleaning_shifts)
