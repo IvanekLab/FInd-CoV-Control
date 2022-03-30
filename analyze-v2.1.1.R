@@ -415,9 +415,9 @@ scatter_plot = function(filename,
     #cat('max value:', max(all_outcomes$outcome),'\n')
     #cat('sum:', sum(all_outcomes$outcome), '\n')
     #cat('mean:', mean(all_outcomes$outcome), '\n')
-    par(mar = c(5,5,4,24), xpd=TRUE)
-    plot(means_x, means_y, xlab = xlab, ylab = ylab, col = colors, cex.axis = 1.5, #cex.names=1.5,
-         cex.lab=1.5, pch = ltys, lwd = 8)
+    par(mar = c(5,5,4,32), xpd=TRUE)
+    plot(means_x, means_y, xlab = xlab, ylab = ylab, col = colors, cex.axis = 2, #cex.names=1.5,
+         cex.lab=2, pch = ltys, lwd = 12)
     #boxplot(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
     title(main=main_title, cex.main = 3)
     #if(percent) {
@@ -425,8 +425,8 @@ scatter_plot = function(filename,
     #    axis(1, at=pretty(all_outcomes$outcome), paste0(lab=pretty(all_outcomes$outcome) * 100, ' %'), las=TRUE, cex.axis = 1.5, cex.lab=1.5)
     #}
     #points(means, 1:length(full_output_filenames), cex =2, pch = 8)
-    legend("topright", row.names, lty = 0, lwd = 8,
-           col = colors, pch = ltys, y.intersp = 1, cex = 1.5, inset = c(-0.38,0))
+    legend("topright", row.names, lty = 0, lwd = 12,
+           col = colors, pch = ltys, y.intersp = 1, cex = 2, inset = c(-0.585,0))
     dev.off()
 
 }
