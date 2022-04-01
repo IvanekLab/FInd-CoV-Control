@@ -535,7 +535,7 @@ end_barplot = function(
 }
 
 
-#oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))
+oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))
 
 l = length(work_shifts)
 production_shifts = work_shifts & ((1:l) %% 3 != 0)
