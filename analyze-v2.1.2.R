@@ -1,5 +1,5 @@
-# analyze-v2.1.1.R is part of Food INdustry CoViD Control Tool
-# (FInd CoV Control), version 2.1.1.
+# analyze-v2.1.2.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 2.1.2.
 # Copyright (C) 2020-2022 Cornell University.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ analyze_fn = function() {  #this may, in the future, be revised to provide
                            #to provide more meaningful debugging data
 
 ANALYZE = TRUE
-source('double-wrapped-v2.1.1.R', local = TRUE)
+source('double-wrapped-v2.1.2.R', local = TRUE)
 list_ = double_wrapped_fn()
 row.names = list_[[1]]
 colors = list_[[2]]
@@ -254,9 +254,7 @@ R0_reduction_cost = function(data, kludge_index) {
     bi_cost
 }
 
-#the shameful part being the explicit coding of what ought to be handled
-#algorithmically
-shameful_kludge = function() {
+generate_intervention_expenses_function = function() {
     i = 0
 
     function(data) {
@@ -559,9 +557,9 @@ first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day
 
 oneplot('Production-Loss', shiftwise_production_loss, mean, c(0,0), 'Production Loss (Dollars ($) per production shift)', mask = production_shifts)
 end_boxplot('Total-Production-Loss', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts)
-end_boxplot('Total-Intervention-Expenses', shameful_kludge(), xlab = 'Total intervention expenses in Dollars ($)"')
+end_boxplot('Total-Intervention-Expenses', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)"')
 
-f = shameful_kludge()
+intervention_expenses_function = generate_intervention_expenses_function()
 #below is massively kludged, to deal with production loss fn not handling
 #cleaning shifts, and cost needing to handle all shifts
 #follow by the need to have two dimensions for handling in end_boxplot
@@ -569,7 +567,7 @@ g = function(data) {
     fd = shiftwise_production_loss(data[production_shifts,,])
     #fd = ifelse(is.na(fd), 0, fd)
     #cat('blorp\n')
-    r = f(data)
+    r = intervention_expenses_function(data)
     r[production_shifts] = r[production_shifts] + fd
     #r = rbind(apply(fd,2,sum) + apply(f(data),2,sum))
     #print(dim(r))
@@ -577,41 +575,41 @@ g = function(data) {
 }
 end_boxplot('Total-Cost', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)')
 #print('before')
-scatter_plot(filename = 'Scatterplot--Production-Losses',
-                       outcome_fn_x = shiftwise_production_loss,
-                       xlab = "Total Production Losses in Dollars ($)",
-                       mask_x = production_shifts,
-                       outcome_fn_y = function(data) data[,'new_infections',],
-                       ylab = 'Total Infections',
-                       mask_y = NA,
-                       main_title = NULL
-                       ) 
-f = shameful_kludge()
-g = function(data) {
+#scatter_plot(filename = 'Scatterplot--Production-Losses',
+#                       outcome_fn_x = shiftwise_production_loss,
+#                       xlab = "Total Production Losses in Dollars ($)",
+#                       mask_x = production_shifts,
+#                       outcome_fn_y = function(data) data[,'new_infections',],
+#                       ylab = 'Total Infections',
+#                       mask_y = NA,
+#                       main_title = NULL
+#                       ) 
+#f = shameful_kludge()
+#g = function(data) {
     #print('barrier')
     #print(dim(data))
-    fd = shiftwise_production_loss(data[production_shifts,,])
+#    fd = shiftwise_production_loss(data[production_shifts,,])
     #print(length(fd))
     #print(length(production_shifts))
     #fd = ifelse(is.na(fd), 0, fd)
     #cat('blorp\n')
-    r = f(data)
+#    r = f(data)
     #print(length(r))
-    r[production_shifts] = r[production_shifts] + fd
+#    r[production_shifts] = r[production_shifts] + fd
     #r = rbind(apply(fd,2,sum) + apply(f(data),2,sum))
     #print(dim(r))
-    r
-}
+#    r
+#}
 #print('mid')
-scatter_plot(filename = 'Scatterplot--Total-Cost',
-                       outcome_fn_x = g,
-                       xlab = "Total Cost (Intervention Expenses + Production Losses) in Dollars ($)",
-                       mask_x = NA, #production_shifts,
-                       outcome_fn_y = function(data) data[,'new_infections',],
-                       ylab = 'Total Infections',
-                       mask_y = NA,
-                       main_title = NULL
-                       ) 
+#scatter_plot(filename = 'Scatterplot--Total-Cost',
+#                       outcome_fn_x = g,
+#                       xlab = "Total Cost (Intervention Expenses + Production Losses) in Dollars ($)",
+#                       mask_x = NA, #production_shifts,
+#                       outcome_fn_y = function(data) data[,'new_infections',],
+#                       ylab = 'Total Infections',
+#                       mask_y = NA,
+#                       main_title = NULL
+#                       ) 
 #print('post')
 
 if(farm_or_facility == 'facility') {

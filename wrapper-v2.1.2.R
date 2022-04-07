@@ -1,5 +1,5 @@
-# main-produce-farm-v2.1.1.R is part of Food INdustry CoViD Control Tool
-# (FInd CoV Control), version 2.1.1.
+# main-produce-farm-v2.1.2.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 2.1.2.
 # Copyright (C) 2020-2022 Cornell University.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -230,7 +230,7 @@ full_output_save_name = paste(filename_core, '_full-output.rds', sep = '')
 
 #and now let's run the model
 if(!(exists('ANALYZE') && ANALYZE == TRUE)) {
-    source('main-produce-farm-v2.1.1.R', local = TRUE)
+    source('main-produce-farm-v2.1.2.R', local = TRUE)
     main_produce_farm_fn()
 }
 

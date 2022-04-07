@@ -1,5 +1,5 @@
-# double-wrapped-v2.1.1.R is part of Food INdustry CoViD Control Tool
-# (FInd CoV Control), version 2.1.1.
+# double-wrapped-v2.1.2.R is part of Food INdustry CoViD Control Tool
+# (FInd CoV Control), version 2.1.2.
 # Copyright (C) 2020-2022 Cornell University.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -160,7 +160,7 @@ full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
     double_wrap_boosting_rate = parameter_set$double_wrap_boosting_rate
     boosting_rate = double_wrap_boosting_rate
     row_name = row.names[i]
-    source('wrapper-v2.1.1.R', local = TRUE)
+    source('wrapper-v2.1.2.R', local = TRUE)
     full_output_save_name = wrapper_fn(i) # returns full_output_save_name
                                           # use of i here is a temporary kludge
     full_output_save_name
