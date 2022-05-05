@@ -118,18 +118,19 @@ if(temperature_screening) {
         stop() #both at once is not yet implemented
     }
 
-    if(temperature_threshold == 37.1) {
-        sensitivity = .63
-        specificity = .95
-    } else if (temperature_threshold == 37.5) {
-        sensitivity = .32
-        specificity = .99
-    } else if (temperature_threshold == 38) {
-        sensitivity = .18
+    #if(temperature_threshold == 37.1) {
+    #    sensitivity = .63
+    #    specificity = .95
+    #} else if (temperature_threshold == 37.5) {
+    #    sensitivity = .32
+    #    specificity = .99
+    #} else
+    if (temperature_threshold == 38) {
+        sensitivity = .052
         specificity = 1.00
-    } else if (temperature_threshold == 38.5) {
-        sensitivity = .08
-        specificity = 1.00
+    #} else if (temperature_threshold == 38.5) {
+    #   sensitivity = .08
+    #    specificity = 1.00
     } else {
         stop('Invalid screening temperature')
     }
