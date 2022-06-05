@@ -342,5 +342,5 @@ additional_farm_parameters = list(
 )
 
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
-do.call(full_run, c(common_parameters, additional_facility_parameters))
+#do.call(full_run, c(common_parameters, additional_facility_parameters))
 
