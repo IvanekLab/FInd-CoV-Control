@@ -279,7 +279,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.1.2'
-double_wrap_num_sims = 10
+double_wrap_num_sims = 1000
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -298,7 +298,7 @@ common_parameters = list(
     n_no_symptoms = '1',        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'dtt',   # relative to working directory
+    folder_name = 'debugging-tests',   # relative to working directory
     analyze_only = 'FALSE',
     PARALLEL = TRUE,
     fraction_recovered = 0.69,

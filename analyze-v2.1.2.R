@@ -332,7 +332,7 @@ end_boxplot = function(
     title(main=main_title, cex.main = 3)
     if(percent) {
         par(xaxt='s')
-        axis(1, at=pretty(all_outcomes$outcome), paste0(lab=pretty(all_outcomes$outcome) * 100, ' %'), las=TRUE, cex.axis = 1.5, cex.lab=1.5)
+        axis(1, at=pretty(c(all_outcomes$outcome,xlim)), paste0(lab=pretty(c(all_outcomes$outcome,xlim)) * 100, ' %'), las=TRUE, cex.axis = 1.5, cex.lab=1.5)
     }
     points(means, 1:length(full_output_filenames), cex =2, pch = 8)
     dev.off()
