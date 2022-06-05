@@ -158,6 +158,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     vaccination_mask = sbern(N, vaccination_rate)
     boosting_mask = sbern(N, boosting_rate)
     event_times = sunif(N, start_time, end_time)
+    stealable = (immune_status_0 == 'R') & (event_times - agents$time_R < 45)
 
     any_vaccination = rep(FALSE, N)
 
@@ -203,11 +204,19 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         )
         agents = update_agents(agents = agents,
                                mask = R_to_B_via_V1,
-                               previous_immunity = immunity_0,
+                               #previous_immunity = immunity_0,
                                time_V1 = event_times,
-                               time_last_immunity_event = event_times,
-                               immune_status = 'B',
+                               #time_last_immunity_event = event_times,
+                               #immune_status = 'B',
                                vax_status = 'V1'
+        )
+        agents = update_agents(agents = agents,
+                               mask = R_to_B_via_V1 & !stealable,
+                               previous_immunity = immunity_0,
+                               #time_V1 = event_times,
+                               time_last_immunity_event = event_times,
+                               immune_status = 'B'#,
+                               #vax_status = 'V1'
         )
 
         R_to_B_via_V2 = (infection_status_0 == 'NI' &
@@ -219,11 +228,19 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         )
         agents = update_agents(agents = agents,
                                mask = R_to_B_via_V2,
-                               previous_immunity = immunity_0,
+                               #previous_immunity = immunity_0,
                                time_V2 = event_times,
-                               time_last_immunity_event = event_times,
-                               immune_status = 'B',
+                               #time_last_immunity_event = event_times,
+                               #immune_status = 'B',
                                vax_status = 'V2'
+        )
+        agents = update_agents(agents = agents,
+                               mask = R_to_B_via_V2 & !stealable,
+                               previous_immunity = immunity_0,
+                               #time_V2 = event_times,
+                               time_last_immunity_event = event_times,
+                               immune_status = 'B'#,
+                               #vax_status = 'V2'
         )
 
         any_vaccination = any_vaccination | S_to_V1 | V1_to_V2 | R_to_B_via_V1 |
@@ -240,11 +257,19 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     )
     agents = update_agents(agents = agents,
                            mask = x_to_B_on_time,
-                           previous_immunity = immunity_0,
+                           #previous_immunity = immunity_0,
                            time_B = event_times,
-                           time_last_immunity_event = event_times,
-                           immune_status = 'B',
+                           #time_last_immunity_event = event_times,
+                           #immune_status = 'B',
                            vax_status = 'B'
+    )
+    agents = update_agents(agents = agents,
+                           mask = x_to_B_on_time & !stealable,
+                           previous_immunity = immunity_0,
+                           #time_B = event_times,
+                           time_last_immunity_event = event_times,
+                           immune_status = 'B'#,
+                           #vax_status = 'B'
     )
 
     any_vaccination = any_vaccination | x_to_B_on_time
@@ -259,11 +284,19 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                 boosting_mask)
         agents = update_agents(agents = agents,
                                mask = x_to_B_late,
-                               previous_immunity = immunity_0,
+                               #previous_immunity = immunity_0,
                                time_B = event_times,
-                               time_last_immunity_event = event_times,
-                               immune_status = 'B',
+                               #time_last_immunity_event = event_times,
+                               #immune_status = 'B',
                                vax_status = 'B'
+        )
+        agents = update_agents(agents = agents,
+                               mask = x_to_B_late & !stealable,
+                               previous_immunity = immunity_0,
+                               #time_B = event_times,
+                               time_last_immunity_event = event_times,
+                               immune_status = 'B'#,
+                               #vax_status = 'B'
         )
         any_vaccination = any_vaccination | x_to_B_late
     }
