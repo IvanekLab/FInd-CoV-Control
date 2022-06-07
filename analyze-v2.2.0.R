@@ -1,4 +1,4 @@
-# analyze-v2.1.2.R is part of Food INdustry CoViD Control Tool
+# analyze-v2.2.0.R is part of Food INdustry CoViD Control Tool
 # (FInd CoV Control), version 2.1.2.
 # Copyright (C) 2020-2022 Cornell University.
 #
@@ -27,7 +27,7 @@ analyze_fn = function() {  #this may, in the future, be revised to provide
                            #to provide more meaningful debugging data
 
 ANALYZE = TRUE
-source('double-wrapped-v2.1.2.R', local = TRUE)
+source('double-wrapped-v2.2.0.R', local = TRUE)
 list_ = double_wrapped_fn()
 row.names = list_[[1]]
 colors = list_[[2]]

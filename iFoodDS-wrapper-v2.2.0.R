@@ -1,4 +1,4 @@
-# iFoodDS-wrapper-v2.1.2.R is part of Food INdustry CoViD Control Tool
+# iFoodDS-wrapper-v2.2.0.R is part of Food INdustry CoViD Control Tool
 # (FInd CoV Control), version 2.1.2.
 # Copyright (C) 2020-2022 Cornell University.
 #
@@ -25,7 +25,7 @@
 #Set analyze_only to TRUE to reanalyze an existing output set with modified
 #analyze.R
 
-source('general-waning-functions-v2.1.2.R')
+source('general-waning-functions-v2.2.0.R')
 
 safe.integer = function(s) {
     i = strtoi(s)
@@ -268,12 +268,12 @@ full_run = function(
     #    steps = days * 3
     #    step_index = (1:steps) * (1/3)
     } else {
-        source('double-wrapped-v2.1.2.R', local = TRUE)
+        source('double-wrapped-v2.2.0.R', local = TRUE)
         double_wrapped_fn()
     }
     steps = days * 3
     step_index = (1:steps) * (1/3)
-    source('analyze-v2.1.2.R', local = TRUE)
+    source('analyze-v2.2.0.R', local = TRUE)
     analyze_fn()
 }
 

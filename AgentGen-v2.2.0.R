@@ -1,4 +1,4 @@
-# AgentGen-v2.1.2.R is part of Food INdustry CoViD Control Tool
+# AgentGen-v2.2.0.R is part of Food INdustry CoViD Control Tool
 # (FInd CoV Control), version 2.1.2.
 # Copyright (C) 2020-2022 Cornell University.
 #
