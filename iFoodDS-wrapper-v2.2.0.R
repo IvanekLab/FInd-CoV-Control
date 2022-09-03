@@ -279,7 +279,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.2.0'
-double_wrap_num_sims = 1000
+double_wrap_num_sims = 100#0
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -319,7 +319,7 @@ additional_facility_parameters = list(
     employee_housing = 'Private', 
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
-    unique_id = 'facility-default-v24',
+    unique_id = 'facility-default-v30',
     output_per_week = 784346.67, #1680000 , #N * 60.1 * 4 #wrong, but it's okay
     hourly_wage = 13.89,
     size = 1000
@@ -342,5 +342,7 @@ additional_farm_parameters = list(
 )
 
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
+do.call(full_run, c(common_parameters, additional_facility_parameters))
+double_wrap_num_sims = 1000
 do.call(full_run, c(common_parameters, additional_facility_parameters))
 
