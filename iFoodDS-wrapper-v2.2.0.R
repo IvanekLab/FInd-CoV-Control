@@ -1,5 +1,5 @@
 # iFoodDS-wrapper-v2.2.0.R is part of Food INdustry CoViD Control Tool
-# (FInd CoV Control), version 2.1.2.
+# (FInd CoV Control), version 2.2.0.
 # Copyright (C) 2020-2022 Cornell University.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -278,7 +278,7 @@ full_run = function(
 }
 
 FIXED_SEED = TRUE
-VERSION = '2.1.2'
+VERSION = '2.2.0'
 double_wrap_num_sims = 1000
 
 #note that several of these parameters are not actually used (no longer true?)
