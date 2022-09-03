@@ -20,6 +20,7 @@ output_per_shift = output_per_week / (5 * (1 + (supervisors > 1))) #N * 60.1 * 4
 #hourly_wage = 13.89
 #size = 1000
 
+library('vioplot')
 
 ######## analyze model predictions
 analyze_fn = function() {  #this may, in the future, be revised to provide
@@ -200,7 +201,7 @@ temperature_screening_cost = function(data) {
     screeners = ceiling(scheduled) / (ts_limit * 60 / ts_time)
     ts_time <- available * ts_time / screeners / 3600   # Actual daily screening time in hours
     compensation <- ts_time * screeners * hourly_wage * 2 # have to pay the screeners, and the people being screened
-    screener_training_cost = max(screeners) * hourly_wage # 1hour training cost for screeners
+    screener_training_cost = ceiling(N/100) * hourly_wage #max(screeners) * hourly_wage # 1hour training cost for screeners
     thermometer_cost <- max(screeners) * thermometer_cost_each
 
     initial_cost = screener_training_cost + thermometer_cost
@@ -282,7 +283,8 @@ end_boxplot = function(
                        xlim = NULL,
                        percent = FALSE,
                        main_title = NULL,
-                       mask = NA
+                       mask = NA,
+                       function_ = boxplot
                        ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
 
@@ -328,7 +330,7 @@ end_boxplot = function(
     #cat('max value:', max(all_outcomes$outcome),'\n')
     #cat('sum:', sum(all_outcomes$outcome), '\n')
     #cat('mean:', mean(all_outcomes$outcome), '\n')
-    boxplot(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
+    function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
     title(main=main_title, cex.main = 3)
     if(percent) {
         par(xaxt='s')
@@ -436,7 +438,8 @@ first_x_boxplot = function(
                            outcome_fn,
                            xlab,
                            xlim = NULL,
-                           mask = NA
+                           mask = NA,
+                           function_ = boxplot
                            ) {
     if(!is.null(filename)) {
         png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
@@ -471,7 +474,7 @@ first_x_boxplot = function(
     all_outcomes$intervention = factor(all_outcomes$intervention, levels = unique(all_outcomes$intervention), ordered = TRUE)
 
     par(mar = c(5,23,4,2))
-    boxplot(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
+    function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
     debug_all_outcomes <<- all_outcomes
     debug_means <<- means
     points(means, 1:length(full_output_filenames), cex =2, pch = 8)
@@ -544,20 +547,24 @@ oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('Pe
 main_title = ''
 
 end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts)
-
+end_boxplot('Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts, function_ = vioplot)
 #end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
 
 end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
+end_boxplot('Fraction-Short-production-violin', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts, function_ = vioplot)
 
 end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
 
 first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = production_shifts)
+first_x_boxplot('First-Day-Short-production-violin', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = production_shifts, function_ = vioplot)
 
 #print(output_per_shift)
 
 oneplot('Production-Loss', shiftwise_production_loss, mean, c(0,0), 'Production Loss (Dollars ($) per production shift)', mask = production_shifts)
 end_boxplot('Total-Production-Loss', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts)
+end_boxplot('Total-Production-Loss-vioplot', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts, function_ = vioplot)
 end_boxplot('Total-Intervention-Expenses', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)"')
+end_boxplot('Total-Intervention-Expenses-vioplot', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)"', function_ = vioplot)
 
 intervention_expenses_function = generate_intervention_expenses_function()
 #below is massively kludged, to deal with production loss fn not handling
@@ -574,6 +581,7 @@ g = function(data) {
     r
 }
 end_boxplot('Total-Cost', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)')
+end_boxplot('Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)', function_ = vioplot)
 #print('before')
 #scatter_plot(filename = 'Scatterplot--Production-Losses',
 #                       outcome_fn_x = shiftwise_production_loss,
@@ -615,9 +623,12 @@ end_boxplot('Total-Cost', g, xlab = 'Total Cost (Intervention Expenses + Product
 if(farm_or_facility == 'facility') {
     oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', round(cleaning_shift_size,2), ' total)', sep = ''), mask = cleaning_shifts)
     end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', round(cleaning_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
+    end_boxplot('Average-Unavailable-cleaning-violin', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', round(cleaning_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts, function_ = vioplot)
     end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
+    end_boxplot('Fraction-Short-cleaning-violin', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts, function_ = vioplot)
     end_barplot('Ever-Short-cleaning', shiftwise_short, xlab = 'Cleaning Shift Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = cleaning_shifts)
     first_x_boxplot('First-Day-Short-cleaning', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = cleaning_shifts)
+    first_x_boxplot('First-Day-Short-cleaning-violin', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = cleaning_shifts, function_ = vioplot)
 }
 
 #sample_data = function() {

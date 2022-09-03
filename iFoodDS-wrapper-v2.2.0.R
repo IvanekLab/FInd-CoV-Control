@@ -320,7 +320,7 @@ additional_facility_parameters = list(
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
     unique_id = 'facility-default-v24',
-    output_per_week = 1680000 , #N * 60.1 * 4 #wrong, but it's okay
+    output_per_week = 784346.67, #1680000 , #N * 60.1 * 4 #wrong, but it's okay
     hourly_wage = 13.89,
     size = 1000
 
@@ -342,5 +342,5 @@ additional_farm_parameters = list(
 )
 
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
-#do.call(full_run, c(common_parameters, additional_facility_parameters))
+do.call(full_run, c(common_parameters, additional_facility_parameters))
 
