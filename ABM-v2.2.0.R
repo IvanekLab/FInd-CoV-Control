@@ -415,7 +415,7 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
     agents$immune_status[x_to_R] = 'R'
     agents$infection_status[x_to_R] = 'NI'
 
-    agents
+    list(agents = agents, IP_to_IM = IP_to_IM)
 }
 
 ABM <- function(agents, contacts_list, lambda_list, schedule,
@@ -553,8 +553,10 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         # infectiousness (or into a different level of infectiousness) into
         # calculation of transmission potentials, but that's a task for a later
         # version.
-        agents = progress_infection(agents, N, start_time, end_time, symptoms_0,
+        pil = progress_infection(agents, N, start_time, end_time, symptoms_0,
                                     isolated_0, immunity_0)
+        agents = pil[['agents']]
+        IP_to_IM = pil[['IP_to_IM']]
 
 
         #TBD (eventually): We still need to recalculate durations for repeats of
@@ -562,7 +564,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
         Out1 = update_Out1(Out1, k, agents, infection_status_0, isolated_0,
                            agent_presence, quantitative_presence,
-                           NI_to_E_community, NI_to_E, doses, tests_performed)
+                           NI_to_E_community, NI_to_E, doses, tests_performed, IP_to_IM)
     
     }
 
@@ -612,6 +614,7 @@ make_Out1 = function(steps) {
         n_scheduled = rep(0, steps),
         n_absent = rep(0, steps),
         new_infections = rep(0, steps),
+        new_symptomatic_infections = rep(0, steps),
         doses = rep(0, steps),
         tests = rep(0, steps)
     )
@@ -619,7 +622,8 @@ make_Out1 = function(steps) {
 
 update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
                        agent_presence, quantitative_presence,
-                       NI_to_E_community, NI_to_E, doses, tests_performed) {
+                       NI_to_E_community, NI_to_E, doses, tests_performed,
+                       IP_to_IM) {
     #NB: TRUE == 1 for the purpose of summation
     infection_status_1 = agents$infection_status
     immune_status_1 = agents$immune_status
@@ -674,6 +678,7 @@ update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
         Out1$qn_scheduled[k] = sum(quantitative_presence)
         Out1$qn_absent[k] = sum(quantitative_presence * absent)
         Out1$new_infections[k] = sum(NI_to_E_community + NI_to_E)
+        Out1$new_symptomatic_infections[k] = sum(IP_to_IM) #pause
         Out1$doses[k] = doses
         Out1$tests[k] = tests_performed
 

@@ -201,7 +201,7 @@ full_run = function(
         dormitory_R0 = 0 
 
         if(tolower(community_transmission) == 'low') {
-            double_wrap_community_foi = 0.0005
+            double_wrap_community_foi = 1e-5#0.0005
         } else if(tolower(community_transmission) == 'intermediate'){
             double_wrap_community_foi = 0.001
         } else if(tolower(community_transmission) == 'high'){
@@ -293,7 +293,7 @@ double_wrap_num_sims = 100#0
 common_parameters = list(
     workers_per_crew = '10',    # FM: workers per line
     crews_per_supervisor = '3', # FM: / lines per shift
-    days = '90',
+    days = '60',
     social_distancing_work = 'Intermediate',
     n_no_symptoms = '1',        #i.e., exposed 
     n_mild = '0',
@@ -318,8 +318,8 @@ additional_facility_parameters = list(
     n_all_floaters = '11',      # FM only (for farm model, will require NULL/NA)
     employee_housing = 'Private', 
     social_distancing_shared_housing = NULL,
-    community_transmission = 'Intermediate',
-    unique_id = 'facility-default-v30',
+    community_transmission = 'Low',
+    unique_id = 'facility-midas-v-low',
     output_per_week = 784346.67, #1680000 , #N * 60.1 * 4 #wrong, but it's okay
     hourly_wage = 13.89,
     size = 1000
@@ -342,7 +342,8 @@ additional_farm_parameters = list(
 )
 
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
-do.call(full_run, c(common_parameters, additional_facility_parameters))
+common_parameters[['analyze_only']] = TRUE
+#do.call(full_run, c(common_parameters, additional_facility_parameters))
 double_wrap_num_sims = 1000
 do.call(full_run, c(common_parameters, additional_facility_parameters))
 
