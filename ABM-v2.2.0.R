@@ -337,8 +337,7 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
                end_time - agents$time_E > agents$duration_E
     )
     xE_to_IP = (xE_to_I &
-                agents$symptomatic &
-                sbern(N, symptoms_0)
+                sbern(N, symptoms_0 * agents$p_symptomatic)
     )
     agents$time_IP[xE_to_IP] = agents$time_E[xE_to_IP] +
         agents$duration_E[xE_to_IP]
@@ -373,25 +372,26 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
     #TBD (eventually): Account for reduced chance of severe disease
     #conditional on symptomatic disease due to history of vaccination or natural
     #infection
-    IM_to_IS = IM_to_x & agents$severe
+    severe = sbern(N, agents$p_severe)
+    IM_to_IS = IM_to_x & severe
     agents$time_IS[IM_to_IS] = agents$time_IM[IM_to_IS] +
         agents$duration_IM[IM_to_IS]
     agents$infection_status[IM_to_IS] = 'IS'
 
-    IM_to_R =  IM_to_x & !(agents$severe)
+    IM_to_R =  IM_to_x & !severe
     agents$time_R[IM_to_R] = agents$time_IM[IM_to_R] +
         agents$duration_IM[IM_to_R]
 
     IS_to_x = (agents$infection_status == 'IS' &
                end_time - agents$time_IS > agents$duration_IS
     )
-
-    IS_to_IC = IS_to_x & agents$critical
+    critical = sbern(N, agents$p_critical)
+    IS_to_IC = IS_to_x & critical
     agents$time_IC[IS_to_IC] = agents$time_IS[IS_to_IC] +
         agents$duration_IS[IS_to_IC]
     agents$infection_status[IS_to_IC] = 'IC'
 
-    IS_to_R =  IS_to_x & !(agents$critical)
+    IS_to_R =  IS_to_x & !critical
     agents$time_R[IS_to_R] = agents$time_IS[IS_to_R] +
         agents$duration_IS[IS_to_R]
 
@@ -399,12 +399,13 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
                end_time - agents$time_IC > agents$duration_IC
     )
 
-    IC_to_D = IC_to_x & agents$death
+    death = sbern(N, agents$p_death)
+    IC_to_D = IC_to_x & death
     agents$time_D[IC_to_D] = agents$time_IC[IC_to_D] +
         agents$duration_IC[IC_to_D]
     agents$infection_status[IC_to_D] = 'D'
 
-    IC_to_R = IC_to_x & !(agents$death)
+    IC_to_R = IC_to_x & !death
     agents$time_R[IC_to_R] = agents$time_IC[IC_to_R] +
         agents$duration_IC[IC_to_R]
 

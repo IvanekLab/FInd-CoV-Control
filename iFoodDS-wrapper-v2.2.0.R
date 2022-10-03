@@ -298,7 +298,7 @@ common_parameters = list(
     n_no_symptoms = '1',        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'debugging-tests',   # relative to working directory
+    folder_name = 'removing-precalculations',#'debugging-tests',   # relative to working directory
     analyze_only = 'FALSE',
     PARALLEL = TRUE,
     fraction_recovered = 0.69,
@@ -342,8 +342,8 @@ additional_farm_parameters = list(
 )
 
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
-common_parameters[['analyze_only']] = TRUE
-#do.call(full_run, c(common_parameters, additional_facility_parameters))
+#common_parameters[['analyze_only']] = TRUE
+do.call(full_run, c(common_parameters, additional_facility_parameters))
 double_wrap_num_sims = 1000
 do.call(full_run, c(common_parameters, additional_facility_parameters))
 

@@ -322,10 +322,10 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                             all.x=TRUE)
 
     #pre-calculating, as with times
-    agents$symptomatic = rbinom(N, 1, agents$p_symptomatic) > 0
-    agents$severe = rbinom(N, 1, SEVERE_MULTIPLIER * agents$p_severe) > 0
-    agents$critical = rbinom(N, 1, agents$p_critical) > 0
-    agents$death = rbinom(N, 1, agents$p_death) > 0
+    #agents$symptomatic = rbinom(N, 1, agents$p_symptomatic) > 0
+    agents$p_severe = SEVERE_MULTIPLIER * agents$p_severe
+    #agents$critical = rbinom(N, 1, agents$p_critical) > 0
+    #agents$death = rbinom(N, 1, agents$p_death) > 0
                                                                 
     agents = agents[sample(nrow(agents)),] # this is a reshuffled database,
                                            # to randomize order of agents
