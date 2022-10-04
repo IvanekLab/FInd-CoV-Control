@@ -332,21 +332,20 @@ end_boxplot = function(
     all_outcomes$intervention = factor(all_outcomes$intervention, levels = unique(all_outcomes$intervention), ordered = TRUE)
 
     par(mar = c(5,23,4,2))
-    if(percent) {
-        par(xaxt="n")
-    }
-    #cat('max value:', max(all_outcomes$outcome),'\n')
-    #cat('sum:', sum(all_outcomes$outcome), '\n')
-    #cat('mean:', mean(all_outcomes$outcome), '\n')
     if(identical(function_, vioplot)) {
         par(cex.lab = 1.5)
     }
-    function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
-    title(main=main_title, cex.main = 3)
     if(percent) {
-        par(xaxt='s')
+        if(identical(function_, vioplot)) {
+            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, yaxt='n')
+        } else {
+            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, xaxt='n')
+        }
         axis(1, at=pretty(c(all_outcomes$outcome,xlim)), paste0(lab=pretty(c(all_outcomes$outcome,xlim)) * 100, ' %'), las=TRUE, cex.axis = 1.5, cex.lab=1.5)
+    } else {
+        function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
     }
+    title(main=main_title, cex.main = 3)
     points(means, 1:length(full_output_filenames), cex =2, pch = 8)
     dev.off()
 }
@@ -568,6 +567,7 @@ end_boxplot('Total-Infections-violin', new_infections, xlab = paste('Total Infec
 end_boxplot('Total-Symptomatic-Infections', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = main_title)
 end_boxplot('Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = main_title, function_ = vioplot)
 
+#browser()
 end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
 end_boxplot('Fraction-Short-production-violin', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts, function_ = vioplot)
 
