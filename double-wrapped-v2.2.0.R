@@ -35,7 +35,8 @@
 # FALSE.                                                                       #
 ################################################################################
 
-double_wrapped_fn = function() { #goal: to get more meaningful debug data
+double_wrapped_fn = function(sensitivity_variable,
+                             sensitivity_multiplier) { #goal: to get more meaningful debug data
 
 double_wrap_isolation_duration = 14
 double_wrap_rational_testing = TRUE
@@ -148,9 +149,9 @@ if(PARALLEL) {
     registerDoParallel(4) # For my home computer
 } #if not, %dopar% is equivalent to %do% (with a warning)
 
-full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
-                                .verbose = TRUE) %dopar% {
-#for(i in 1:k_max) { # Can be substituted for the above for better crash
+#full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
+#                                .verbose = TRUE) %dopar% {
+for(i in 1:1) {#k_max) { # Can be substituted for the above for better crash
                      # messages
     parameter_set = parameter_sets[i,]
     double_wrap_reduction = parameter_set$double_wrap_reduction
@@ -161,7 +162,9 @@ full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
     boosting_rate = double_wrap_boosting_rate
     row_name = row.names[i]
     source('wrapper-v2.2.0.R', local = TRUE)
-    full_output_save_name = wrapper_fn(i) # returns full_output_save_name
+    full_output_save_name = wrapper_fn(i,
+                                       sensitivity_variable,
+                                       sensitivity_multiplier) # returns full_output_save_name
                                           # use of i here is a temporary kludge
     full_output_save_name
 }
@@ -172,5 +175,5 @@ if(!(exists('ANALYZE') && ANALYZE == TRUE)) {
 }
 DOUBLE_WRAPPED = FALSE
 
-list(row.names, colors, ltys, full_output_filenames)
+#list(row.names, colors, ltys, full_output_filenames)
 } #double_wrapped_fn

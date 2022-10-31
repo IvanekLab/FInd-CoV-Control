@@ -21,7 +21,8 @@
 #individual based
 #each person/agent has properties = parameters, attributes behaviours
 #model each person individually
-main_produce_farm_fn = function() { #goal: get more meaningful debug data
+main_produce_farm_fn = function(sensitivity_variable,
+                                sensitivity_multiplier) { #goal: get more meaningful debug data
 library(Rlab)
  
 source("AgentGen-v2.2.0.R")
@@ -71,10 +72,18 @@ ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
 
     #marginal values based on default age distribution
     #should probably be made more flexible later, but this should do for now
+
     p_symptomatic = 0.671
     duration_IA = 5
     duration_IP = 1.058 * 2.174
     duration_IM = 8
+    if(sensitivity_variable %in% c('p_symptomatic', 'duration_IA', 'duration_IP', 'duration_IM')) {
+        assign(sensitivity_variable, sensitivity_multiplier * get(sensitivity_variable))
+        cat('\n\n', sensitivity_variable, '\n', sensitivity_multiplier, '\n', get(sensitivity_variable), '\n\n')
+        if(sensitivity_variable == 'p_symptomatic') {
+            stop('p_symptomatic sensitivity testing not yet implemented')
+        }
+    }
     #p_trans_IS = .89 * .0575, # from Moghadas et al. 2020, but irrelevant
                                # (for now, at least) since we are assuming all
                                # severe cases are hospitalized
@@ -115,7 +124,6 @@ scenario_parameters = ScenarioParameters(work_R0 = net_work_R0,
                                          crews_by_team = crews_by_team, 
                                          crew_sizes = crew_sizes,
                                          virus_params = virus_parameters)
-
 
 ###################################
 ##################################
@@ -335,7 +343,9 @@ for (i in 1:num_sims) {
                        fraction_boosted_ever = fraction_boosted_ever,
                        fraction_boosted_last_five_months =
                            fraction_boosted_last_five_months,
-                       protection_functions = protection_functions)
+                       protection_functions = protection_functions,
+                       sensitivity_variable = sensitivity_variable,
+                       sensitivity_multiplier = sensitivity_multiplier)
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
                  virus_parameters, testing_parameters,

@@ -82,7 +82,9 @@ full_run = function(
                     protection_functions,
                     output_per_week, #= 1680000, # / (5 * (1 + (supervisors > 1))) #N * 60.1 * 4 #wrong, but it's okay
                     hourly_wage, # = 13.89
-                    size# = 1000
+                    size,# = 1000
+                    sensitivity_variable,
+                    sensitivity_multiplier
 ) {
     setwd(working_directory)
 
@@ -269,12 +271,13 @@ full_run = function(
     #    step_index = (1:steps) * (1/3)
     } else {
         source('double-wrapped-v2.2.0.R', local = TRUE)
-        double_wrapped_fn()
+        double_wrapped_fn(sensitivity_variable,
+                          sensitivity_multiplier)
     }
     steps = days * 3
     step_index = (1:steps) * (1/3)
-    source('analyze-v2.2.0.R', local = TRUE)
-    analyze_fn()
+    #source('analyze-v2.2.0.R', local = TRUE)
+    #analyze_fn()
 }
 
 FIXED_SEED = TRUE
@@ -293,14 +296,14 @@ double_wrap_num_sims = 100#0
 common_parameters = list(
     workers_per_crew = '10',    # FM: workers per line
     crews_per_supervisor = '3', # FM: / lines per shift
-    days = '60',
+    days = '90',
     social_distancing_work = 'Intermediate',
     n_no_symptoms = '1',        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'removing-precalculations',#'debugging-tests',   # relative to working directory
+    folder_name = 'sensitivity-2022-10-29',#'debugging-tests',   # relative to working directory
     analyze_only = 'FALSE',
-    PARALLEL = TRUE,
+    PARALLEL = FALSE,#TRUE,
     fraction_recovered = 0.69,
     fraction_fully_vaccinated = 0.71,
     ffv_last_five_months = 0.09,
@@ -318,8 +321,8 @@ additional_facility_parameters = list(
     n_all_floaters = '11',      # FM only (for farm model, will require NULL/NA)
     employee_housing = 'Private', 
     social_distancing_shared_housing = NULL,
-    community_transmission = 'Low',
-    unique_id = 'facility-midas-v-low',
+    community_transmission = 'Intermediate',
+    #unique_id = 'facility-pass-1',
     output_per_week = 784346.67, #1680000 , #N * 60.1 * 4 #wrong, but it's okay
     hourly_wage = 13.89,
     size = 1000
@@ -343,7 +346,38 @@ additional_farm_parameters = list(
 
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
 #common_parameters[['analyze_only']] = TRUE
-do.call(full_run, c(common_parameters, additional_facility_parameters))
+#do.call(full_run, c(common_parameters, additional_facility_parameters))
+do.call(full_run,
+        c(common_parameters,
+          additional_facility_parameters,
+          list(sensitivity_variable='NONE',
+               sensitivity_multiplier=1,
+               unique_id = 'facility-pass-1')))
+for(sensitivity_variable in c('duration_IA', 'duration_IP', 'duration_IM')) {
+    for(sensitivity_multiplier in c(0.5, 1.5)) {
+        do.call(full_run,
+                c(common_parameters,
+                  additional_facility_parameters,
+                  list(sensitivity_variable=sensitivity_variable,
+                       sensitivity_multiplier=sensitivity_multiplier,
+                       unique_id = paste0('facility-pass-1-', sensitivity_variable, '-', sensitivity_multiplier))))
+    }
+}
 double_wrap_num_sims = 1000
-do.call(full_run, c(common_parameters, additional_facility_parameters))
+do.call(full_run,
+        c(common_parameters,
+          additional_facility_parameters,
+          list(sensitivity_variable='NONE',
+               sensitivity_multiplier=1,
+               unique_id = 'facility-pass-1')))
+for(sensitivity_variable in c('duration_IA', 'duration_IP', 'duration_IM')) {
+    for(sensitivity_multiplier in c(0.5, 1.5)) {
+        do.call(full_run,
+                c(common_parameters,
+                  additional_facility_parameters,
+                  list(sensitivity_variable=sensitivity_variable,
+                       sensitivity_multiplier=sensitivity_multiplier,
+                       unique_id = paste0('facility-pass-1-', sensitivity_variable, '-', sensitivity_multiplier))))
+    }
+}
 

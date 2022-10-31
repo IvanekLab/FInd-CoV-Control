@@ -34,7 +34,10 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       SEVERE_MULTIPLIER = 1,
                       fraction_boosted_ever = 0,
                       fraction_boosted_last_five_months = 0,
-                      protection_functions) {
+                      protection_functions,
+                      sensitivity_variable,
+                      sensitivity_multiplier
+                      ) {
     #TBD (eventually): Either add back in the ability to use these or remove
     #them from the parameter list.
     if(max(IA0, IP0, initial_V1) > 0) {
@@ -126,7 +129,14 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          stringsAsFactors = FALSE
                          #"stringsAsFactors = FALSE" is to allow transition into
                          #states that are not present at simulation start
-    ) 
+    )
+    if(sensitivity_variable %in% c('p_symptomatic', 'duration_IA', 'duration_IP', 'duration_IM')) {
+        agents[[sensitivity_variable]] = sensitivity_multiplier * get(sensitivity_variable, agents)
+        #cat('\n\n', sensitivity_variable, '\n', sensitivity_multiplier, '\n', get(sensitivity_variable, agents), '\n\n')
+        if(sensitivity_variable == 'p_symptomatic') {
+            stop('p_symptomatic sensitivity testing not yet implemented')
+        }
+    }
     #pre-calculating all indices for clarity and ease of debugging
     #This block is based on the need to insure that any(index_E & index_IM) ==
     #FALSE . Its complexity is based on the R misfeature that if a == 0, then
