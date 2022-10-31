@@ -1,0 +1,189 @@
+ABM-v2.2.0.R:20:    isolation_duration = 5
+ABM-v2.2.0.R:161:    stealable = (immune_status_0 == 'R') & (event_times - agents$time_R < 45)
+ABM-v2.2.0.R:253:                      end_time - agents$time_V2 > 152 &
+ABM-v2.2.0.R:283:                (end_time - agents$time_V2 > 152 + 1) & #5 months
+
+AgentGen-v2.2.0.R:26:AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
+AgentGen-v2.2.0.R:32:                      age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
+AgentGen-v2.2.0.R:33:                                            0.01, 0),
+AgentGen-v2.2.0.R:34:                      SEVERE_MULTIPLIER = 1,
+
+below are for duration_E_plus_IP (theoretically)
+AgentGen-v2.2.0.R:58:    mu = 5.2
+AgentGen-v2.2.0.R:59:    sd = .1
+
+AgentGen-v2.2.0.R:62:    duration_IP = rgamma(N, shape=1.058, scale=2.174)
+AgentGen-v2.2.0.R:120:                         duration_IA = rgamma(N, shape=5, scale=1),
+AgentGen-v2.2.0.R:123:                         duration_IM = rgamma(N, shape=16, scale=0.5),
+AgentGen-v2.2.0.R:125:                         duration_IS = rgamma(N, shape=34.0278, scale=0.4114),
+AgentGen-v2.2.0.R:127:                         duration_IC = rgamma(N, shape=34.0278, scale=0.4114),
+
+AgentGen-v2.2.0.R:234:        initial_V2_last_five_months, -152, 0
+AgentGen-v2.2.0.R:238:        -(365+61),#fully vax starts in mid-december 2020
+AgentGen-v2.2.0.R:239:        -152 
+AgentGen-v2.2.0.R:245:    agents$time_V2[index_B_older] = runif(n_boosted_older, -(365+61), -(2*152+1))
+AgentGen-v2.2.0.R:247:                                                     -2*152, -152)
+AgentGen-v2.2.0.R:250:    agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21
+AgentGen-v2.2.0.R:262:    agents$time_B[index_B] = agents$time_V2[index_B] + 152 #was: pmax(agents$time_V2[index_B] + 152, -152)
+AgentGen-v2.2.0.R:270:    agents$time_R[index_R]= -runif(initial_recovered, 0, 365)
+AgentGen-v2.2.0.R:295:    agents$previous_immunity[R_V1_V2] = B_protection(21, 0)
+
+Probably not practical to change # of work days (given that it can't be 2.5, nor can it be 7.5 if we assume that this is truly weekly
+But bear it in mind
+analyze-v2.2.0.R:19:output_per_shift = output_per_week / (5 * (1 + (supervisors > 1))) #N * 60.1 * 4 #wrong, but it's okay
+analyze-v2.2.0.R:46:    week = c(rep(workday, 5), rep(day_off, 2))
+analyze-v2.2.0.R:47:    schedule = rep(week, ceiling(days/7))[1:(3 * days)]
+analyze-v2.2.0.R:70:    week = c(rep(workday, 5), rep(day_off, 2))
+analyze-v2.2.0.R:71:    schedule = rep(week, ceiling(days/7))[1:(3 * days)]
+
+analyze-v2.2.0.R:180:    shiftwise_unavailable_fraction(data) > .15
+analyze-v2.2.0.R:185:    adjusted_fraction_available = pmin(fraction_available / 0.85, 1)
+analyze-v2.2.0.R:186:    fractional_production = adjusted_fraction_available^0.437
+analyze-v2.2.0.R:201:    thermometer_cost_each <- 20 # $20 per thermometer 
+analyze-v2.2.0.R:202:    KN95_cost <- 1 # $1 per mask per day 
+analyze-v2.2.0.R:203:    face_shield_cost <- 3 # $3 per face shield. Changing every 30 days. ($0.1/day) 
+analyze-v2.2.0.R:204:    ts_time <- 3 # 3 seconds for each screening
+analyze-v2.2.0.R:205:    ts_limit <- 5 #screening should be completed under 5 minute
+analyze-v2.2.0.R:209:    screeners = ceiling(scheduled) / (ts_limit * 60 / ts_time)
+analyze-v2.2.0.R:210:    ts_time <- available * ts_time / screeners / 3600   # Actual daily screening time in hours
+analyze-v2.2.0.R:211:    compensation <- ts_time * screeners * hourly_wage * 2 # have to pay the screeners, and the people being screened
+analyze-v2.2.0.R:212:    screener_training_cost = ceiling(N/100) * hourly_wage #max(screeners) * hourly_wage # 1hour training cost for screeners
+analyze-v2.2.0.R:216:    ongoing_cost = compensation + (KN95_cost + face_shield_cost/30) * screeners
+analyze-v2.2.0.R:218:    ongoing_cost[1] = ongoing_cost[1] + initial_cost
+analyze-v2.2.0.R:225:    vt_kit <- 10 # $10 per test
+analyze-v2.2.0.R:226:    vt_time <- 1/4 # 15 minutes waiting assumed
+analyze-v2.2.0.R:241:    data[,'doses',] * hourly_wage * 0.75
+analyze-v2.2.0.R:245:    face_shield <- 3 # $3 per face shield. Changing every month (30 days)
+analyze-v2.2.0.R:246:    KN95 <- 1 # $1 per N95 per shift
+analyze-v2.2.0.R:247:    air_cleaner <- 1000 # 1 air cleaner per 1000 sqft
+analyze-v2.2.0.R:248:    life <- 3 * 365 # 3year life of air_cleaner
+analyze-v2.2.0.R:252:    if(kludge_index == 8) {
+analyze-v2.2.0.R:253:        bi_cost = KN95 * bi_available
+analyze-v2.2.0.R:254:    } else if(kludge_index == 9 || (kludge_index == 10 && farm_or_facility == 'farm')) {
+analyze-v2.2.0.R:255:        bi_cost = ((KN95 + face_shield/30) * bi_available)
+analyze-v2.2.0.R:256:    } else if(kludge_index == 10) {
+analyze-v2.2.0.R:257:        bi_cost = ((KN95 + face_shield/30) * bi_available) + size/1000 * air_cleaner / life 
+analyze-v2.2.0.R:270:        i <<- i + 1
+analyze-v2.2.0.R:272:        if(i == 1) {
+analyze-v2.2.0.R:273:            array(0, c(dim(data)[1], dim(data)[3]))
+analyze-v2.2.0.R:274:        } else if(i == 2) {
+analyze-v2.2.0.R:276:        } else if(i %in% 3:5) {
+analyze-v2.2.0.R:278:        } else if(i %in% c(6:7, 11:13)) {
+
+reminder about unavailability
+analyze-v2.2.0.R:554:production_shifts = work_shifts & ((1:l) %% 3 != 0)
+analyze-v2.2.0.R:555:cleaning_shifts =  work_shifts & ((1:l) %% 3 == 0)
+analyze-v2.2.0.R:646:    end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
+analyze-v2.2.0.R:647:    end_boxplot('Fraction-Short-cleaning-violin', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts, function_ = vioplot)
+
+ContactsGen-v2.2.0.R:264:example_rates = list(c_ww = 1,      #by definition (reference value);
+ContactsGen-v2.2.0.R:269:                    t_ww = 0.1,
+ContactsGen-v2.2.0.R:270:                    o_ww = 0.1,
+ContactsGen-v2.2.0.R:271:                    t_ff = 0.2,
+ContactsGen-v2.2.0.R:272:                    o_ff = 0.1,
+ContactsGen-v2.2.0.R:273:                    c_wf = 1,
+ContactsGen-v2.2.0.R:274:                    t_wf = 0.1,
+ContactsGen-v2.2.0.R:275:                    o_wf = 0.1,
+ContactsGen-v2.2.0.R:276:                    o_ss = 0.2,
+ContactsGen-v2.2.0.R:277:                    t_ws = 0.3,
+ContactsGen-v2.2.0.R:278:                    o_ws = 0.1,
+ContactsGen-v2.2.0.R:279:                    t_fs = 1,
+ContactsGen-v2.2.0.R:280:                    o_fs = 0.1,
+ContactsGen-v2.2.0.R:281:                    o_wm = 0.01,
+ContactsGen-v2.2.0.R:282:                    o_fm = 0.1,
+ContactsGen-v2.2.0.R:283:                    o_sm = 1
+custom-contacts-gen-general-v2.2.0.R:31:    diff_crew = tt * 0.1 # for different lines
+
+double-wrapped-v2.2.0.R:41:double_wrap_isolation_duration = 14
+
+general-waning-functions-v2.2.0.R:20:    0.91157392 * exp(-0.08904459 / 7 * t)
+general-waning-functions-v2.2.0.R:24:    (0.471669758 * exp(-0.083161719 / 7 * t) +
+general-waning-functions-v2.2.0.R:25:     0.326600870 * exp(-0.008970573 / 7 * t))
+general-waning-functions-v2.2.0.R:32:    ifelse(t < 21,
+general-waning-functions-v2.2.0.R:33:        .36 * t / 21,
+general-waning-functions-v2.2.0.R:34:        .36
+general-waning-functions-v2.2.0.R:39:    ifelse(t < 14,
+general-waning-functions-v2.2.0.R:40:        (t / 14) * default_V2_decay(14) + ((14 - t) / 14) * prev,
+general-waning-functions-v2.2.0.R:47:    ifelse(t < 7, 
+general-waning-functions-v2.2.0.R:48:        t / 7 * .62 + (7 - t) / 7 * prev,
+general-waning-functions-v2.2.0.R:49:        ifelse(t < 14,
+general-waning-functions-v2.2.0.R:50:            (14 - t) / 7 * .62 + (t - 7) / 7 * default_B_decay(14), 
+general-waning-functions-v2.2.0.R:58:    ifelse(t < 14,
+general-waning-functions-v2.2.0.R:59:        1,
+general-waning-functions-v2.2.0.R:64:R_decay_45 = function(t) {
+general-waning-functions-v2.2.0.R:65:    pmin(1, default_R_decay(t - 45 + 14))
+general-waning-functions-v2.2.0.R:68:R_protection_45 = function(t, prev) {
+general-waning-functions-v2.2.0.R:70:    ifelse(t < 45,
+general-waning-functions-v2.2.0.R:71:        1,
+general-waning-functions-v2.2.0.R:72:        R_decay_45(t)
+general-waning-functions-v2.2.0.R:113:        1 - sqrt(1 - net_symptomatic_protection(agents, start_time))
+
+general-waning-functions-v2.2.0.R:174:    V1_net_symptoms = 1 - .37
+general-waning-functions-v2.2.0.R:175:    V2_susceptibility = 1 - .65
+general-waning-functions-v2.2.0.R:176:    V2_net_symptoms = 1 - .88
+
+iFoodDS-wrapper-v2.2.0.R:114:        SEVERE_MULTIPLIER = 2
+iFoodDS-wrapper-v2.2.0.R:116:        SEVERE_MULTIPLIER = 1.2
+iFoodDS-wrapper-v2.2.0.R:117:    } else if(variant == '2020'){
+iFoodDS-wrapper-v2.2.0.R:118:        SEVERE_MULTIPLIER = 1
+iFoodDS-wrapper-v2.2.0.R:126:            workers_per_crew == 10 &&
+iFoodDS-wrapper-v2.2.0.R:127:            crews_per_supervisor == 3 &&
+iFoodDS-wrapper-v2.2.0.R:128:            supervisors == 3 &&
+iFoodDS-wrapper-v2.2.0.R:132:            days == 90 &&
+iFoodDS-wrapper-v2.2.0.R:137:            n_no_symptoms == 1 &&
+iFoodDS-wrapper-v2.2.0.R:139:            fraction_recovered == 0.69 &&
+iFoodDS-wrapper-v2.2.0.R:140:            fraction_fully_vaccinated == 0.71 &&
+iFoodDS-wrapper-v2.2.0.R:141:            ffv_last_five_months == 0.09 &&
+iFoodDS-wrapper-v2.2.0.R:142:            fraction_boosted_ever == 0.45 &&
+iFoodDS-wrapper-v2.2.0.R:143:            fraction_boosted_last_five_months == 0.45
+
+iFoodDS-wrapper-v2.2.0.R:357:    for(sensitivity_multiplier in c(0.5, 1.5)) {
+iFoodDS-wrapper-v2.2.0.R:374:    for(sensitivity_multiplier in c(0.5, 1.5)) {
+
+main-produce-farm-v2.2.0.R:50:VirusParameters = function(p_trans_IP = .0575, relative_trans_IA = .11,
+main-produce-farm-v2.2.0.R:51:                           relative_trans_IM = .44) {
+main-produce-farm-v2.2.0.R:76:    p_symptomatic = 0.671
+main-produce-farm-v2.2.0.R:77:    duration_IA = 5
+main-produce-farm-v2.2.0.R:78:    duration_IP = 1.058 * 2.174
+main-produce-farm-v2.2.0.R:79:    duration_IM = 8
+
+more week stuff
+main-produce-farm-v2.2.0.R:236:average_raw_home_contacts_per_day = (5 * (raw_home_contacts_ps_1 +
+main-produce-farm-v2.2.0.R:239:                                     2 * (raw_home_contacts_weekend_ps_1 +
+main-produce-farm-v2.2.0.R:242:                                     ) / 7
+main-produce-farm-v2.2.0.R:257:    scenario_parameters[['average']] / (sum(shift_sum) / N) * 7/5
+
+main-produce-farm-v2.2.0.R:292:vaccination_interval = 21
+
+week again
+main-produce-farm-v2.2.0.R:296:week = c(rep(workday, 5), rep(day_off, 2))
+main-produce-farm-v2.2.0.R:297:schedule = rep(week, ceiling(days/7))[1:(3 * days)]
+
+could be a useful null example
+main-produce-farm-v2.2.0.R:312:    safe_set_seed(-778276078) #random 32-bit signed integer generated using
+
+reminder that these need to be neatened up
+wrapper-v2.2.0.R:57:temperature_threshold = 37.1    # batch mode: double_wrap_temp_test
+wrapper-v2.2.0.R:62:viral_testing_rate = 0.3        # batch mode: double_wrap_viral_test_rate
+wrapper-v2.2.0.R:64:isolation_duration = 14         # batch mode: double_wrap_isolation_duration
+wrapper-v2.2.0.R:75:num_sims = 100 # number of simulations; 100 takes 1-2 minutes
+
+these are actually substantive
+wrapper-v2.2.0.R:130:    if (temperature_threshold == 38) {
+wrapper-v2.2.0.R:131:        sensitivity = .052
+wrapper-v2.2.0.R:132:        specificity = 1.00
+wrapper-v2.2.0.R:147:        mild_FNR = 1 - sensitivity,
+wrapper-v2.2.0.R:148:        FPR = 1 - specificity,
+
+neatening
+wrapper-v2.2.0.R:152:    work_testing_rate = 1
+
+substantive
+wrapper-v2.2.0.R:159:        asymptomatic_FNR = 1 - 0.9,
+wrapper-v2.2.0.R:160:        presymptomatic_FNR = 1 - 0.9,
+wrapper-v2.2.0.R:161:        mild_FNR = 1 - 0.9,
+wrapper-v2.2.0.R:162:        FPR = 1 - 0.9995,
+
+unclear
+wrapper-v2.2.0.R:210:if(isolation_duration != 14) {
+
