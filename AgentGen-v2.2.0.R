@@ -82,7 +82,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     sdlog = sqrt(log(sd**2 / mu**2 + 1))
     mulog = log(mu) - (sdlog ** 2) / 2
 
-    duration_IP = rgamma(N, shape=duration_IP_shape, scale=duration_IP_scale)
+    duration_IP = sgamma(N, shape=duration_IP_shape, scale=duration_IP_scale)
     duration_E = pmax(rlnorm(N, mulog, sdlog) - duration_IP, 0) 
     #Moghadas et al., 2020 & need for a non-negative duration
     #Create a population of susceptibles 
@@ -140,14 +140,14 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          Age_Cat = sample(Age_Categories, N, replace = TRUE,
                                           prob = age_probabilities),
                          duration_E = duration_E,
-                         duration_IA = rgamma(N, shape=duration_IA_shape, scale=duration_IA_scale),
+                         duration_IA = sgamma(N, shape=duration_IA_shape, scale=duration_IA_scale),
                          # Moghadas et al., 2020
                          duration_IP = duration_IP,
-                         duration_IM = rgamma(N, shape=duration_IM_shape, scale=duration_IM_scale),
+                         duration_IM = sgamma(N, shape=duration_IM_shape, scale=duration_IM_scale),
                          #Michelle based on Kerr et al
-                         duration_IS = rgamma(N, shape=duration_IS_shape, scale=duration_IS_scale),
+                         duration_IS = sgamma(N, shape=duration_IS_shape, scale=duration_IS_scale),
                          #Michelle based on Kerr et al
-                         duration_IC = rgamma(N, shape=duration_IC_shape, scale=duration_IC_scale),
+                         duration_IC = sgamma(N, shape=duration_IC_shape, scale=duration_IC_scale),
                          #Michelle based on Kerr et al
                          stringsAsFactors = FALSE
                          #"stringsAsFactors = FALSE" is to allow transition into

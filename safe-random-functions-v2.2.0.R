@@ -48,6 +48,12 @@ random_functions_and_counter = function() {
                        #prob = 1 always gives 1
     }
 
+    sgamma = function(N, shape, scale) {
+        X = runif(N, 0, 1)
+        runif_0_1_calls_counter <<- runif_0_1_calls_counter + N
+        qgamma(X, shape=shape, scale = scale)
+    }
+
     print_rand_state = function(s) {
         cat('\n\n', s, '\nseed:', set_seed, '\ncalls:', runif_0_1_calls_counter,
             '\ncurrent state, abbreviated:', .Random.seed[1:3], '\n\n')
@@ -57,6 +63,7 @@ random_functions_and_counter = function() {
          safe_set_seed = safe_set_seed,
          sunif = sunif,
          sbern = sbern,
+         sgamma = sgamma,
          print_rand_state = print_rand_state
     )
 }
@@ -66,6 +73,7 @@ if(!exists('SAFE_RANDOM_FUNCTIONS_INITIALIZED')) {
     safe_set_seed = rfac_l[['safe_set_seed']]
     sunif = rfac_l[['sunif']]
     sbern = rfac_l[['sbern']]
+    sgamma = rfac_l[['sgamma']]
     print_rand_state = rfac_l[['print_rand_state']]
     SAFE_RANDOM_FUNCTIONS_INITIALIZED = TRUE
 }
