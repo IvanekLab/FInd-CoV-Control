@@ -26,6 +26,7 @@
 #analyze.R
 
 source('general-waning-functions-v2.2.0.R')
+source('constants.R') #constants for sensitivity testing, consistency, clarity, etc.
 
 safe.integer = function(s) {
     i = strtoi(s)
@@ -271,8 +272,14 @@ full_run = function(
     #    step_index = (1:steps) * (1/3)
     } else {
         source('double-wrapped-v2.2.0.R', local = TRUE)
-        double_wrapped_fn(sensitivity_variable,
-                          sensitivity_multiplier)
+        if(!is.null(sensitivity_variable)) {
+            if(sensitivity_variable %in% names(kConstants)) {
+                kConstants[[sensitivity_variable]] = sensitivity_multiplier * kConstants[[sensitivity_variable]]
+            } else {
+                stop('Not a valid sensitivity_variable: ', sensitivity_variable)
+            }
+        }
+        double_wrapped_fn(kConstants)
     }
     steps = days * 3
     step_index = (1:steps) * (1/3)
@@ -347,37 +354,44 @@ additional_farm_parameters = list(
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
 #common_parameters[['analyze_only']] = TRUE
 #do.call(full_run, c(common_parameters, additional_facility_parameters))
+kConstants_ = kConstants
+writeLines('\nNULL')
 do.call(full_run,
         c(common_parameters,
           additional_facility_parameters,
-          list(sensitivity_variable='NONE',
+          list(sensitivity_variable=NULL,
                sensitivity_multiplier=1,
-               unique_id = 'facility-pass-1')))
-for(sensitivity_variable in c('duration_IA', 'duration_IP', 'duration_IM')) {
+               unique_id = 'facility-pass-3')))
+for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
+        kConstants = kConstants_
+        writeLines(paste0('\n', sensitivity_variable, ' x ', sensitivity_multiplier))
         do.call(full_run,
                 c(common_parameters,
                   additional_facility_parameters,
                   list(sensitivity_variable=sensitivity_variable,
                        sensitivity_multiplier=sensitivity_multiplier,
-                       unique_id = paste0('facility-pass-1-', sensitivity_variable, '-', sensitivity_multiplier))))
+                       unique_id = paste0('facility-pass-3-', sensitivity_variable, '-', sensitivity_multiplier))))
     }
 }
+stop('Made it through.')
 double_wrap_num_sims = 1000
+kConstants = kConstants_
 do.call(full_run,
         c(common_parameters,
           additional_facility_parameters,
-          list(sensitivity_variable='NONE',
+          list(sensitivity_variable=NULL,
                sensitivity_multiplier=1,
-               unique_id = 'facility-pass-1')))
-for(sensitivity_variable in c('duration_IA', 'duration_IP', 'duration_IM')) {
+               unique_id = 'facility-pass-3')))
+for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
+        kConstants = kConstants_
         do.call(full_run,
                 c(common_parameters,
                   additional_facility_parameters,
                   list(sensitivity_variable=sensitivity_variable,
                        sensitivity_multiplier=sensitivity_multiplier,
-                       unique_id = paste0('facility-pass-1-', sensitivity_variable, '-', sensitivity_multiplier))))
+                       unique_id = paste0('facility-pass-3-', sensitivity_variable, '-', sensitivity_multiplier))))
     }
 }
-
+kConstants = kConstants_

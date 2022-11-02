@@ -35,8 +35,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                       fraction_boosted_ever = 0,
                       fraction_boosted_last_five_months = 0,
                       protection_functions,
-                      sensitivity_variable,
-                      sensitivity_multiplier
+                      kConstants
                       ) {
     #TBD (eventually): Either add back in the ability to use these or remove
     #them from the parameter list.
@@ -55,11 +54,35 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                        "70-79", "80+")
 
     ##duration_E calculations
-    mu = 5.2
-    sd = .1
+    #Retrieving and calculating constants
+    mu = get('mu', kConstants)
+    sd = get('sd', kConstants)
+
+    duration_IA_mean = get('duration_IA_mean', kConstants)
+    duration_IA_shape = get('duration_IA_shape', kConstants)
+    duration_IA_scale = duration_IA_mean / duration_IA_shape
+
+    duration_IP_mean = get('duration_IP_mean', kConstants)
+    duration_IP_shape = get('duration_IP_shape', kConstants)
+    duration_IP_scale = duration_IP_mean / duration_IP_shape
+
+    duration_IM_mean = get('duration_IM_mean', kConstants)
+    duration_IM_shape = get('duration_IM_shape', kConstants)
+    duration_IM_scale = duration_IM_mean / duration_IM_shape
+
+    duration_IS_mean = get('duration_IS_mean', kConstants)
+    duration_IS_shape = get('duration_IS_shape', kConstants)
+    duration_IS_scale = duration_IS_mean / duration_IS_shape
+
+    duration_IC_mean = get('duration_IC_mean', kConstants)
+    duration_IC_shape = get('duration_IC_shape', kConstants)
+    duration_IC_scale = duration_IC_mean / duration_IC_shape
+    #END RETRIEVING AND CALCULATING CONSTANTS
+
     sdlog = sqrt(log(sd**2 / mu**2 + 1))
     mulog = log(mu) - (sdlog ** 2) / 2
-    duration_IP = rgamma(N, shape=1.058, scale=2.174)
+
+    duration_IP = rgamma(N, shape=duration_IP_shape, scale=duration_IP_scale)
     duration_E = pmax(rlnorm(N, mulog, sdlog) - duration_IP, 0) 
     #Moghadas et al., 2020 & need for a non-negative duration
     #Create a population of susceptibles 
@@ -117,26 +140,20 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          Age_Cat = sample(Age_Categories, N, replace = TRUE,
                                           prob = age_probabilities),
                          duration_E = duration_E,
-                         duration_IA = rgamma(N, shape=5, scale=1),
+                         duration_IA = rgamma(N, shape=duration_IA_shape, scale=duration_IA_scale),
                          # Moghadas et al., 2020
                          duration_IP = duration_IP,
-                         duration_IM = rgamma(N, shape=16, scale=0.5),
+                         duration_IM = rgamma(N, shape=duration_IM_shape, scale=duration_IM_scale),
                          #Michelle based on Kerr et al
-                         duration_IS = rgamma(N, shape=34.0278, scale=0.4114),
+                         duration_IS = rgamma(N, shape=duration_IS_shape, scale=duration_IS_scale),
                          #Michelle based on Kerr et al
-                         duration_IC = rgamma(N, shape=34.0278, scale=0.4114),
+                         duration_IC = rgamma(N, shape=duration_IC_shape, scale=duration_IC_scale),
                          #Michelle based on Kerr et al
                          stringsAsFactors = FALSE
                          #"stringsAsFactors = FALSE" is to allow transition into
                          #states that are not present at simulation start
     )
-    if(sensitivity_variable %in% c('p_symptomatic', 'duration_IA', 'duration_IP', 'duration_IM')) {
-        agents[[sensitivity_variable]] = sensitivity_multiplier * get(sensitivity_variable, agents)
-        #cat('\n\n', sensitivity_variable, '\n', sensitivity_multiplier, '\n', get(sensitivity_variable, agents), '\n\n')
-        if(sensitivity_variable == 'p_symptomatic') {
-            stop('p_symptomatic sensitivity testing not yet implemented')
-        }
-    }
+    
     #pre-calculating all indices for clarity and ease of debugging
     #This block is based on the need to insure that any(index_E & index_IM) ==
     #FALSE . Its complexity is based on the R misfeature that if a == 0, then

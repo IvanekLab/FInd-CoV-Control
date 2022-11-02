@@ -37,8 +37,7 @@
 # Number of individuals initially in various states other than completely
 # susceptible
 wrapper_fn = function(index_i,
-                      sensitivity_variable,
-                      sensitivity_multiplier) {   #goal: to get more meaningful debug data
+                      kConstants) {   #goal: to get more meaningful debug data
 
 initial_recovered = 0 # batch mode: double_wrap_initial_recovered
 initial_V1 = 0        # batch mode: double_wrap_initial_V1
@@ -234,8 +233,7 @@ full_output_save_name = paste(filename_core, '_full-output.rds', sep = '')
 #and now let's run the model
 if(!(exists('ANALYZE') && ANALYZE == TRUE)) {
     source('main-produce-farm-v2.2.0.R', local = TRUE)
-    main_produce_farm_fn(sensitivity_variable,
-                         sensitivity_multiplier)
+    main_produce_farm_fn(kConstants)
 }
 
 full_output_save_name

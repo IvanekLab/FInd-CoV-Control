@@ -163,8 +163,7 @@ for(i in 1:1) {#k_max) { # Can be substituted for the above for better crash
     row_name = row.names[i]
     source('wrapper-v2.2.0.R', local = TRUE)
     full_output_save_name = wrapper_fn(i,
-                                       sensitivity_variable,
-                                       sensitivity_multiplier) # returns full_output_save_name
+                                       kConstants) # returns full_output_save_name
                                           # use of i here is a temporary kludge
     full_output_save_name
 }

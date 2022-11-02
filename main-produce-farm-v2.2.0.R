@@ -21,8 +21,7 @@
 #individual based
 #each person/agent has properties = parameters, attributes behaviours
 #model each person individually
-main_produce_farm_fn = function(sensitivity_variable,
-                                sensitivity_multiplier) { #goal: get more meaningful debug data
+main_produce_farm_fn = function(kConstants) { #goal: get more meaningful debug data
 library(Rlab)
  
 source("AgentGen-v2.2.0.R")
@@ -47,19 +46,14 @@ source("ABM-v2.2.0.R")
 #about viral properties.
 #Default values from Moghadas et al. 2020 (gives range of .0575 to .0698 for
 #p_trans_IP)
-VirusParameters = function(p_trans_IP = .0575, relative_trans_IA = .11,
-                           relative_trans_IM = .44) {
-    #p_trans_IP = p_trans_IP 
-    p_trans_IA = relative_trans_IA * p_trans_IP
-    p_trans_IM = relative_trans_IM * p_trans_IP
+p_trans_IP = get('p_trans_IP', kConstants)
+relative_trans_IA = get('relative_trans_IA', kConstants)
+relative_trans_IM = get('relative_trans_IM', kConstants)
 
-    list(p_trans_IP = p_trans_IP,
-         p_trans_IA = p_trans_IA,
-         p_trans_IM = p_trans_IM
-    )
-}
-
-virus_parameters = VirusParameters()
+virus_parameters = list(p_trans_IP = p_trans_IP,
+                        p_trans_IA = relative_trans_IA * p_trans_IP,
+                        p_trans_IM = relative_trans_IM * p_trans_IP
+                        )
 
 #some of these are redundant steps that should be eliminated
 ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
@@ -74,16 +68,9 @@ ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
     #should probably be made more flexible later, but this should do for now
 
     p_symptomatic = 0.671
-    duration_IA = 5
-    duration_IP = 1.058 * 2.174
-    duration_IM = 8
-    if(sensitivity_variable %in% c('p_symptomatic', 'duration_IA', 'duration_IP', 'duration_IM')) {
-        assign(sensitivity_variable, sensitivity_multiplier * get(sensitivity_variable))
-        cat('\n\n', sensitivity_variable, '\n', sensitivity_multiplier, '\n', get(sensitivity_variable), '\n\n')
-        if(sensitivity_variable == 'p_symptomatic') {
-            stop('p_symptomatic sensitivity testing not yet implemented')
-        }
-    }
+    duration_IA = get('duration_IA_mean', kConstants)
+    duration_IP = get('duration_IP_mean', kConstants)
+    duration_IM = get('duration_IM_mean', kConstants)
     #p_trans_IS = .89 * .0575, # from Moghadas et al. 2020, but irrelevant
                                # (for now, at least) since we are assuming all
                                # severe cases are hospitalized
@@ -344,8 +331,7 @@ for (i in 1:num_sims) {
                        fraction_boosted_last_five_months =
                            fraction_boosted_last_five_months,
                        protection_functions = protection_functions,
-                       sensitivity_variable = sensitivity_variable,
-                       sensitivity_multiplier = sensitivity_multiplier)
+                       kConstants = kConstants)
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
                  virus_parameters, testing_parameters,
