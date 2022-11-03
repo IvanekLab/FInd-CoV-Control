@@ -35,8 +35,7 @@
 # FALSE.                                                                       #
 ################################################################################
 
-double_wrapped_fn = function(sensitivity_variable,
-                             sensitivity_multiplier) { #goal: to get more meaningful debug data
+double_wrapped_fn = function(kConstants) { #goal: to get more meaningful debug data
 
 double_wrap_isolation_duration = 14
 double_wrap_rational_testing = TRUE
