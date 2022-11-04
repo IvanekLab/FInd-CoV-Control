@@ -82,6 +82,15 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     sdlog = sqrt(log(sd**2 / mu**2 + 1))
     mulog = log(mu) - (sdlog ** 2) / 2
 
+    cat('mu and sd:', mu, sd,
+        '\nIP:', duration_IP_shape, duration_IP_scale,
+        '\nIA:', duration_IA_shape, duration_IA_scale,
+        '\nIM:', duration_IM_shape, duration_IM_scale,
+        '\nIS:', duration_IS_shape, duration_IS_scale,
+        '\nIC:', duration_IC_shape, duration_IC_scale, '\n'
+    )
+    #stop('Pause here to confirm.')
+
     duration_IP = sgamma(N, shape=duration_IP_shape, scale=duration_IP_scale)
     duration_E = pmax(rlnorm(N, mulog, sdlog) - duration_IP, 0) 
     #Moghadas et al., 2020 & need for a non-negative duration
@@ -153,6 +162,10 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          #"stringsAsFactors = FALSE" is to allow transition into
                          #states that are not present at simulation start
     )
+    library('openssl')
+    library('repr')
+    print(sha256(repr(agents)))
+    stop('Pause here to confirm.')
     
     #pre-calculating all indices for clarity and ease of debugging
     #This block is based on the need to insure that any(index_E & index_IM) ==
