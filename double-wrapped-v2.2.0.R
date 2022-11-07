@@ -35,9 +35,12 @@
 # FALSE.                                                                       #
 ################################################################################
 
-double_wrapped_fn = function(kConstants) { #goal: to get more meaningful debug data
+double_wrapped_fn = function(kConstants) {
 
-double_wrap_isolation_duration = 14
+    # removing all references to isolation_duration,
+    # double_wrap_isolation_duration, etc. that are not in kConstants, as these
+    # have been irrelevant for a while (hardcoded as five, now shifting from
+    # hardcoding to kConstants)
 double_wrap_rational_testing = TRUE
 
 double_wrap_initial_recovered = round(fraction_recovered * N)
@@ -57,10 +60,11 @@ vax_rates = c(0.02, 0.04)
 R0_reductions = c(0.2, 0.4, 0.8)
 
 k_max = 1 + length(temperature_thresholds) + length(viral_test_rates) +
-    length(vax_rates) + length(R0_reductions) + 3 # +3 is a kludge to allow the
-                                                  # final three interventions
+        length(vax_rates) + length(R0_reductions) + 3 # +3 is a kludge to allow
+                                                      #the final three interventions
 
-row.names<-c(     "Baseline",
+    row.names<-c(
+        "Baseline",
                   "Temperature Screening, 38.0°C",
                   "Virus Test, p = 0.05 / Working Day",
                   "Virus Test, p = 0.3 / Working Day",
@@ -78,35 +82,25 @@ if(length(row.names) != k_max) {
     stop('Row names does not have the right length')
 }
 
-c4 = c('black', 'blue3', 'lightblue1', 'red2', 'gray80', 'darkgreen', 'yellow2')
+    c4 = c('black', 'blue3', 'lightblue1', 'red2', 'gray80', 'darkgreen',
+           'yellow2')
 
 colors = c(c4[1],
            c4[2],
-           c4[3],
-           c4[3],
-           c4[3],
-           c4[4],
-           c4[4],
-           c4[5],
-           c4[5],
-           c4[5],
-           c4[6],
-           c4[6],
+               c4[3], c4[3], c4[3],
+               c4[4], c4[4],
+               c4[5], c4[5], c4[5],
+               c4[6], c4[6],
            c4[7]
 )
 
 ltys = c(1,
          1,
-         1,
-         2,
+             1, 2, 3,
+             1, 2,
+             1, 2,
          3,
-         1,
-         2,
-         1,
-         2,
-         3,
-         1,
-         2,
+             1, 2,
          1
 )
 
@@ -120,7 +114,6 @@ parameter_sets = data.frame(double_wrap_reduction = rep(0, k_max),
 for(h in 2:(1 + length(temperature_thresholds))) {
  parameter_sets[h, 'double_wrap_temp_test'] = temperature_thresholds[h - 1]
 }
-
 for(i in (h + 1):(h + length(viral_test_rates))) {
     parameter_sets[i, 'double_wrap_viral_test_rate'] = viral_test_rates[i - h]
 }
@@ -130,7 +123,6 @@ for(j in (i + 1):(i + length(vax_rates))) {
 for(k in (j + 1):(j + length(R0_reductions))) {
     parameter_sets[k, 'double_wrap_reduction'] = R0_reductions[k - j]
 }
-
 parameter_sets[k+1,'double_wrap_boosting_rate'] = 0.02
 parameter_sets[k+2,'double_wrap_boosting_rate'] = 0.04
 parameter_sets[k+3,c('double_wrap_vax_rate','double_wrap_boosting_rate')] = 0.02
@@ -169,9 +161,11 @@ full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
     boosting_rate = double_wrap_boosting_rate
     row_name = row.names[i]
     source('wrapper-v2.2.0.R', local = TRUE)
-    full_output_save_name = wrapper_fn(i,
-                                       kConstants) # returns full_output_save_name
-                                          # use of i here is a temporary kludge
+        # below returns full_output_save_name
+        # use of i is a temporary kludge to address the lack of encoding of
+        # boosting rate in filenames (TBD: Change this)
+        full_output_save_name = wrapper_fn(i, kConstants)
+                                          
     full_output_save_name
 }
 if(!(exists('ANALYZE') && ANALYZE == TRUE)) {

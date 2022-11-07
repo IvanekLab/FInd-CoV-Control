@@ -206,10 +206,12 @@ if(vaccination_rate != 0) {
                           sep = '')
 }
 
-if(isolation_duration != 14) {
-    filename_core = paste(filename_core, ',isol-dur-', isolation_duration,
-                          sep = '')
-}
+#TBD: decide whether we'd be better off encoding this in the filename, from
+#kConstants
+#if(isolation_duration != 14) {
+#    filename_core = paste(filename_core, ',isol-dur-', isolation_duration,
+#                          sep = '')
+#}
 
 if(initial_recovered > 0) {
     filename_core = paste(filename_core, ',initial_recovered-',
