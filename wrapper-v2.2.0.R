@@ -60,7 +60,6 @@ temperature_threshold = 37.1    # batch mode: double_wrap_temp_test
                                 # temperature_testing = TRUE will cause an error
 viral_testing_rate = 0.3        # batch mode: double_wrap_viral_test_rate
 rational_testing = TRUE
-isolation_duration = 14         # batch mode: double_wrap_isolation_duration
 
 #vaccination
 vaccination_rate = 0            # batch mode: double_wrap_vax_rate
@@ -94,7 +93,6 @@ if(exists('DOUBLE_WRAPPED') && DOUBLE_WRAPPED == TRUE) {
     vaccination_rate = double_wrap_vax_rate
     community_foi = double_wrap_community_foi
     num_sims = double_wrap_num_sims
-    isolation_duration = double_wrap_isolation_duration
     baseline_work_R0 = double_wrap_baseline_work_R0
     initial_V1 = double_wrap_initial_V1
     initial_V2 = double_wrap_initial_V2

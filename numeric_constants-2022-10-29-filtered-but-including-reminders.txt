@@ -1,8 +1,3 @@
-ABM-v2.2.0.R:20:    isolation_duration = 5
-ABM-v2.2.0.R:161:    stealable = (immune_status_0 == 'R') & (event_times - agents$time_R < 45)
-ABM-v2.2.0.R:253:                      end_time - agents$time_V2 > 152 &
-ABM-v2.2.0.R:283:                (end_time - agents$time_V2 > 152 + 1) & #5 months
-
 AgentGen-v2.2.0.R:26:AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
 AgentGen-v2.2.0.R:32:                      age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
 AgentGen-v2.2.0.R:33:                                            0.01, 0),
@@ -10,15 +5,10 @@ AgentGen-v2.2.0.R:34:                      SEVERE_MULTIPLIER = 1,
 
 below are for duration_E_plus_IP (theoretically)
 
-AgentGen-v2.2.0.R:234:        initial_V2_last_five_months, -152, 0
 AgentGen-v2.2.0.R:238:        -(365+61),#fully vax starts in mid-december 2020
-AgentGen-v2.2.0.R:239:        -152 
 AgentGen-v2.2.0.R:245:    agents$time_V2[index_B_older] = runif(n_boosted_older, -(365+61), -(2*152+1))
-AgentGen-v2.2.0.R:247:                                                     -2*152, -152)
-AgentGen-v2.2.0.R:250:    agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21
-AgentGen-v2.2.0.R:262:    agents$time_B[index_B] = agents$time_V2[index_B] + 152 #was: pmax(agents$time_V2[index_B] + 152, -152)
+
 AgentGen-v2.2.0.R:270:    agents$time_R[index_R]= -runif(initial_recovered, 0, 365)
-AgentGen-v2.2.0.R:295:    agents$previous_immunity[R_V1_V2] = B_protection(21, 0)
 
 Probably not practical to change # of work days (given that it can't be 2.5, nor can it be 7.5 if we assume that this is truly weekly
 But bear it in mind
@@ -86,34 +76,6 @@ ContactsGen-v2.2.0.R:282:                    o_fm = 0.1,
 ContactsGen-v2.2.0.R:283:                    o_sm = 1
 custom-contacts-gen-general-v2.2.0.R:31:    diff_crew = tt * 0.1 # for different lines
 
-double-wrapped-v2.2.0.R:41:double_wrap_isolation_duration = 14
-
-general-waning-functions-v2.2.0.R:20:    0.91157392 * exp(-0.08904459 / 7 * t)
-general-waning-functions-v2.2.0.R:24:    (0.471669758 * exp(-0.083161719 / 7 * t) +
-general-waning-functions-v2.2.0.R:25:     0.326600870 * exp(-0.008970573 / 7 * t))
-general-waning-functions-v2.2.0.R:32:    ifelse(t < 21,
-general-waning-functions-v2.2.0.R:33:        .36 * t / 21,
-general-waning-functions-v2.2.0.R:34:        .36
-general-waning-functions-v2.2.0.R:39:    ifelse(t < 14,
-general-waning-functions-v2.2.0.R:40:        (t / 14) * default_V2_decay(14) + ((14 - t) / 14) * prev,
-general-waning-functions-v2.2.0.R:47:    ifelse(t < 7, 
-general-waning-functions-v2.2.0.R:48:        t / 7 * .62 + (7 - t) / 7 * prev,
-general-waning-functions-v2.2.0.R:49:        ifelse(t < 14,
-general-waning-functions-v2.2.0.R:50:            (14 - t) / 7 * .62 + (t - 7) / 7 * default_B_decay(14), 
-general-waning-functions-v2.2.0.R:58:    ifelse(t < 14,
-general-waning-functions-v2.2.0.R:59:        1,
-general-waning-functions-v2.2.0.R:64:R_decay_45 = function(t) {
-general-waning-functions-v2.2.0.R:65:    pmin(1, default_R_decay(t - 45 + 14))
-general-waning-functions-v2.2.0.R:68:R_protection_45 = function(t, prev) {
-general-waning-functions-v2.2.0.R:70:    ifelse(t < 45,
-general-waning-functions-v2.2.0.R:71:        1,
-general-waning-functions-v2.2.0.R:72:        R_decay_45(t)
-general-waning-functions-v2.2.0.R:113:        1 - sqrt(1 - net_symptomatic_protection(agents, start_time))
-
-general-waning-functions-v2.2.0.R:174:    V1_net_symptoms = 1 - .37
-general-waning-functions-v2.2.0.R:175:    V2_susceptibility = 1 - .65
-general-waning-functions-v2.2.0.R:176:    V2_net_symptoms = 1 - .88
-
 iFoodDS-wrapper-v2.2.0.R:114:        SEVERE_MULTIPLIER = 2
 iFoodDS-wrapper-v2.2.0.R:116:        SEVERE_MULTIPLIER = 1.2
 iFoodDS-wrapper-v2.2.0.R:117:    } else if(variant == '2020'){
@@ -139,8 +101,6 @@ main-produce-farm-v2.2.0.R:239:                                     2 * (raw_hom
 main-produce-farm-v2.2.0.R:242:                                     ) / 7
 main-produce-farm-v2.2.0.R:257:    scenario_parameters[['average']] / (sum(shift_sum) / N) * 7/5
 
-main-produce-farm-v2.2.0.R:292:vaccination_interval = 21
-
 week again
 main-produce-farm-v2.2.0.R:296:week = c(rep(workday, 5), rep(day_off, 2))
 main-produce-farm-v2.2.0.R:297:schedule = rep(week, ceiling(days/7))[1:(3 * days)]
@@ -151,7 +111,6 @@ main-produce-farm-v2.2.0.R:312:    safe_set_seed(-778276078) #random 32-bit sign
 reminder that these need to be neatened up
 wrapper-v2.2.0.R:57:temperature_threshold = 37.1    # batch mode: double_wrap_temp_test
 wrapper-v2.2.0.R:62:viral_testing_rate = 0.3        # batch mode: double_wrap_viral_test_rate
-wrapper-v2.2.0.R:64:isolation_duration = 14         # batch mode: double_wrap_isolation_duration
 wrapper-v2.2.0.R:75:num_sims = 100 # number of simulations; 100 takes 1-2 minutes
 
 these are actually substantive
@@ -170,6 +129,4 @@ wrapper-v2.2.0.R:160:        presymptomatic_FNR = 1 - 0.9,
 wrapper-v2.2.0.R:161:        mild_FNR = 1 - 0.9,
 wrapper-v2.2.0.R:162:        FPR = 1 - 0.9995,
 
-unclear
-wrapper-v2.2.0.R:210:if(isolation_duration != 14) {
 

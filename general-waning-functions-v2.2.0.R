@@ -16,61 +16,89 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-default_V2_decay = function(t) {
-    0.91157392 * exp(-0.08904459 / 7 * t)
-}
 
-default_B_decay = function(t) {
-    (0.471669758 * exp(-0.083161719 / 7 * t) +
-     0.326600870 * exp(-0.008970573 / 7 * t))
-}
-
-default_R_decay = default_B_decay #although the protection functions are non-identical
-
-default_V1_protection = function(t, prev) {
+make_V1_protection_general = function (kConstants) {
+    second_shot_interval = get('second_shot_interval', kConstants)
+    max_V1_protection = get('max_V1_protection', kConstants)
+    function(t, prev) {
     #prev unused; included for consistent interface
-    ifelse(t < 21,
-        .36 * t / 21,
-        .36
-    )
-}
-
-default_V2_protection = function(t, prev) {
-    ifelse(t < 14,
-        (t / 14) * default_V2_decay(14) + ((14 - t) / 14) * prev,
-        default_V2_decay(t)
-    )
-}
-
-
-default_B_protection = function(t, prev) {
-    ifelse(t < 7, 
-        t / 7 * .62 + (7 - t) / 7 * prev,
-        ifelse(t < 14,
-            (14 - t) / 7 * .62 + (t - 7) / 7 * default_B_decay(14), 
-            default_B_decay(t)
+        ifelse(t < second_shot_interval,
+            max_V1_protection * t / second_shot_interval,
+            max_V1_protection
         )
-    )
+    }
 }
 
-default_R_protection = function(t, prev) {
+make_V2_protection_general = function(kConstants) {
+    V2_ramp_time = get('V2_ramp_time', kConstants)
+    V2_magnitude = get('V2_magnitude', kConstants)
+    V2_decay_rate = get('V2_decay_rate', kConstants)
+    V2_decay = function(t) {
+        pmin(V2_magnitude * exp(-V2_decay_rate * t), 1)
+        #pmin(..., 1) is a kludge to handle 0.5, 1.5 sensitivity testing
+        #otherwise, maximum protection would be > 1
+    }
+    V2_max = V2_decay(V2_ramp_time)
+    function(t, prev) {
+        ifelse(t < V2_ramp_time,
+            (t / V2_ramp_time) * V2_max +
+                ((V2_ramp_time - t) / V2_ramp_time) * prev,
+            V2_decay(t)
+        )
+    }
+}
+
+make_B_decay_general = function(kConstants) {
+    B_magnitude_1 = get('B_magnitude_1', kConstants)
+    B_magnitude_2 = get('B_magnitude_2', kConstants)
+    B_decay_rate_1 = get('B_decay_rate_1', kConstants)
+    B_decay_rate_2 = get('B_decay_rate_2', kConstants)
+    function(t) {
+        (B_magnitude_1 * exp(-B_decay_rate_1 * t) +
+            B_magnitude_2 * exp(-B_decay_rate_2 * t))
+    }
+}
+
+make_B_protection_general = function(B_decay, kConstants) {
+    #B_decay is passed in as an already-constructed parameter because it is used
+    #both here and in make_R_protection_general
+    #NB: Changes here may make for some weird results
+    B_ramp_time_1 = get('B_ramp_time_1', kConstants)
+    B_ramp_time_2 = get('B_ramp_time_2', kConstants)
+    B_mid_ramp_protection = get('B_mid_ramp_protection', kConstants)
+    total_B_ramp_time = B_ramp_time_1 + B_ramp_time_2
+    B_max = B_decay(total_B_ramp_time)
+    function(t, prev) {
+        ifelse(t < B_ramp_time_1, 
+            t / B_ramp_time_1 * B_mid_ramp_protection +
+                (B_ramp_time_1 - t) / B_ramp_time_1 * prev,
+            ifelse(t < total_B_ramp_time,
+                (total_B_ramp_time - t) / B_ramp_time_2 * B_mid_ramp_protection +
+                    (t - B_ramp_time_1) / B_ramp_time_2 * B_max, 
+                B_decay(t)
+            )
+        )
+    }
+}
+
+make_R_protection_general = function(B_decay, kConstants) {
+    complete_immunity_duration_R = get('complete_immunity_duration_R',
+                                       kConstants)
+    B_ramp_time_1 = get('B_ramp_time_1', kConstants)
+    B_ramp_time_2 = get('B_ramp_time_2', kConstants)
+    total_B_ramp_time = B_ramp_time_1 + B_ramp_time_2
+    
+    R_decay = function(t) {
+        pmin(1, B_decay(t - complete_immunity_duration_R + total_B_ramp_time))
+    }
+
+    function(t, prev) {
     #prev unused; included for consistent interface
-    ifelse(t < 14,
-        1,
-        default_R_decay(t)
-    )
-}
-
-R_decay_45 = function(t) {
-    pmin(1, default_R_decay(t - 45 + 14))
-}
-
-R_protection_45 = function(t, prev) {
-    #prev unused; included for consistent interface
-    ifelse(t < 45,
-        1,
-        R_decay_45(t)
-    )
+        ifelse(t < complete_immunity_duration_R,
+            1,
+            R_decay(t)
+        )
+    }
 }
 
 #R_protection = B_protection
@@ -129,35 +157,16 @@ make_protection_functions = function(V1_protection, V2_protection, B_protection,
     )
 }
 
-default_protection_functions = make_protection_functions(default_V1_protection,
-                                                         default_V2_protection,
-                                                         default_B_protection,
-                                                         default_R_protection)
+make_protection_functions_general = function(kConstants) {
+    B_decay = make_B_decay_general(kConstants)
+    make_protection_functions(
+        make_V1_protection_general(kConstants),
+        make_V2_protection_general(kConstants),
+        make_B_protection_general(B_decay, kConstants),
+        make_R_protection_general(B_decay, kConstants)
+    )
+}
 
-default2_protection_functions = make_protection_functions(default_V1_protection,
-                                                          default_V2_protection,
-                                                          default_R_protection,
-                                                          default_R_protection)
-
-protection_functions_45 = make_protection_functions(default_V1_protection,
-                                                    default_V2_protection,
-                                                    default_B_protection,
-                                                    R_protection_45)
-#old debugging check; may no longer be valid
-#immune_status = c(rep('FS', 28), rep('V1', 28), rep('V2', 56), rep('B', 56),
-#                  rep('R', 28))
-#time_last_immunity_event = -rep((1:28),7)
-#previous_immunity = c(rep(0,84), rep(.36, 28), rep(0, 28), rep(.4, 28), rep(.6,28))
-#agents = list(immune_status = immune_status,
-#              time_last_immunity_event = time_last_immunity_event,
-#              previous_immunity = previous_immunity)
-#nsp = net_symptomatic_protection(agents,0)
-#ip = infection_protection(agents,0)
-#sp = symptom_protection(agents,0)
-#plot(nsp)
-#points(ip,type='l')
-#points(sp,type='l',col='red',lty=2)
-#abline(h=0)
 
 two_level_protection = function(level, duration) {
     function(t, prev) {
@@ -189,7 +198,7 @@ make_one_one_three = function() {
 
     net_symptomatic_protection = protection_functions$net_symptomatic_protection
 
-   infection_protection = function(agents, start_time) {
+    infection_protection = function(agents, start_time) {
         ais = agents$immune_status
         t = (start_time - agents$time_last_immunity_event)
         t = pmax(t, 0) #TBD (eventually): find a way to not need this kludge

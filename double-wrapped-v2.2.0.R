@@ -35,7 +35,7 @@
 # FALSE.                                                                       #
 ################################################################################
 
-double_wrapped_fn = function(kConstants) {
+double_wrapped_fn = function(kConstants, protection_functions) {
 
     # removing all references to isolation_duration,
     # double_wrap_isolation_duration, etc. that are not in kConstants, as these

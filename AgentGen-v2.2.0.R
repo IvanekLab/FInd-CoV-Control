@@ -49,6 +49,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     B_protection = get('B_protection', protection_functions)
     net_symptomatic_protection = get('net_symptomatic_protection',
                                      protection_functions)
+    boosting_interval = get('boosting_interval', kConstants)
+    second_shot_interval = get('second_shot_interval', kConstants)
 
     Age_Categories = c("10-19", "20-29", "30-39", "40-49", "50-59", "60-69",
                        "70-79", "80+")
@@ -261,23 +263,23 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #Using uniform distributions for now; may change later.
     #TBD (eventually): better distributions
     agents$time_V2[index_V2_last_five_months] = runif(
-        initial_V2_last_five_months, -152, 0
+        initial_V2_last_five_months, -boosting_interval, 0
     )
     agents$time_V2[index_V2_older] = runif(
         initial_V2 - initial_V2_last_five_months,
         -(365+61),#fully vax starts in mid-december 2020
-        -152 
+        -boosting_interval 
     )
 
     #Adjusting timing of vaccinations to match boosting timing.
     #Ideally, this would be handled in a more sophisticated fashion, but
     #this will do for now.
-    agents$time_V2[index_B_older] = runif(n_boosted_older, -(365+61), -(2*152+1))
+    agents$time_V2[index_B_older] = runif(n_boosted_older, -(365+61), -(2*boosting_interval+1)) #TBD: Extend start date 2022-11-07
     agents$time_V2[index_B_last_five_months] = runif(n_boosted_last_five_months,
-                                                     -2*152, -152)
+                                                     -2*boosting_interval, -boosting_interval)
 
     agents$time_last_immunity_event[index_V2] = agents$time_V2[index_V2]
-    agents$time_V1[index_V2] = agents$time_V2[index_V2] - 21
+    agents$time_V1[index_V2] = agents$time_V2[index_V2] - second_shot_interval
     #again, not perfect, but doesn't actually matter
     #(currently, and probably ever)
     agents$previous_immunity[index_V2] = V1_protection(
@@ -289,7 +291,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #           agents$boosting_on_time)
     agents$immune_status[index_B] = 'B'
     agents$vax_status[index_B] = 'B'
-    agents$time_B[index_B] = agents$time_V2[index_B] + 152 #was: pmax(agents$time_V2[index_B] + 152, -152)
+    agents$time_B[index_B] = agents$time_V2[index_B] + boosting_interval #was: pmax(agents$time_V2[index_B] + 152, -152)
     agents$time_last_immunity_event[index_B] = agents$time_B[index_B]
     agents$previous_immunity[index_B] = V2_protection(
         agents$time_B[index_B] - agents$time_V2[index_B],

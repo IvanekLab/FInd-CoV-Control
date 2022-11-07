@@ -14,5 +14,21 @@ kConstants = list( #using Google-style notation for now
     duration_IC_shape = 34.0278,
     p_trans_IP = .0575, #should not actually affect anything
     relative_trans_IA = .11,
-    relative_trans_IM = .44
+    relative_trans_IM = .44,
+    boosting_interval = 152,
+    complete_immunity_duration_R = 45,
+    second_shot_interval = 21, #days
+    max_V1_protection = 0.36,
+    V2_ramp_time = 14, #days
+    V2_magnitude = 0.9115739,
+    V2_decay_rate = 0.08904459 / 7, #1/days; / 7 converts from 1/weeks
+    B_ramp_time_1 = 7, # days
+    B_ramp_time_2 = 7, # days, between B_ramp_time_1 and end of ramp
+    B_mid_ramp_protection = .62,
+    B_magnitude_1 = 0.471669758,
+    B_magnitude_2 = 0.326600870,
+    B_decay_rate_1 = 0.083161719 / 7,
+    B_decay_rate_2 = 0.008970573 / 7
 )
+
+variables_to_exclude = list('boosting_interval') #to avoid clash with when we assume vaccination starts (which needs to be updated)

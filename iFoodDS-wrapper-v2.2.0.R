@@ -279,7 +279,8 @@ full_run = function(
                 stop('Not a valid sensitivity_variable: ', sensitivity_variable)
             }
         }
-        double_wrapped_fn(kConstants)
+        protection_functions = make_protection_functions_general(kConstants)
+        double_wrapped_fn(kConstants, protection_functions)
     }
     steps = days * 3
     step_index = (1:steps) * (1/3)
@@ -316,7 +317,7 @@ common_parameters = list(
     ffv_last_five_months = 0.09,
     fraction_boosted_ever = 0.45,
     fraction_boosted_last_five_months = 0.45,
-    protection_functions = protection_functions_45,
+    #protection_functions = protection_functions_45,
     variant = 'omicron'
 )
 
@@ -361,7 +362,7 @@ do.call(full_run,
           additional_facility_parameters,
           list(sensitivity_variable=NULL,
                sensitivity_multiplier=1,
-               unique_id = 'facility-pass-4')))
+               unique_id = 'facility-pass-5')))
 for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
         kConstants = kConstants_

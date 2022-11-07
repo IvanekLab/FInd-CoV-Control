@@ -57,7 +57,7 @@ virus_parameters = list(p_trans_IP = p_trans_IP,
 
 #some of these are redundant steps that should be eliminated
 ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
-                              work_testing_rate, isolation_duration,
+                              work_testing_rate,
                               home_vaccination_rate, lambda = 0, crews_by_team,
                               crew_sizes, virus_params) {
     p_trans_IP = get('p_trans_IP', virus_params)
@@ -90,7 +90,6 @@ ScenarioParameters = function(work_R0, dormitory_R0, days, housing_dormitory,
                 crew_sizes = crew_sizes,
                 dormitory_intensity = dormitory_contacts,
                 housing_dormitory = housing_dormitory,
-                isolation_duration = isolation_duration,
                 home_vaccination_rate = home_vaccination_rate,
                 work_testing_rate = work_testing_rate
     )
@@ -105,7 +104,6 @@ scenario_parameters = ScenarioParameters(work_R0 = net_work_R0,
                                          days = days,
                                          housing_dormitory = TRUE, 
                                          work_testing_rate = work_testing_rate,
-                                         isolation_duration = isolation_duration, 
                                          home_vaccination_rate = vaccination_rate,
                                          lambda = community_foi,
                                          crews_by_team = crews_by_team, 
@@ -276,7 +274,7 @@ boosting_rate_list[['weekend_ps_1']] = boosting_rate_list[['ps_1']]
 boosting_rate_list[['weekend_ps_2']] = boosting_rate_list[['ps_2']]
 boosting_rate_list[['weekend_cs']] = boosting_rate_list[['cs']]
 
-vaccination_interval = 21
+vaccination_interval = get('second_shot_interval', kConstants)
 
 workday = c('ps_1', 'ps_2', 'cs')
 day_off = c('weekend_ps_1', 'weekend_ps_2', 'weekend_cs')
@@ -343,7 +341,8 @@ for (i in 1:num_sims) {
                  agent_presence_list = agent_presence_list,
                  quantitative_presence_list = quantitative_presence_list,
                  boosting_rate_list = boosting_rate_list,
-                 protection_functions = protection_functions
+                 protection_functions = protection_functions,
+                 kConstants
     )
     agents = model$agents
     output = model$Out1

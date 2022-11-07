@@ -145,7 +145,10 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                      start_time, end_time, boosting_rate,
                      infection_status_0, immune_status_0, vax_status_0,
                      isolated_0, immunity_0,
-                     net_symptomatic_protection) {
+                     net_symptomatic_protection,
+                     boosting_interval,
+                     complete_immunity_duration_R
+            ) {
 
     #some of the assignments below could be condensed, but I'm trying to be
     #systematic about things
@@ -156,7 +159,8 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     vaccination_mask = sbern(N, vaccination_rate)
     boosting_mask = sbern(N, boosting_rate)
     event_times = sunif(N, start_time, end_time)
-    stealable = (immune_status_0 == 'R') & (event_times - agents$time_R < 45)
+    stealable = (immune_status_0 == 'R') &
+        (event_times - agents$time_R < complete_immunity_duration_R)
 
     any_vaccination = rep(FALSE, N)
 
@@ -248,7 +252,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     x_to_B_on_time = (infection_status_0 == 'NI' &
                       #any immune status
                       vax_status_0 == 'V2' &
-                      end_time - agents$time_V2 > 152 &
+                      end_time - agents$time_V2 > boosting_interval &
                       #any vaccination rate
                       agents$boosting_on_time &
                       !isolated_0
@@ -278,7 +282,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         #so is still valid in R or B (from R + V1 or V2)
         x_to_B_late = ((infection_status_0 == 'NI' &
                 vax_status_0 == 'V2' & !isolated_0) &
-                (end_time - agents$time_V2 > 152 + 1) & #5 months
+                (end_time - agents$time_V2 > boosting_interval + 1) & #5 months
                 boosting_mask)
         agents = update_agents(agents = agents,
                                mask = x_to_B_late,
@@ -424,7 +428,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                 vaccination_rate_list,  agent_presence_list,
                 quantitative_presence_list, 
                 boosting_rate_list,
-                protection_functions) {
+                protection_functions,
+                kConstants) {
 
     N <-nrow(agents)
 
@@ -445,11 +450,16 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     p_trans_IA = get('p_trans_IA', virus_parameters)
     p_trans_IP = get('p_trans_IP', virus_parameters)
     p_trans_IM = get('p_trans_IM', virus_parameters)
-    isolation_duration = get('isolation_duration', scenario_parameters)
+    isolation_duration = get('isolation_duration', kConstants)
     net_symptomatic_protection = get('net_symptomatic_protection',
                                      protection_functions)
     infection_protection = get('infection_protection', protection_functions)
     symptom_protection = get('symptom_protection', protection_functions)
+
+    #constants
+    boosting_interval = get('boosting_interval', kConstants)
+    complete_immunity_duration_R = get('complete_immunity_duration_R',
+                                       kConstants)
 
     #Creating initial conditions
     end_time = 0 # End of the last shift before simulation starts
@@ -504,7 +514,9 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                        start_time, end_time, boosting_rate,
                        infection_status_0, immune_status_0, vax_status_0,
                        isolated_0, immunity_0,
-                       net_symptomatic_protection
+                       net_symptomatic_protection,
+                       boosting_interval,
+                       complete_immunity_duration_R
         )
         agents = vl[['agents']]
         doses = vl[['doses']]
