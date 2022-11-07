@@ -310,7 +310,7 @@ common_parameters = list(
     working_directory = '.',
     folder_name = 'sensitivity-2022-10-29',#'debugging-tests',   # relative to working directory
     analyze_only = 'FALSE',
-    PARALLEL = FALSE,#TRUE,
+    PARALLEL = TRUE,
     fraction_recovered = 0.69,
     fraction_fully_vaccinated = 0.71,
     ffv_last_five_months = 0.09,
@@ -374,7 +374,6 @@ for(sensitivity_variable in names(kConstants)) {
                        unique_id = paste0('facility-pass-4-', sensitivity_variable, '-', sensitivity_multiplier))))
     }
 }
-stop('Made it through.')
 double_wrap_num_sims = 1000
 kConstants = kConstants_
 do.call(full_run,

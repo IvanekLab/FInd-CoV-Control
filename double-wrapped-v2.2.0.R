@@ -145,12 +145,20 @@ library(foreach)
 
 if(PARALLEL) {
     library(doParallel)
-    registerDoParallel(4) # For my home computer
+    registerDoParallel(5) # For my home computer
 } #if not, %dopar% is equivalent to %do% (with a warning)
 
-#full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
-#                                .verbose = TRUE) %dopar% {
-for(i in 1:1) {#k_max) { # Can be substituted for the above for better crash
+limited_runs_index = c(1,2,4,9,13)
+k_max = 5
+row.names = row.names[limited_runs_index]
+colors = colors[limited_runs_index]
+ltys = ltys[limited_runs_index]
+parameter_sets = parameter_sets[limited_runs_index,]
+#NB: cost plots will be off
+
+full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
+                                .verbose = TRUE) %dopar% {
+#for(i in 1:1) {#k_max) { # Can be substituted for the above for better crash
                      # messages
     parameter_set = parameter_sets[i,]
     double_wrap_reduction = parameter_set$double_wrap_reduction
