@@ -16,9 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-unisolation_fn = function(agents, start_time) {
-    isolation_duration = 5
-
+unisolation_fn = function(agents, start_time, isolation_duration) {
     x_un_Isol = (
         agents$isolated &
         start_time - agents$time_isolated >= isolation_duration &
@@ -472,7 +470,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         end_time = start_time + step_length
 
 
-        agents = unisolation_fn(agents, start_time)
+        agents = unisolation_fn(agents, start_time, isolation_duration)
 
         ifl = isolation_fn(agents, start_time, rational_testing, testing_rate,
                            fractional_test_carried, N, IA_FNR, IP_FNR, IM_FNR, 

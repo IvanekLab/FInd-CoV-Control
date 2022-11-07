@@ -9,14 +9,6 @@ AgentGen-v2.2.0.R:33:                                            0.01, 0),
 AgentGen-v2.2.0.R:34:                      SEVERE_MULTIPLIER = 1,
 
 below are for duration_E_plus_IP (theoretically)
-AgentGen-v2.2.0.R:58:    mu = 5.2
-AgentGen-v2.2.0.R:59:    sd = .1
-
-AgentGen-v2.2.0.R:62:    duration_IP = rgamma(N, shape=1.058, scale=2.174)
-AgentGen-v2.2.0.R:120:                         duration_IA = rgamma(N, shape=5, scale=1),
-AgentGen-v2.2.0.R:123:                         duration_IM = rgamma(N, shape=16, scale=0.5),
-AgentGen-v2.2.0.R:125:                         duration_IS = rgamma(N, shape=34.0278, scale=0.4114),
-AgentGen-v2.2.0.R:127:                         duration_IC = rgamma(N, shape=34.0278, scale=0.4114),
 
 AgentGen-v2.2.0.R:234:        initial_V2_last_five_months, -152, 0
 AgentGen-v2.2.0.R:238:        -(365+61),#fully vax starts in mid-december 2020
@@ -140,12 +132,6 @@ iFoodDS-wrapper-v2.2.0.R:143:            fraction_boosted_last_five_months == 0.
 iFoodDS-wrapper-v2.2.0.R:357:    for(sensitivity_multiplier in c(0.5, 1.5)) {
 iFoodDS-wrapper-v2.2.0.R:374:    for(sensitivity_multiplier in c(0.5, 1.5)) {
 
-main-produce-farm-v2.2.0.R:50:VirusParameters = function(p_trans_IP = .0575, relative_trans_IA = .11,
-main-produce-farm-v2.2.0.R:51:                           relative_trans_IM = .44) {
-main-produce-farm-v2.2.0.R:76:    p_symptomatic = 0.671
-main-produce-farm-v2.2.0.R:77:    duration_IA = 5
-main-produce-farm-v2.2.0.R:78:    duration_IP = 1.058 * 2.174
-main-produce-farm-v2.2.0.R:79:    duration_IM = 8
 
 more week stuff
 main-produce-farm-v2.2.0.R:236:average_raw_home_contacts_per_day = (5 * (raw_home_contacts_ps_1 +
