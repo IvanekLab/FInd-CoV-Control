@@ -58,6 +58,7 @@ analyze-v2.2.0.R:555:cleaning_shifts =  work_shifts & ((1:l) %% 3 == 0)
 analyze-v2.2.0.R:646:    end_boxplot('Fraction-Short-cleaning', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts)
 analyze-v2.2.0.R:647:    end_boxplot('Fraction-Short-cleaning-violin', shiftwise_short, xlab = 'Percentage of Cleaning Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = cleaning_shifts, function_ = vioplot)
 
+#Changing these more like scenario per Renata 2022-11-07
 ContactsGen-v2.2.0.R:264:example_rates = list(c_ww = 1,      #by definition (reference value);
 ContactsGen-v2.2.0.R:269:                    t_ww = 0.1,
 ContactsGen-v2.2.0.R:270:                    o_ww = 0.1,
@@ -76,9 +77,11 @@ ContactsGen-v2.2.0.R:282:                    o_fm = 0.1,
 ContactsGen-v2.2.0.R:283:                    o_sm = 1
 custom-contacts-gen-general-v2.2.0.R:31:    diff_crew = tt * 0.1 # for different lines
 
+#SEVERE_MULTIPLIER as sensitivity analysis per Renata 2022-11-29
 iFoodDS-wrapper-v2.2.0.R:114:        SEVERE_MULTIPLIER = 2
 iFoodDS-wrapper-v2.2.0.R:116:        SEVERE_MULTIPLIER = 1.2
-iFoodDS-wrapper-v2.2.0.R:117:    } else if(variant == '2020'){
+iFoodDS-wrapper-v2.2.0.R:117:    } else if(variant =sensitivity = .052
+wrapper-v2.2.0.R:132:        specificity = 1.0= '2020'){
 iFoodDS-wrapper-v2.2.0.R:118:        SEVERE_MULTIPLIER = 1
 iFoodDS-wrapper-v2.2.0.R:126:            workers_per_crew == 10 &&
 iFoodDS-wrapper-v2.2.0.R:127:            crews_per_supervisor == 3 &&

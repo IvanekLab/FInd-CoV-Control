@@ -1,43 +1,45 @@
+source('constants.R')
+
 symptomatic_infections = function(df) {
     apply(df[,'new_symptomatic_infections',], 2, sum)
 }
 
-shiftwise_unavailable_fraction = function(data) {
-    apply(data[,'qn_absent',] / data[,'qn_scheduled',], 2, sum)
+shiftwise_unavailable = function(data) {
+    apply(data[,'qn_absent',], 2, sum)
 }
 
 d = list()
-d[['1']] = readRDS('sensitivity-2022-10-29/facility-pass-4baseline_community-0.002,work_R0-6,E0-1,initial_recovered-71,initial_V2-73,n_sims-1000index_i-1_full-output.rds')
-d[['2']] = readRDS('sensitivity-2022-10-29/facility-pass-4baseline_community-0.002,work_R0-6,E0-1,T.test-38,initial_recovered-71,initial_V2-73,n_sims-1000index_i-2_full-output.rds')
-d[['3']] = readRDS('sensitivity-2022-10-29/facility-pass-4baseline_community-0.002,work_R0-6,E0-1,v.test-0.3-rational,initial_recovered-71,initial_V2-73,n_sims-1000index_i-3_full-output.rds')
-d[['4']] = readRDS('sensitivity-2022-10-29/facility-pass-4baseline_community-0.002,work_R0-6x(1-0.4),E0-1,initial_recovered-71,initial_V2-73,n_sims-1000index_i-4_full-output.rds')
-d[['5']] = readRDS('sensitivity-2022-10-29/facility-pass-4baseline_community-0.002,work_R0-6,E0-1,vax-rate0.02,initial_recovered-71,initial_V2-73,n_sims-1000index_i-5_full-output.rds')
+d[['1']] = readRDS('sensitivity-2022-10-29/facility-pass-5baseline_community-0.002,work_R0-6,E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-1_full-output.rds')
+d[['2']] = readRDS('sensitivity-2022-10-29/facility-pass-5baseline_community-0.002,work_R0-6,E0-1,T.test-38,initial_recovered-71,initial_V2-73,n_sims-100index_i-2_full-output.rds')
+d[['3']] = readRDS('sensitivity-2022-10-29/facility-pass-5baseline_community-0.002,work_R0-6,E0-1,v.test-0.3-rational,initial_recovered-71,initial_V2-73,n_sims-100index_i-3_full-output.rds')
+d[['4']] = readRDS('sensitivity-2022-10-29/facility-pass-5baseline_community-0.002,work_R0-6x(1-0.4),E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-4_full-output.rds')
+d[['5']] = readRDS('sensitivity-2022-10-29/facility-pass-5baseline_community-0.002,work_R0-6,E0-1,vax-rate0.02,initial_recovered-71,initial_V2-73,n_sims-100index_i-5_full-output.rds')
 #adding '_' to the end of key is necessary, to avoid R's obnoxious special casing: 
 #From ?names: The name ‘""’ is special: it is used to indicate that there is no
 #name associated with an element of a (atomic or generic) vector. Subscripting
 #by ‘""’ will match nothing (not even elements which have no name). – 
 #nicola
 #Sep 23, 2016 at 18:07
-for(sensitivity_variable in c('isolation_duration', 'mu', 'sd')) {
+for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
         key = paste0(sensitivity_variable, '-', sensitivity_multiplier)
-        d[[paste0(1,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-4-', key, 'baseline_community-0.002,work_R0-6,E0-1,initial_recovered-71,initial_V2-73,n_sims-1000index_i-1_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
-        d[[paste0(2,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-4-', key, 'baseline_community-0.002,work_R0-6,E0-1,T.test-38,initial_recovered-71,initial_V2-73,n_sims-1000index_i-2_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
-        d[[paste0(3,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-4-', key, 'baseline_community-0.002,work_R0-6,E0-1,v.test-0.3-rational,initial_recovered-71,initial_V2-73,n_sims-1000index_i-3_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
-        d[[paste0(4,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-4-', key, 'baseline_community-0.002,work_R0-6x(1-0.4),E0-1,initial_recovered-71,initial_V2-73,n_sims-1000index_i-4_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
-        d[[paste0(5,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-4-', key, 'baseline_community-0.002,work_R0-6,E0-1,vax-rate0.02,initial_recovered-71,initial_V2-73,n_sims-1000index_i-5_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
+        d[[paste0(1,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-5-', key, 'baseline_community-0.002,work_R0-6,E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-1_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
+        d[[paste0(2,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-5-', key, 'baseline_community-0.002,work_R0-6,E0-1,T.test-38,initial_recovered-71,initial_V2-73,n_sims-100index_i-2_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
+        d[[paste0(3,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-5-', key, 'baseline_community-0.002,work_R0-6,E0-1,v.test-0.3-rational,initial_recovered-71,initial_V2-73,n_sims-100index_i-3_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
+        d[[paste0(4,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-5-', key, 'baseline_community-0.002,work_R0-6x(1-0.4),E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-4_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
+        d[[paste0(5,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-5-', key, 'baseline_community-0.002,work_R0-6,E0-1,vax-rate0.02,initial_recovered-71,initial_V2-73,n_sims-100index_i-5_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
     }
 }
 
 si = list()
-suf = list()
+su = list()
 for(key in names(d)) {
     si[[key]] = symptomatic_infections(d[[key]])
-    suf[[key]] = symptomatic_infections(d[[key]])
+    su[[key]] = shiftwise_unavailable(d[[key]])
 }
 
 si_mean_max = max(sapply(si, mean)) 
-suf_mean_max = max(sapply(suf, mean))
+su_mean_max = max(sapply(su, mean))
 
 limited_runs_index = c(1,2,4,9,13)
 c4 = c('black', 'blue3', 'lightblue1', 'red2', 'gray80', 'darkgreen', 'yellow2')
@@ -72,9 +74,9 @@ row.names<-c(     "Baseline",
                   'Vax + Boosting, p = 0.02/day'
 )[limited_runs_index]
 
-png('sample-sensitivity-plots.png', height = 900, width = 1600)
-layout(matrix(1:6, ncol = 3))
-for(sensitivity_variable in c('isolation_duration', 'mu', 'sd')) {
+png('better-sensitivity-plots-si.png', height = 200*5, width = 200*7)
+layout(matrix(c(1:31, 0, 0, 0, 0, 31, 0, 0, 0, 0), ncol = 8))
+for(sensitivity_variable in names(kConstants)) {
     for(i in 1:5) {
         keys = c(
             paste0(i,sensitivity_variable, '-', '0.5'),
@@ -99,6 +101,15 @@ for(sensitivity_variable in c('isolation_duration', 'mu', 'sd')) {
             )
         }
     }
+}
+plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
+legend("bottom", row.names, lwd = 4, col = colors)
+dev.off()
+#print('here at least?')
+png('better-sensitivity-plots-su.png', height = 200*5, width = 200*7)
+layout(matrix(c(1:31, 0, 0, 0, 0, 31, 0, 0, 0, 0), ncol = 8))
+for(sensitivity_variable in names(kConstants)) {
+    print(sensitivity_variable)
     for(i in 1:5) {
         keys = c(
             paste0(i,sensitivity_variable, '-', '0.5'),
@@ -108,8 +119,8 @@ for(sensitivity_variable in c('isolation_duration', 'mu', 'sd')) {
         if(i == 1) {
             plot(
                 (1:3)/2,
-                sapply(keys, function(s) mean(suf[[s]])),
-                ylim = c(0, suf_mean_max),
+                sapply(keys, function(s) mean(su[[s]])),
+                ylim = c(0, su_mean_max),
                 xlab = paste0(sensitivity_variable, ' (multiplier)'),
                 ylab = 'Mean total shifts unavailable',
                 type = 'b',
@@ -118,7 +129,7 @@ for(sensitivity_variable in c('isolation_duration', 'mu', 'sd')) {
         } else {
             points(
                 (1:3)/2,
-                sapply(keys, function(s) mean(suf[[s]])),
+                sapply(keys, function(s) mean(su[[s]])),
                 type = 'b',
                 col = colors[i],
                 lwd = 2
@@ -126,5 +137,6 @@ for(sensitivity_variable in c('isolation_duration', 'mu', 'sd')) {
         }
     }
 }
-legend("bottomright", row.names, lwd = 4, col = colors)
+plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
+legend("bottom", row.names, lwd = 4, col = colors)
 dev.off()
