@@ -367,7 +367,10 @@ do.call(full_run,
 #stop('Test here.')
 for (sensitivity_variable in c('SEVERE_MULTIPLIER',
                                'R_question_period',
-                               'time_since_first_V2')) {
+                               'time_since_first_V2',
+                               'p_trans_IP',
+                               'p_trans_IA',
+                               'p_trans_IM')) {
 #for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
         kConstants = kConstants_
@@ -377,7 +380,7 @@ for (sensitivity_variable in c('SEVERE_MULTIPLIER',
                   additional_facility_parameters,
                   list(sensitivity_variable=sensitivity_variable,
                        sensitivity_multiplier=sensitivity_multiplier,
-                       unique_id = paste0('facility-pass-5-', sensitivity_variable, '-', sensitivity_multiplier))))
+                       unique_id = paste0('facility-pass-6-', sensitivity_variable, '-', sensitivity_multiplier))))
     }
 }
 double_wrap_num_sims = 1000
@@ -390,7 +393,10 @@ do.call(full_run,
                unique_id = 'facility-pass-6')))
 for (sensitivity_variable in c('SEVERE_MULTIPLIER',
                                'R_question_period',
-                               'time_since_first_V2')) {
+                               'time_since_first_V2',
+                               'p_trans_IP',
+                               'p_trans_IA',
+                               'p_trans_IM')) {
 for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
         kConstants = kConstants_
@@ -399,7 +405,7 @@ for(sensitivity_variable in names(kConstants)) {
                   additional_facility_parameters,
                   list(sensitivity_variable=sensitivity_variable,
                        sensitivity_multiplier=sensitivity_multiplier,
-                       unique_id = paste0('facility-pass-5-', sensitivity_variable, '-', sensitivity_multiplier))))
+                       unique_id = paste0('facility-pass-6-', sensitivity_variable, '-', sensitivity_multiplier))))
     }
 }
 kConstants = kConstants_

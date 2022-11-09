@@ -12,9 +12,10 @@ kConstants = list( #using Google-style notation for now
     duration_IS_shape = 34.0278,
     duration_IC_mean = 0.4114 * 34.0278,
     duration_IC_shape = 34.0278,
-    p_trans_IP = .0575, #should not actually affect anything
-    relative_trans_IA = .11,
-    relative_trans_IM = .44,
+    #trying altering p_trans_Ix variables separately
+    p_trans_IP = .0575,
+    p_trans_IA = .0575 * .11,
+    p_trans_IM = .0575 * .44,
     boosting_interval = 152,
     complete_immunity_duration_R = 45,
     second_shot_interval = 21, #days
@@ -34,4 +35,24 @@ kConstants = list( #using Google-style notation for now
     time_since_first_V2 = 365 + 61
 )
 
-variables_to_exclude = list('boosting_interval') #to avoid clash with when we assume vaccination starts (which needs to be updated)
+#variables_to_exclude = list('boosting_interval') #to avoid clash with when we assume vaccination starts (which needs to be updated)
+
+#Note: Does the obvious checks, but may miss some subtler issues (hopefully not)
+#Also doesn't check for existence of all constants, only those which are used
+#in consistency checking (relevant if constructing a set of constants "from
+#scratch"
+check_consistency = function(constants, altered_single_parameter == NULL, altered_parameters = NULL) {
+    #p_trans_IP = get('p_trans_IP', constants)
+    #p_trans_IA = get('p_trans_IA', constants)
+    #p_trans_IM = get('p_trans_IM', constants)
+    #if(p_trans_IP + p_trans_IA + p_trans_IM == 0) { #Inversely proportional to contact rates
+    #    if(is.null(
+    #    return list(consistent = FALSE,
+    #                parameters_to_change = list(p_trans_IP = .0575))
+    #}
+    #Thought: What about setting transmission rates individually?
+    #TBD: This (and the analogous bit in AgentGen-v2.2.0.R) should probably
+    #just be 2 * boosting_interval
+    if(2 * boosting_interval + 1 < time_since_first_V2)
+}
+
