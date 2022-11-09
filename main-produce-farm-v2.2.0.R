@@ -324,7 +324,6 @@ for (i in 1:num_sims) {
                        initial_recovered = initial_recovered,
                        initial_V1 = initial_V1, initial_V2 = initial_V2,
                        ffv_last_five_months = ffv_last_five_months,
-                       SEVERE_MULTIPLIER = SEVERE_MULTIPLIER,
                        fraction_boosted_ever = fraction_boosted_ever,
                        fraction_boosted_last_five_months =
                            fraction_boosted_last_five_months,

@@ -1,14 +1,8 @@
 AgentGen-v2.2.0.R:26:AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
 AgentGen-v2.2.0.R:32:                      age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
 AgentGen-v2.2.0.R:33:                                            0.01, 0),
-AgentGen-v2.2.0.R:34:                      SEVERE_MULTIPLIER = 1,
 
 below are for duration_E_plus_IP (theoretically)
-
-AgentGen-v2.2.0.R:238:        -(365+61),#fully vax starts in mid-december 2020
-AgentGen-v2.2.0.R:245:    agents$time_V2[index_B_older] = runif(n_boosted_older, -(365+61), -(2*152+1))
-
-AgentGen-v2.2.0.R:270:    agents$time_R[index_R]= -runif(initial_recovered, 0, 365)
 
 Probably not practical to change # of work days (given that it can't be 2.5, nor can it be 7.5 if we assume that this is truly weekly
 But bear it in mind
@@ -77,12 +71,8 @@ ContactsGen-v2.2.0.R:282:                    o_fm = 0.1,
 ContactsGen-v2.2.0.R:283:                    o_sm = 1
 custom-contacts-gen-general-v2.2.0.R:31:    diff_crew = tt * 0.1 # for different lines
 
-#SEVERE_MULTIPLIER as sensitivity analysis per Renata 2022-11-29
-iFoodDS-wrapper-v2.2.0.R:114:        SEVERE_MULTIPLIER = 2
-iFoodDS-wrapper-v2.2.0.R:116:        SEVERE_MULTIPLIER = 1.2
-iFoodDS-wrapper-v2.2.0.R:117:    } else if(variant =sensitivity = .052
+sensitivity = .052
 wrapper-v2.2.0.R:132:        specificity = 1.0= '2020'){
-iFoodDS-wrapper-v2.2.0.R:118:        SEVERE_MULTIPLIER = 1
 iFoodDS-wrapper-v2.2.0.R:126:            workers_per_crew == 10 &&
 iFoodDS-wrapper-v2.2.0.R:127:            crews_per_supervisor == 3 &&
 iFoodDS-wrapper-v2.2.0.R:128:            supervisors == 3 &&

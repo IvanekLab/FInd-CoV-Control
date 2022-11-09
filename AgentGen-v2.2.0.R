@@ -31,7 +31,6 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                                             #general?
                       age_probabilities = c(0.04, 0.26, 0.26, 0.21, 0.15, 0.07,
                                             0.01, 0),
-                      SEVERE_MULTIPLIER = 1,
                       fraction_boosted_ever = 0,
                       fraction_boosted_last_five_months = 0,
                       protection_functions,
@@ -51,6 +50,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                                      protection_functions)
     boosting_interval = get('boosting_interval', kConstants)
     second_shot_interval = get('second_shot_interval', kConstants)
+    SEVERE_MULTIPLIER = get('SEVERE_MULTIPLIER', kConstants)
+    R_question_period = get('R_question_period', kConstants)
+    time_since_first_V2 = get('time_since_first_V2', kConstants)
 
     Age_Categories = c("10-19", "20-29", "30-39", "40-49", "50-59", "60-69",
                        "70-79", "80+")
@@ -267,14 +269,14 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     )
     agents$time_V2[index_V2_older] = runif(
         initial_V2 - initial_V2_last_five_months,
-        -(365+61),#fully vax starts in mid-december 2020
+        -(time_since_first_V2),#fully vax starts in mid-december 2020
         -boosting_interval 
     )
 
     #Adjusting timing of vaccinations to match boosting timing.
     #Ideally, this would be handled in a more sophisticated fashion, but
     #this will do for now.
-    agents$time_V2[index_B_older] = runif(n_boosted_older, -(365+61), -(2*boosting_interval+1)) #TBD: Extend start date 2022-11-07
+    agents$time_V2[index_B_older] = runif(n_boosted_older, -(time_since_first_V2), -(2*boosting_interval+1)) #TBD: Extend start date 2022-11-07
     agents$time_V2[index_B_last_five_months] = runif(n_boosted_last_five_months,
                                                      -2*boosting_interval, -boosting_interval)
 
@@ -299,7 +301,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     )
 
     #particularly suboptimal at the moment, given the recent massive peak
-    agents$time_R[index_R]= -runif(initial_recovered, 0, 365)
+    agents$time_R[index_R]= -runif(initial_recovered, 0, R_question_period)
     only_R = index_R & !index_V2
     agents$immune_status[only_R] = 'R'
     agents$time_last_immunity_event[only_R] = agents$time_R[only_R]

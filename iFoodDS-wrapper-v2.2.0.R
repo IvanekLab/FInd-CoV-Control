@@ -107,19 +107,20 @@ full_run = function(
     analyze_only = safe.logical(analyze_only)
     PARALLEL = safe.logical(PARALLEL)
 
-    variant = tolower(variant)
-    if(variant == 'delta') {
+    #variant = tolower(variant)
+    #if(variant == 'delta') {
         #DELTA = safe.logical(DELTA)
         #SEVERE_MULTIPLIER = safe.numeric(SEVERE_MULTIPLIER)
         #DELTA = TRUE
-        SEVERE_MULTIPLIER = 2
-    } else if(variant == 'omicron') {
-        SEVERE_MULTIPLIER = 1.2
-    } else if(variant == '2020'){
-        SEVERE_MULTIPLIER = 1
-    } else {
-        stop(paste('Unsupported variant:', variant))
-    }
+    #    SEVERE_MULTIPLIER = 2
+    #} else if(variant == 'omicron') {
+    #    SEVERE_MULTIPLIER = 1.2
+    #} else if(variant == '2020'){
+    #    SEVERE_MULTIPLIER = 1
+    #} else {
+    #    stop(paste('Unsupported variant:', variant))
+    #}
+    SEVERE_MULTIPLIER = get('SEVERE_MULTIPLIER', kConstants)
     
     farm_or_facility == tolower(farm_or_facility)
     if(farm_or_facility == 'farm') {
@@ -362,8 +363,12 @@ do.call(full_run,
           additional_facility_parameters,
           list(sensitivity_variable=NULL,
                sensitivity_multiplier=1,
-               unique_id = 'facility-pass-5')))
-for(sensitivity_variable in names(kConstants)) {
+               unique_id = 'facility-pass-6')))
+#stop('Test here.')
+for (sensitivity_variable in c('SEVERE_MULTIPLIER',
+                               'R_question_period',
+                               'time_since_first_V2')) {
+#for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
         kConstants = kConstants_
         writeLines(paste0('\n', sensitivity_variable, ' x ', sensitivity_multiplier))
@@ -382,7 +387,10 @@ do.call(full_run,
           additional_facility_parameters,
           list(sensitivity_variable=NULL,
                sensitivity_multiplier=1,
-               unique_id = 'facility-pass-5')))
+               unique_id = 'facility-pass-6')))
+for (sensitivity_variable in c('SEVERE_MULTIPLIER',
+                               'R_question_period',
+                               'time_since_first_V2')) {
 for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
         kConstants = kConstants_

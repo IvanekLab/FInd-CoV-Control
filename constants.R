@@ -28,7 +28,10 @@ kConstants = list( #using Google-style notation for now
     B_magnitude_1 = 0.471669758,
     B_magnitude_2 = 0.326600870,
     B_decay_rate_1 = 0.083161719 / 7,
-    B_decay_rate_2 = 0.008970573 / 7
+    B_decay_rate_2 = 0.008970573 / 7,
+    SEVERE_MULTIPLIER = 1.2,
+    R_question_period = 365, #days
+    time_since_first_V2 = 365 + 61
 )
 
 variables_to_exclude = list('boosting_interval') #to avoid clash with when we assume vaccination starts (which needs to be updated)
