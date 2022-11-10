@@ -273,13 +273,13 @@ full_run = function(
     #    step_index = (1:steps) * (1/3)
     } else {
         source('double-wrapped-v2.2.0.R', local = TRUE)
-        if(!is.null(sensitivity_variable)) {
-            if(sensitivity_variable %in% names(kConstants)) {
-                kConstants[[sensitivity_variable]] = sensitivity_multiplier * kConstants[[sensitivity_variable]]
-            } else {
-                stop('Not a valid sensitivity_variable: ', sensitivity_variable)
-            }
-        }
+        #if(!is.null(sensitivity_variable)) {
+        #    if(sensitivity_variable %in% names(kConstants)) {
+        #        kConstants[[sensitivity_variable]] = sensitivity_multiplier * kConstants[[sensitivity_variable]]
+        #    } else {
+        #        stop('Not a valid sensitivity_variable: ', sensitivity_variable)
+        #    }
+        #}
         protection_functions = make_protection_functions_general(kConstants)
         double_wrapped_fn(kConstants, protection_functions)
     }
@@ -356,50 +356,80 @@ additional_farm_parameters = list(
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
 #common_parameters[['analyze_only']] = TRUE
 #do.call(full_run, c(common_parameters, additional_facility_parameters))
-kConstants_ = kConstants
+#kConstants_ = kConstants
 writeLines('\nNULL')
+ccl = check_consistency(kConstants)
+if(!get('consistent', ccl)) {
+    stop('ERROR! BASE PARAMETERS INCONSISTENT!')
+}
 do.call(full_run,
         c(common_parameters,
           additional_facility_parameters,
-          list(sensitivity_variable=NULL,
-               sensitivity_multiplier=1,
+          list(#sensitivity_variable=NULL,
+               #sensitivity_multiplier=1,
                unique_id = 'facility-pass-6')))
-#stop('Test here.')
-for (sensitivity_variable in c('SEVERE_MULTIPLIER',
-                               'R_question_period',
-                               'time_since_first_V2',
-                               'p_trans_IP',
-                               'p_trans_IA',
-                               'p_trans_IM')) {
-#for(sensitivity_variable in names(kConstants)) {
+stop('Test here.')
+#for (sensitivity_variable in c('SEVERE_MULTIPLIER',
+#                               'R_question_period',
+#                               'time_since_first_V2',
+#                               'p_trans_IP',
+#                               'p_trans_IA',
+#                               'p_trans_IM')) {
+for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
-        kConstants = kConstants_
+        kConstants_ = kConstants
+        #if(!is.null(sensitivity_variable)) {
+        if(sensitivity_variable %in% names(kConstants_)) {
+            kConstants_[[sensitivity_variable]] = sensitivity_multiplier * kConstants_[[sensitivity_variable]]
+        } else {
+            stop('Not a valid sensitivity_variable: ', sensitivity_variable)
+        }
+        ccl = check_consistency(kConstants_)
+        kConstants_fixed = get(fixed_parameters, ccl)
+        if(!get('consistent', ccl) && !get('fixed', ccl)) {
+            stop('Unfixable constants')
+        }
+        sensitivity_multiplier = get(sensitivity_variable, ccl)
+        #}
         writeLines(paste0('\n', sensitivity_variable, ' x ', sensitivity_multiplier))
         do.call(full_run,
                 c(common_parameters,
                   additional_facility_parameters,
-                  list(sensitivity_variable=sensitivity_variable,
-                       sensitivity_multiplier=sensitivity_multiplier,
+                  list(#sensitivity_variable=sensitivity_variable,
+                       #sensitivity_multiplier=sensitivity_multiplier,
                        unique_id = paste0('facility-pass-6-', sensitivity_variable, '-', sensitivity_multiplier))))
     }
 }
+stop('Done with x100s.')
 double_wrap_num_sims = 1000
-kConstants = kConstants_
+kConstants_ = kConstants
 do.call(full_run,
         c(common_parameters,
           additional_facility_parameters,
-          list(sensitivity_variable=NULL,
-               sensitivity_multiplier=1,
+          list(#sensitivity_variable=NULL,
+               #sensitivity_multiplier=1,
                unique_id = 'facility-pass-6')))
-for (sensitivity_variable in c('SEVERE_MULTIPLIER',
-                               'R_question_period',
-                               'time_since_first_V2',
-                               'p_trans_IP',
-                               'p_trans_IA',
-                               'p_trans_IM')) {
+#for (sensitivity_variable in c('SEVERE_MULTIPLIER',
+#                               'R_question_period',
+#                               'time_since_first_V2',
+#                               'p_trans_IP',
+#                               'p_trans_IA',
+#                               'p_trans_IM')) {
 for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
-        kConstants = kConstants_
+        kConstants_ = kConstants
+        if(sensitivity_variable %in% names(kConstants_)) {
+            kConstants_[[sensitivity_variable]] = sensitivity_multiplier * kConstants_[[sensitivity_variable]]
+        } else {
+            stop('Not a valid sensitivity_variable: ', sensitivity_variable)
+        }
+        ccl = check_consistency(kConstants_)
+        kConstants_fixed = get(fixed_parameters, ccl)
+        if(!get('consistent', ccl) && !get('fixed', ccl)) {
+            stop('Unfixable constants')
+        }
+        sensitivity_multiplier = get(sensitivity_variable, ccl)
+
         do.call(full_run,
                 c(common_parameters,
                   additional_facility_parameters,

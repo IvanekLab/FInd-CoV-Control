@@ -47,12 +47,12 @@ source("ABM-v2.2.0.R")
 #Default values from Moghadas et al. 2020 (gives range of .0575 to .0698 for
 #p_trans_IP)
 p_trans_IP = get('p_trans_IP', kConstants)
-relative_trans_IA = get('relative_trans_IA', kConstants)
-relative_trans_IM = get('relative_trans_IM', kConstants)
+p_trans_IA = get('p_trans_IA', kConstants)
+p_trans_IM = get('p_trans_IM', kConstants)
 
 virus_parameters = list(p_trans_IP = p_trans_IP,
-                        p_trans_IA = relative_trans_IA * p_trans_IP,
-                        p_trans_IM = relative_trans_IM * p_trans_IP
+                        p_trans_IA = p_trans_IA,
+                        p_trans_IM = p_trans_IM
                         )
 
 #some of these are redundant steps that should be eliminated

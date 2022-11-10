@@ -41,7 +41,7 @@ kConstants = list( #using Google-style notation for now
 #Also doesn't check for existence of all constants, only those which are used
 #in consistency checking (relevant if constructing a set of constants "from
 #scratch"
-check_consistency = function(constants, altered_single_parameter == NULL, altered_parameters = NULL) {
+check_consistency = function(constants, altered_single_parameter = NULL, altered_parameters = NULL) {
     #p_trans_IP = get('p_trans_IP', constants)
     #p_trans_IA = get('p_trans_IA', constants)
     #p_trans_IM = get('p_trans_IM', constants)
@@ -53,6 +53,34 @@ check_consistency = function(constants, altered_single_parameter == NULL, altere
     #Thought: What about setting transmission rates individually?
     #TBD: This (and the analogous bit in AgentGen-v2.2.0.R) should probably
     #just be 2 * boosting_interval
-    if(2 * boosting_interval + 1 < time_since_first_V2)
+    boosting_interval = get('boosting_interval', constants)
+    time_since_first_V2 = get('time_since_first_V2', constants)
+    if(2 * boosting_interval + 1 > time_since_first_V2) {
+        if(!is.null(altered_single_parameter)) { #will eventually want to add
+                                                 #altered_parameters logic  as well
+            if(altered_single_parameter == 'boosting_interval') {
+                constants[['boosting_interval']] = (time_since_first_V2 - 1) / 2
+                return(list(consistent = FALSE,
+                            fixed = TRUE,
+                            fixed_constants = constants))
+            } else if(altered_single_parameter == 'time_since_first_V2') {
+                constants[['time_since_first_V2']] = 2 * boosting_interval + 1
+                return(list(consistent = FALSE, #ultimately, we ought to allow clear identification of what is wrong
+                            fixed = FALSE,
+                            fixed_constants = NULL))
+            } else {
+                return(list(consistent = FALSE, #ultimately, we ought to allow clear identification of what is wrong
+                            fixed = FALSE,
+                            fixed_constants = NULL))
+            }
+        } else {
+            return(list(consistent = FALSE,
+                        fixed = FALSE,
+                        fixed_constants = NULL))
+        }
+    }
+    return(list(consistent = TRUE,
+                fixed = TRUE,
+                fixed_constants = constants))
 }
 
