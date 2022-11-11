@@ -378,7 +378,7 @@ do.call(full_run,
 #                               'p_trans_IA',
 #                               'p_trans_IM')) {
 #cat('ASS\nASS\nASS\nASS!\n')
-for(sensitivity_variable in names(kConstants)) {
+for(sensitivity_variable in names(kConstants)[18:length(names(kConstants))]) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
         kConstants_ = kConstants
         #if(!is.null(sensitivity_variable)) {
@@ -387,12 +387,12 @@ for(sensitivity_variable in names(kConstants)) {
         } else {
             stop('Not a valid sensitivity_variable: ', sensitivity_variable)
         }
-        ccl = check_consistency(kConstants_)
+        ccl = check_consistency(kConstants_, altered_single_parameter = sensitivity_variable)
         kConstants_fixed = get('fixed_constants', ccl)
         if(!get('consistent', ccl) && !get('fixed', ccl)) {
             stop('Unfixable constants')
         }
-        sensitivity_multiplier = get(sensitivity_variable, kConstants_fixed)
+        sensitivity_multiplier = get(sensitivity_variable, kConstants_fixed) / get(sensitivity_variable, kConstants)
         #}
         writeLines(paste0('\n###\n###\n###', sensitivity_variable, ' x ', sensitivity_multiplier, '\n###\n###\n###'))
         do.call(full_run,
@@ -413,12 +413,6 @@ do.call(full_run,
           list(#sensitivity_variable=NULL,
                #sensitivity_multiplier=1,
                unique_id = 'facility-pass-6')))
-#for (sensitivity_variable in c('SEVERE_MULTIPLIER',
-#                               'R_question_period',
-#                               'time_since_first_V2',
-#                               'p_trans_IP',
-#                               'p_trans_IA',
-#                               'p_trans_IM')) {
 for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
         kConstants_ = kConstants

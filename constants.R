@@ -42,14 +42,20 @@ kConstants = list( #using Google-style notation for now
 #in consistency checking (relevant if constructing a set of constants "from
 #scratch"
 check_consistency = function(constants, altered_single_parameter = NULL, altered_parameters = NULL) {
-    #p_trans_IP = get('p_trans_IP', constants)
-    #p_trans_IA = get('p_trans_IA', constants)
-    #p_trans_IM = get('p_trans_IM', constants)
-    #if(p_trans_IP + p_trans_IA + p_trans_IM == 0) { #Inversely proportional to contact rates
+    p_trans_IP = get('p_trans_IP', constants)
+    p_trans_IA = get('p_trans_IA', constants)
+    p_trans_IM = get('p_trans_IM', constants)
+    if(p_trans_IP + p_trans_IA + p_trans_IM == 0) { #Inversely proportional to contact rates
+        return(list(consistent = FALSE, #There isn't really a good solution here
+                                        #In general, we are trying to return the
+                                        #"least changed" valid set, but that's
+                                        #ill-defined
+                    fixed = FALSE,
+                    fixed_constants = NULL))
     #    if(is.null(
     #    return list(consistent = FALSE,
     #                parameters_to_change = list(p_trans_IP = .0575))
-    #}
+    }
     #Thought: What about setting transmission rates individually?
     #TBD: This (and the analogous bit in AgentGen-v2.2.0.R) should probably
     #just be 2 * boosting_interval
@@ -66,8 +72,8 @@ check_consistency = function(constants, altered_single_parameter = NULL, altered
             } else if(altered_single_parameter == 'time_since_first_V2') {
                 constants[['time_since_first_V2']] = 2 * boosting_interval + 1
                 return(list(consistent = FALSE, #ultimately, we ought to allow clear identification of what is wrong
-                            fixed = FALSE,
-                            fixed_constants = NULL))
+                            fixed = TRUE,
+                            fixed_constants = constants))
             } else {
                 return(list(consistent = FALSE, #ultimately, we ought to allow clear identification of what is wrong
                             fixed = FALSE,
