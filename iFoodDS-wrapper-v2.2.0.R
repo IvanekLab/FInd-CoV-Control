@@ -84,8 +84,9 @@ full_run = function(
                     output_per_week, #= 1680000, # / (5 * (1 + (supervisors > 1))) #N * 60.1 * 4 #wrong, but it's okay
                     hourly_wage, # = 13.89
                     size,# = 1000
-                    sensitivity_variable,
-                    sensitivity_multiplier
+                    #sensitivity_variable,
+                    #sensitivity_multiplier
+                    kConstants
 ) {
     setwd(working_directory)
 
@@ -367,14 +368,16 @@ do.call(full_run,
           additional_facility_parameters,
           list(#sensitivity_variable=NULL,
                #sensitivity_multiplier=1,
-               unique_id = 'facility-pass-6')))
-stop('Test here.')
+               unique_id = 'facility-pass-6',
+               kConstants = kConstants)))
+#stop('Test here.')
 #for (sensitivity_variable in c('SEVERE_MULTIPLIER',
 #                               'R_question_period',
 #                               'time_since_first_V2',
 #                               'p_trans_IP',
 #                               'p_trans_IA',
 #                               'p_trans_IM')) {
+#cat('ASS\nASS\nASS\nASS!\n')
 for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
         kConstants_ = kConstants
@@ -385,19 +388,20 @@ for(sensitivity_variable in names(kConstants)) {
             stop('Not a valid sensitivity_variable: ', sensitivity_variable)
         }
         ccl = check_consistency(kConstants_)
-        kConstants_fixed = get(fixed_parameters, ccl)
+        kConstants_fixed = get('fixed_constants', ccl)
         if(!get('consistent', ccl) && !get('fixed', ccl)) {
             stop('Unfixable constants')
         }
-        sensitivity_multiplier = get(sensitivity_variable, ccl)
+        sensitivity_multiplier = get(sensitivity_variable, kConstants_fixed)
         #}
-        writeLines(paste0('\n', sensitivity_variable, ' x ', sensitivity_multiplier))
+        writeLines(paste0('\n###\n###\n###', sensitivity_variable, ' x ', sensitivity_multiplier, '\n###\n###\n###'))
         do.call(full_run,
                 c(common_parameters,
                   additional_facility_parameters,
                   list(#sensitivity_variable=sensitivity_variable,
                        #sensitivity_multiplier=sensitivity_multiplier,
-                       unique_id = paste0('facility-pass-6-', sensitivity_variable, '-', sensitivity_multiplier))))
+                       unique_id = paste0('facility-pass-6-', sensitivity_variable, '-', sensitivity_multiplier),
+                       kConstants = kConstants_fixed)))
     }
 }
 stop('Done with x100s.')
@@ -424,7 +428,7 @@ for(sensitivity_variable in names(kConstants)) {
             stop('Not a valid sensitivity_variable: ', sensitivity_variable)
         }
         ccl = check_consistency(kConstants_)
-        kConstants_fixed = get(fixed_parameters, ccl)
+        kConstants_fixed = get(fixed_constants, ccl)
         if(!get('consistent', ccl) && !get('fixed', ccl)) {
             stop('Unfixable constants')
         }

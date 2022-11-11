@@ -22,7 +22,7 @@
 #each person/agent has properties = parameters, attributes behaviours
 #model each person individually
 main_produce_farm_fn = function(kConstants) { #goal: get more meaningful debug data
-library(Rlab)
+#library(Rlab) #TBD renable this somewhere sensible
  
 source("AgentGen-v2.2.0.R")
 source("ContactsGen-v2.2.0.R")
