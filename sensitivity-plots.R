@@ -9,11 +9,11 @@ shiftwise_unavailable = function(data) {
 }
 
 d = list()
-d[['1']] = readRDS('sensitivity-2022-10-29/facility-pass-6baseline_community-0.002,work_R0-6,E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-1_full-output.rds')
-d[['2']] = readRDS('sensitivity-2022-10-29/facility-pass-6baseline_community-0.002,work_R0-6,E0-1,T.test-38,initial_recovered-71,initial_V2-73,n_sims-100index_i-2_full-output.rds')
-d[['3']] = readRDS('sensitivity-2022-10-29/facility-pass-6baseline_community-0.002,work_R0-6,E0-1,v.test-0.3-rational,initial_recovered-71,initial_V2-73,n_sims-100index_i-3_full-output.rds')
-d[['4']] = readRDS('sensitivity-2022-10-29/facility-pass-6baseline_community-0.002,work_R0-6x(1-0.4),E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-4_full-output.rds')
-d[['5']] = readRDS('sensitivity-2022-10-29/facility-pass-6baseline_community-0.002,work_R0-6,E0-1,vax-rate0.02,initial_recovered-71,initial_V2-73,n_sims-100index_i-5_full-output.rds')
+d[['1']] = readRDS('sensitivity-2022-10-29/farm-pass-6baseline_community-0,work_R0-6,dormitory_R0-2,E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-1_full-output.rds')
+d[['2']] = readRDS('sensitivity-2022-10-29/farm-pass-6baseline_community-0,work_R0-6,dormitory_R0-2,E0-1,T.test-38,initial_recovered-71,initial_V2-73,n_sims-100index_i-2_full-output.rds')
+d[['3']] = readRDS('sensitivity-2022-10-29/farm-pass-6baseline_community-0,work_R0-6,dormitory_R0-2,E0-1,v.test-0.3-rational,initial_recovered-71,initial_V2-73,n_sims-100index_i-3_full-output.rds')
+d[['4']] = readRDS('sensitivity-2022-10-29/farm-pass-6baseline_community-0,work_R0-6x(1-0.4),dormitory_R0-2,E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-4_full-output.rds')
+d[['5']] = readRDS('sensitivity-2022-10-29/farm-pass-6baseline_community-0,work_R0-6,dormitory_R0-2,E0-1,vax-rate0.02,initial_recovered-71,initial_V2-73,n_sims-100index_i-5_full-output.rds')
 #adding '_' to the end of key is necessary, to avoid R's obnoxious special casing: 
 #From ?names: The name ‘""’ is special: it is used to indicate that there is no
 #name associated with an element of a (atomic or generic) vector. Subscripting
@@ -31,11 +31,11 @@ for(sensitivity_variable in names(kConstants)) {
         }
         sensitivity_multiplier = get(sensitivity_variable, kConstants_fixed) / get(sensitivity_variable, kConstants)
         key = paste0(sensitivity_variable, '-', sensitivity_multiplier)
-        d[[paste0(1,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-6-', key, 'baseline_community-0.002,work_R0-6,E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-1_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
-        d[[paste0(2,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-6-', key, 'baseline_community-0.002,work_R0-6,E0-1,T.test-38,initial_recovered-71,initial_V2-73,n_sims-100index_i-2_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
-        d[[paste0(3,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-6-', key, 'baseline_community-0.002,work_R0-6,E0-1,v.test-0.3-rational,initial_recovered-71,initial_V2-73,n_sims-100index_i-3_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
-        d[[paste0(4,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-6-', key, 'baseline_community-0.002,work_R0-6x(1-0.4),E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-4_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
-        d[[paste0(5,key)]] = readRDS(paste0('sensitivity-2022-10-29/facility-pass-6-', key, 'baseline_community-0.002,work_R0-6,E0-1,vax-rate0.02,initial_recovered-71,initial_V2-73,n_sims-100index_i-5_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
+        d[[paste0(1,key)]] = readRDS(paste0('sensitivity-2022-10-29/farm-pass-6-', key, 'baseline_community-0,work_R0-6,dormitory_R0-2,E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-1_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
+        d[[paste0(2,key)]] = readRDS(paste0('sensitivity-2022-10-29/farm-pass-6-', key, 'baseline_community-0,work_R0-6,dormitory_R0-2,E0-1,T.test-38,initial_recovered-71,initial_V2-73,n_sims-100index_i-2_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
+        d[[paste0(3,key)]] = readRDS(paste0('sensitivity-2022-10-29/farm-pass-6-', key, 'baseline_community-0,work_R0-6,dormitory_R0-2,E0-1,v.test-0.3-rational,initial_recovered-71,initial_V2-73,n_sims-100index_i-3_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
+        d[[paste0(4,key)]] = readRDS(paste0('sensitivity-2022-10-29/farm-pass-6-', key, 'baseline_community-0,work_R0-6x(1-0.4),dormitory_R0-2,E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-4_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
+        d[[paste0(5,key)]] = readRDS(paste0('sensitivity-2022-10-29/farm-pass-6-', key, 'baseline_community-0,work_R0-6,dormitory_R0-2,E0-1,vax-rate0.02,initial_recovered-71,initial_V2-73,n_sims-100index_i-5_full-output.rds')) #"baseline" is included because sensitivitiy variable & multiplier are not yet in the test for whether that name should be included
     }
 }
 
@@ -84,7 +84,7 @@ row.names<-c(     "Baseline",
                   'Vax + Boosting, p = 0.02/day'
 )[limited_runs_index]
 
-png('betterer-sensitivity-plots-si.png', height = 200*5, width = 200*7)
+png('farm-betterer-sensitivity-plots-si.png', height = 200*5, width = 200*7)
 layout(matrix(c(1:29, 34, 30:34), ncol = 7))
 for(sensitivity_variable in names(kConstants)) {
     kConstants_ = kConstants
@@ -139,7 +139,7 @@ plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
 legend("bottom", row.names, lwd = 4, col = colors)
 dev.off()
 #print('here at least?')
-png('betterer-sensitivity-plots-su.png', height = 200*5, width = 200*7)
+png('farm-betterer-sensitivity-plots-su.png', height = 200*5, width = 200*7)
 layout(matrix(c(1:29, 34, 30:34), ncol = 7))
 for(sensitivity_variable in names(kConstants)) {
     print(sensitivity_variable)

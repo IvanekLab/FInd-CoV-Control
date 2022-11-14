@@ -348,7 +348,7 @@ additional_farm_parameters = list(
     employee_housing = 'Shared', 
     social_distancing_shared_housing = 'Intermediate',
     community_transmission = NULL,
-    unique_id = 'farm-default-v24', #actually lower, but going for consistency
+    #unique_id = 'farm-default-v24', #actually lower, but going for consistency
     output_per_week = 1680000, #/ (5 * (1 + (supervisors > 1))) #N * 60.1 * 4 #wrong, but it's okay
     hourly_wage = 13.89,
     size = NA
@@ -365,10 +365,10 @@ if(!get('consistent', ccl)) {
 }
 do.call(full_run,
         c(common_parameters,
-          additional_facility_parameters,
+          additional_farm_parameters,
           list(#sensitivity_variable=NULL,
                #sensitivity_multiplier=1,
-               unique_id = 'facility-pass-6',
+               unique_id = 'farm-pass-6',
                kConstants = kConstants)))
 #stop('Test here.')
 #for (sensitivity_variable in c('SEVERE_MULTIPLIER',
@@ -378,7 +378,7 @@ do.call(full_run,
 #                               'p_trans_IA',
 #                               'p_trans_IM')) {
 #cat('ASS\nASS\nASS\nASS!\n')
-for(sensitivity_variable in names(kConstants)[18:length(names(kConstants))]) {
+for(sensitivity_variable in names(kConstants)) {
     for(sensitivity_multiplier in c(0.5, 1.5)) {
         kConstants_ = kConstants
         #if(!is.null(sensitivity_variable)) {
@@ -394,16 +394,70 @@ for(sensitivity_variable in names(kConstants)[18:length(names(kConstants))]) {
         }
         sensitivity_multiplier = get(sensitivity_variable, kConstants_fixed) / get(sensitivity_variable, kConstants)
         #}
-        writeLines(paste0('\n###\n###\n###', sensitivity_variable, ' x ', sensitivity_multiplier, '\n###\n###\n###'))
+        writeLines(paste0('###\n###\n', sensitivity_variable, ' x ', sensitivity_multiplier, '\n###\n###\n'))
         do.call(full_run,
                 c(common_parameters,
-                  additional_facility_parameters,
+                  additional_farm_parameters,
                   list(#sensitivity_variable=sensitivity_variable,
                        #sensitivity_multiplier=sensitivity_multiplier,
-                       unique_id = paste0('facility-pass-6-', sensitivity_variable, '-', sensitivity_multiplier),
+                       unique_id = paste0('farm-pass-6-', sensitivity_variable, '-', sensitivity_multiplier),
                        kConstants = kConstants_fixed)))
     }
 }
+
+
+cat('$$$$$$\n$$$$$$\n$$$$$$\nNow for all vaxing at simulation start.')
+common_parameters[['fraction_fully_vaccinated']] = 0
+common_parameters[['ffv_last_five_months']] = 0
+
+writeLines('\nNULL')
+ccl = check_consistency(kConstants)
+if(!get('consistent', ccl)) {
+    stop('ERROR! BASE PARAMETERS INCONSISTENT!')
+}
+do.call(full_run,
+        c(common_parameters,
+          additional_farm_parameters,
+          list(#sensitivity_variable=NULL,
+               #sensitivity_multiplier=1,
+               unique_id = 'no-vax-farm-pass-6',
+               kConstants = kConstants)))
+#stop('Test here.')
+#for (sensitivity_variable in c('SEVERE_MULTIPLIER',
+#                               'R_question_period',
+#                               'time_since_first_V2',
+#                               'p_trans_IP',
+#                               'p_trans_IA',
+#                               'p_trans_IM')) {
+#cat('ASS\nASS\nASS\nASS!\n')
+for(sensitivity_variable in names(kConstants)) {
+    for(sensitivity_multiplier in c(0.5, 1.5)) {
+        kConstants_ = kConstants
+        #if(!is.null(sensitivity_variable)) {
+        if(sensitivity_variable %in% names(kConstants_)) {
+            kConstants_[[sensitivity_variable]] = sensitivity_multiplier * kConstants_[[sensitivity_variable]]
+        } else {
+            stop('Not a valid sensitivity_variable: ', sensitivity_variable)
+        }
+        ccl = check_consistency(kConstants_, altered_single_parameter = sensitivity_variable)
+        kConstants_fixed = get('fixed_constants', ccl)
+        if(!get('consistent', ccl) && !get('fixed', ccl)) {
+            stop('Unfixable constants')
+        }
+        sensitivity_multiplier = get(sensitivity_variable, kConstants_fixed) / get(sensitivity_variable, kConstants)
+        #}
+        writeLines(paste0('###\n###\n', sensitivity_variable, ' x ', sensitivity_multiplier, '\n###\n###\n'))
+        do.call(full_run,
+                c(common_parameters,
+                  additional_farm_parameters,
+                  list(#sensitivity_variable=sensitivity_variable,
+                       #sensitivity_multiplier=sensitivity_multiplier,
+                       unique_id = paste0('no-vax-farm-pass-6-', sensitivity_variable, '-', sensitivity_multiplier),
+                       kConstants = kConstants_fixed)))
+    }
+}
+
+
 stop('Done with x100s.')
 double_wrap_num_sims = 1000
 kConstants_ = kConstants
