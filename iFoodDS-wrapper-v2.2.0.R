@@ -363,12 +363,15 @@ ccl = check_consistency(kConstants)
 if(!get('consistent', ccl)) {
     stop('ERROR! BASE PARAMETERS INCONSISTENT!')
 }
+additional_facility_parameters[['employee_housing']] = 'Shared'
+additional_facility_parameters[['social_distancing_shared_housing']] = 'Intermediate'
+additional_facility_parameters[['community_transmission']] = NULL
 do.call(full_run,
         c(common_parameters,
-          additional_farm_parameters,
+          additional_facility_parameters,
           list(#sensitivity_variable=NULL,
                #sensitivity_multiplier=1,
-               unique_id = 'farm-pass-6',
+               unique_id = 'farmlike-facility-pass-6',
                kConstants = kConstants)))
 #stop('Test here.')
 #for (sensitivity_variable in c('SEVERE_MULTIPLIER',
@@ -397,10 +400,10 @@ for(sensitivity_variable in names(kConstants)) {
         writeLines(paste0('###\n###\n', sensitivity_variable, ' x ', sensitivity_multiplier, '\n###\n###\n'))
         do.call(full_run,
                 c(common_parameters,
-                  additional_farm_parameters,
+                  additional_facility_parameters,
                   list(#sensitivity_variable=sensitivity_variable,
                        #sensitivity_multiplier=sensitivity_multiplier,
-                       unique_id = paste0('farm-pass-6-', sensitivity_variable, '-', sensitivity_multiplier),
+                       unique_id = paste0('farmlike-facility-pass-6-', sensitivity_variable, '-', sensitivity_multiplier),
                        kConstants = kConstants_fixed)))
     }
 }
@@ -417,10 +420,10 @@ if(!get('consistent', ccl)) {
 }
 do.call(full_run,
         c(common_parameters,
-          additional_farm_parameters,
+          additional_facility_parameters,
           list(#sensitivity_variable=NULL,
                #sensitivity_multiplier=1,
-               unique_id = 'no-vax-farm-pass-6',
+               unique_id = 'no-vax-farmlike-facility-pass-6',
                kConstants = kConstants)))
 #stop('Test here.')
 #for (sensitivity_variable in c('SEVERE_MULTIPLIER',
@@ -449,10 +452,10 @@ for(sensitivity_variable in names(kConstants)) {
         writeLines(paste0('###\n###\n', sensitivity_variable, ' x ', sensitivity_multiplier, '\n###\n###\n'))
         do.call(full_run,
                 c(common_parameters,
-                  additional_farm_parameters,
+                  additional_facility_parameters,
                   list(#sensitivity_variable=sensitivity_variable,
                        #sensitivity_multiplier=sensitivity_multiplier,
-                       unique_id = paste0('no-vax-farm-pass-6-', sensitivity_variable, '-', sensitivity_multiplier),
+                       unique_id = paste0('no-vax-farmlike-facility-pass-6-', sensitivity_variable, '-', sensitivity_multiplier),
                        kConstants = kConstants_fixed)))
     }
 }
