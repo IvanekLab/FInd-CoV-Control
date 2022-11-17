@@ -4,8 +4,6 @@
 *.txt
 nohup.out
 *.png
-*/*.png
-*/*.rds
 *.rds
 *.csv
-*/*.csv
+*/*
