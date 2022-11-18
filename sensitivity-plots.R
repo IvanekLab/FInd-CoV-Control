@@ -414,10 +414,10 @@ panelwise_interesting_sensitivity_fn = function(
                             log(value) - log(null_value)
                         }
                     ))
-                    if(this_greatest_positive_difference > greatest_positive_difference) {
+                    if(this_greatest_positive_difference >= greatest_positive_difference) {
                         greatest_positive_difference = this_greatest_positive_difference
                     }
-                    if(this_greatest_negative_difference < greatest_negative_difference) {
+                    if(this_greatest_negative_difference <= greatest_negative_difference) {
                         greatest_negative_difference = this_greatest_negative_difference
                     }
                 }
@@ -434,16 +434,10 @@ print(greatest_positive_difference)
                 function(m) get_real_multiplier(sensitivity_variable, m)
             )
 
-            #key_05 = paste0(sensitivity_variable, '-', sensitivity_multiplier_05)
-            #key_15 = paste0(sensitivity_variable, '-', sensitivity_multiplier_15)
-#print('hung')
-            greatest_difference = 0
-            #gd_key = NULL
-            gd_j = NULL
-            #gd_i = NULL
-
-            #figuring out which parameter set to use results from
             for(i in 1:5) {
+                greatest_difference = 0
+                gd_j = NULL
+            
                 keys = sapply(
                     real_multipliers,
                     function(m) {
@@ -453,6 +447,7 @@ print(greatest_positive_difference)
                         )
                     }
                 )
+
                 for(j in 1:max_j) {
                     values = sapply(keys, function(key) mean(outcome_fn(dd[[j]][[key]])))
                     this_greatest_difference = max(sapply(
@@ -466,30 +461,15 @@ print(greatest_positive_difference)
                             ))
                         }
                     ))
-                    if(this_greatest_difference > greatest_difference) {
+                    print(this_greatest_difference)
+                    if(this_greatest_difference >= greatest_difference) {
                         greatest_difference = this_greatest_difference
                         gd_j = j
-                        #gd_i = i
+                        print(gd_j)
                     }
                 }
-            }
 
-            for(i in 1:5) {
-                keys = sapply(
-                    real_multipliers,
-                    function(m) {
-                        ifelse(m == 1,
-                            paste0(i),
-                            paste0(i, sensitivity_variable, '-', m)
-                        )
-                    }
-                )
-#print('dwang!')
-                #keys = c(
-                #    paste0(i,key_05),
-                #    i,
-                #    paste0(i,key_15)
-                #)
+
                 values = sapply(keys, function(key) mean(outcome_fn(dd[[gd_j]][[key]])))
                 null_value = mean(outcome_fn(dd[[gd_j]][[paste0(i)]]))
                 if(i == 1) {
@@ -501,7 +481,7 @@ print(greatest_positive_difference)
                         xlim = c(0.5, 1.5),
                         xlab = paste0(sensitivity_variable, ' (multiplier)'),
                         ylab = ylab,
-                        main = unique_ids[gd_j],
+                        #main = unique_ids[gd_j],
                         type = 'b',
                         lwd = 4#9#8#4
                     )
@@ -522,9 +502,9 @@ print(greatest_positive_difference)
 
     }
 #print('weeb')
-    make_paneled_plot('summary-sensitivity-plots-si.png', symptomatic_infections, 'Symptomatic infections (multiplier)')
+    make_paneled_plot('more-summary-sensitivity-plots-si.png', symptomatic_infections, 'Symptomatic infections (multiplier)')
 #print('wob')
-    make_paneled_plot('summary-sensitivity-plots-su.png', shiftwise_unavailable, 'Shifts unavailable (multiplier)')
+    make_paneled_plot('more-summary-sensitivity-plots-su.png', shiftwise_unavailable, 'Shifts unavailable (multiplier)')
 }
 
 panelwise_interesting_sensitivity_fn(
