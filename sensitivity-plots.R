@@ -424,8 +424,10 @@ panelwise_interesting_sensitivity_fn = function(
             }
         }
 
-print(greatest_negative_difference)
-print(greatest_positive_difference)
+#print(greatest_negative_difference)
+#print(greatest_positive_difference)
+
+        greatest_differences = c()
 
         #actually doing it
         for(sensitivity_variable in names(kConstants)) {
@@ -433,6 +435,8 @@ print(greatest_positive_difference)
                 sensitivity_multipliers,
                 function(m) get_real_multiplier(sensitivity_variable, m)
             )
+            
+            greatest_difference_all_5 = 0
 
             for(i in 1:5) {
                 greatest_difference = 0
@@ -468,6 +472,9 @@ print(greatest_positive_difference)
                         print(gd_j)
                     }
                 }
+                if(greatest_difference > greatest_difference_all_5) {
+                    greatest_difference_all_5 = greatest_difference
+                }
 
 
                 values = sapply(keys, function(key) mean(outcome_fn(dd[[gd_j]][[key]])))
@@ -495,27 +502,36 @@ print(greatest_positive_difference)
                     )
                 }
             }
+            greatest_differences = c(greatest_differences, greatest_difference_all_5)
         }
         plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
         legend("bottom", row.names, lwd = 4, col = colors)
         dev.off()
-
+        greatest_differences
     }
 #print('weeb')
-    make_paneled_plot('more-summary-sensitivity-plots-si.png', symptomatic_infections, 'Symptomatic infections (multiplier)')
+    greatest_si_differences = make_paneled_plot('v4-summary-sensitivity-plots-si.png', symptomatic_infections, 'Symptomatic infections (multiplier)')
 #print('wob')
-    make_paneled_plot('more-summary-sensitivity-plots-su.png', shiftwise_unavailable, 'Shifts unavailable (multiplier)')
+    greatest_su_differences = make_paneled_plot('v4-summary-sensitivity-plots-su.png', shiftwise_unavailable, 'Shifts unavailable (multiplier)')
+    list(si = greatest_si_differences, su = greatest_su_differences)
 }
 
-panelwise_interesting_sensitivity_fn(
+l = panelwise_interesting_sensitivity_fn(
     'sensitivity-2022-10-29',
-    c('farmlike-facility-pass-6', 'facility-pass-6', 'farm-pass-6', 'no-vax-farm-pass-6', 'no-vax-farmlike-facility-pass-6'),
-    c(FALSE, TRUE, TRUE, FALSE, FALSE),
-    c(0, 0.002, 0, 0, 0),
-    c(6, 6, 6, 6, 6),
-    c(2, 0, 2, 2, 2),
+    c('farmlike-facility-pass-6', 'facility-pass-6', 'farm-pass-6', 'no-vax-farm-pass-6', 'no-vax-farmlike-facility-pass-6',
+      'no-vax-no-recovered-farm-pass-6','no-recovered-farm-pass-6', 'simple-no-boost-farm-pass-6'),
+    c(FALSE, TRUE, TRUE, FALSE, FALSE,
+      FALSE, FALSE, FALSE),
+    c(0, 0.002, 0, 0, 0,
+      0, 0, 0),
+    c(6, 6, 6, 6, 6,
+      6, 6, 6),
+    c(2, 0, 2, 2, 2,
+      2, 2, 2),
     1,
-    c(71, 71, 71, 71, 71),
-    c(73, 73, 73, 0, 0),
+    c(71, 71, 71, 71, 71,
+      0, 0, 71),
+    c(73, 73, 73, 0, 0,
+      0, 73, 73),
     100
 )
