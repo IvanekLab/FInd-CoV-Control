@@ -431,136 +431,75 @@ run_67 = function(common_parameters, additional_facility_parameters,
     }
 }
 
-run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'facility',
-       list(unique_id = 'farmlike-facility-pass-7',
-            employee_housing = 'Shared', 
-            social_distancing_shared_housing = 'Intermediate',
-            community_transmission = NULL
-       ),
-       c('isolation_duration', 'second_shot_interval', 'max_V1_protection',
-         'V2_ramp_time', 'B_mid_ramp_protection')
-)
-
+comments = scan(what = 'character')
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
-       list(unique_id = 'simple-no-boost-farm-pass-7',
-            fraction_boosted_ever = 0,
-            fraction_boosted_last_five_months = 0),
-       c('isolation_duration', 'second_shot_interval', 'max_V1_protection',
-         'V2_ramp_time', 'B_mid_ramp_protection')
+       list(folder_name = 'sensitivity-2022-11-22',
+            unique_id = 'farm'
+       )
 )
 
-stop('DONE')
-
+comments = scan(what = 'character')
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
-       list(unique_id = 'no-vax-no-recovered-farm-pass-7',
+       list(folder_name = 'sensitivity-2022-11-22',
+            unique_id = 'farm-start-of-epidemic',
             fraction_recovered = 0,
             fraction_fully_vaccinated = 0,
             ffv_last_five_months = 0,
             fraction_boosted_ever = 0,
-            fraction_boosted_last_five_months = 0)
+            fraction_boosted_last_five_months = 0
+       )
 )
 
+comments = scan(what = 'character')
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
-       list(unique_id = 'no-recovered-farm-pass-7',
+       list(folder_name = 'sensitivity-2022-11-22',
+            unique_id = 'farm-dec-11',
+            fraction_recovered = 0.22,
+            fraction_fully_vaccinated = 0,
+            ffv_last_five_months = 0,
+            fraction_boosted_ever = 0,
+            fraction_boosted_last_five_months = 0
+       )
+)
+
+comments = scan(what = 'character')
+run_67(common_parameters, additional_facility_parameters,
+       additional_farm_parameters, kConstants, 'farm',
+       list(folder_name = 'sensitivity-2022-11-22',
+            unique_id = 'facilitylike-farm',
+            employee_housing = 'Individual', 
+            social_distancing_shared_housing = NULL,
+            community_transmission = 'Intermediate'
+       )
+)
+
+
+comments = scan(what = 'character')
+run_67(common_parameters, additional_facility_parameters,
+       additional_farm_parameters, kConstants, 'facility',
+       list(folder_name = 'sensitivity-2022-11-22',
+            unique_id = 'farmlike-facility',
+            employee_housing = 'Shared', 
+            social_distancing_shared_housing = 'Intermediate',
+            community_transmission = NULL
+       )
+)
+
+comments = scan(what = 'character')
+run_67(common_parameters, additional_facility_parameters,
+       additional_farm_parameters, kConstants, 'facility',
+       list(folder_name = 'sensitivity-2022-11-22',
+            unique_id = 'facility'
+       )
+)
+
+comments = scan(what = 'character')
+run_67(common_parameters, additional_facility_parameters,
+       additional_farm_parameters, kConstants, 'farm',
+       list(folder_name = 'sensitivity-2022-11-22',
+            unique_id = 'no-recovered-farm',
             fraction_recovered = 0)
 )
-
-run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'farm',
-       list(unique_id = 'simple-no-boost-farm-pass-7',
-            fraction_boosted_ever = 0,
-            fraction_boosted_last_five_months = 0)
-)
-
-
-stop('End edited bit.')
-    
-cat('$$$$$$\n$$$$$$\n$$$$$$\nNow for all vaxing at simulation start.')
-common_parameters[['fraction_fully_vaccinated']] = 0
-common_parameters[['ffv_last_five_months']] = 0
-
-writeLines('\nNULL')
-ccl = check_consistency(kConstants)
-if(!get('consistent', ccl)) {
-    stop('ERROR! BASE PARAMETERS INCONSISTENT!')
-}
-do.call(full_run,
-        c(common_parameters,
-          additional_facility_parameters,
-          list(#sensitivity_variable=NULL,
-               #sensitivity_multiplier=1,
-               unique_id = 'no-vax-farmlike-facility-pass-6',
-               kConstants = kConstants)))
-#stop('Test here.')
-#for (sensitivity_variable in c('SEVERE_MULTIPLIER',
-#                               'R_question_period',
-#                               'time_since_first_V2',
-#                               'p_trans_IP',
-#                               'p_trans_IA',
-#                               'p_trans_IM')) {
-#cat('ASS\nASS\nASS\nASS!\n')
-for(sensitivity_variable in names(kConstants)) {
-    for(sensitivity_multiplier in c(0.5, 1.5)) {
-        kConstants_ = kConstants
-        #if(!is.null(sensitivity_variable)) {
-        if(sensitivity_variable %in% names(kConstants_)) {
-            kConstants_[[sensitivity_variable]] = sensitivity_multiplier * kConstants_[[sensitivity_variable]]
-        } else {
-            stop('Not a valid sensitivity_variable: ', sensitivity_variable)
-        }
-        ccl = check_consistency(kConstants_, altered_single_parameter = sensitivity_variable)
-        kConstants_fixed = get('fixed_constants', ccl)
-        if(!get('consistent', ccl) && !get('fixed', ccl)) {
-            stop('Unfixable constants')
-        }
-        sensitivity_multiplier = get(sensitivity_variable, kConstants_fixed) / get(sensitivity_variable, kConstants)
-        #}
-        writeLines(paste0('###\n###\n', sensitivity_variable, ' x ', sensitivity_multiplier, '\n###\n###\n'))
-        do.call(full_run,
-                c(common_parameters,
-                  additional_facility_parameters,
-                  list(#sensitivity_variable=sensitivity_variable,
-                       #sensitivity_multiplier=sensitivity_multiplier,
-                       unique_id = paste0('no-vax-farmlike-facility-pass-6-', sensitivity_variable, '-', sensitivity_multiplier),
-                       kConstants = kConstants_fixed)))
-    }
-}
-
-
-stop('Done with x100s.')
-double_wrap_num_sims = 1000
-kConstants_ = kConstants
-do.call(full_run,
-        c(common_parameters,
-          additional_facility_parameters,
-          list(#sensitivity_variable=NULL,
-               #sensitivity_multiplier=1,
-               unique_id = 'facility-pass-6')))
-for(sensitivity_variable in names(kConstants)) {
-    for(sensitivity_multiplier in c(0.5, 1.5)) {
-        kConstants_ = kConstants
-        if(sensitivity_variable %in% names(kConstants_)) {
-            kConstants_[[sensitivity_variable]] = sensitivity_multiplier * kConstants_[[sensitivity_variable]]
-        } else {
-            stop('Not a valid sensitivity_variable: ', sensitivity_variable)
-        }
-        ccl = check_consistency(kConstants_)
-        kConstants_fixed = get(fixed_constants, ccl)
-        if(!get('consistent', ccl) && !get('fixed', ccl)) {
-            stop('Unfixable constants')
-        }
-        sensitivity_multiplier = get(sensitivity_variable, ccl)
-
-        do.call(full_run,
-                c(common_parameters,
-                  additional_facility_parameters,
-                  list(sensitivity_variable=sensitivity_variable,
-                       sensitivity_multiplier=sensitivity_multiplier,
-                       unique_id = paste0('facility-pass-6-', sensitivity_variable, '-', sensitivity_multiplier))))
-    }
-}
-kConstants = kConstants_
