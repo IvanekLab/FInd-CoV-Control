@@ -428,6 +428,7 @@ panelwise_interesting_sensitivity_fn = function(
 #print(greatest_positive_difference)
 
         greatest_differences = c()
+        greatest_difference_indices_matrix = c()
 
         #actually doing it
         for(sensitivity_variable in names(kConstants)) {
@@ -437,6 +438,7 @@ panelwise_interesting_sensitivity_fn = function(
             )
             
             greatest_difference_all_5 = 0
+            greatest_difference_indices = rep(0, 5)
 
             for(i in 1:5) {
                 greatest_difference = 0
@@ -465,16 +467,17 @@ panelwise_interesting_sensitivity_fn = function(
                             ))
                         }
                     ))
-                    print(this_greatest_difference)
-                    if(this_greatest_difference >= greatest_difference) {
+                    #print(this_greatest_difference)
+                    if(this_greatest_difference > greatest_difference) {
                         greatest_difference = this_greatest_difference
                         gd_j = j
-                        print(gd_j)
+                        #print(gd_j)
                     }
                 }
                 if(greatest_difference > greatest_difference_all_5) {
                     greatest_difference_all_5 = greatest_difference
                 }
+                greatest_difference_indices[i] = gd_j
 
 
                 values = sapply(keys, function(key) mean(outcome_fn(dd[[gd_j]][[key]])))
@@ -503,35 +506,36 @@ panelwise_interesting_sensitivity_fn = function(
                 }
             }
             greatest_differences = c(greatest_differences, greatest_difference_all_5)
+            greatest_difference_indices_matrix = rbind(greatest_difference_indices_matrix, greatest_difference_indices)
         }
         plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
         legend("bottom", row.names, lwd = 4, col = colors)
         dev.off()
-        greatest_differences
+        list(gd = greatest_differences, gdim = greatest_difference_indices_matrix)
     }
 #print('weeb')
-    greatest_si_differences = make_paneled_plot('v4-summary-sensitivity-plots-si.png', symptomatic_infections, 'Symptomatic infections (multiplier)')
+    l_si = make_paneled_plot('v4-summary-sensitivity-plots-si.png', symptomatic_infections, 'Symptomatic infections (multiplier)')
 #print('wob')
-    greatest_su_differences = make_paneled_plot('v4-summary-sensitivity-plots-su.png', shiftwise_unavailable, 'Shifts unavailable (multiplier)')
-    list(si = greatest_si_differences, su = greatest_su_differences)
+    l_su = make_paneled_plot('v4-summary-sensitivity-plots-su.png', shiftwise_unavailable, 'Shifts unavailable (multiplier)')
+    list(gd_si = l_si$gd, gd_su = l_su$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim)
 }
 
 l = panelwise_interesting_sensitivity_fn(
     'sensitivity-2022-10-29',
-    c('farmlike-facility-pass-6', 'facility-pass-6', 'farm-pass-6', 'no-vax-farm-pass-6', 'no-vax-farmlike-facility-pass-6',
-      'no-vax-no-recovered-farm-pass-6','no-recovered-farm-pass-6', 'simple-no-boost-farm-pass-6'),
-    c(FALSE, TRUE, TRUE, FALSE, FALSE,
-      FALSE, FALSE, FALSE),
-    c(0, 0.002, 0, 0, 0,
-      0, 0, 0),
-    c(6, 6, 6, 6, 6,
-      6, 6, 6),
-    c(2, 0, 2, 2, 2,
-      2, 2, 2),
+    c('farmlike-facility-pass-6', 'facility-pass-6', 'farm-pass-6', 'no-vax-farm-pass-6', 'no-vax-farmlike-facility-pass-6'),
+      # 'no-vax-no-recovered-farm-pass-6','no-recovered-farm-pass-6', 'simple-no-boost-farm-pass-6'),
+    c(FALSE, TRUE, TRUE, FALSE, FALSE),
+      # FALSE, FALSE, FALSE),
+    c(0, 0.002, 0, 0, 0),
+    #  0, 0, 0),
+    c(6, 6, 6, 6, 6),
+    #  6, 6, 6),
+    c(2, 0, 2, 2, 2),
+    #  2, 2, 2),
     1,
-    c(71, 71, 71, 71, 71,
-      0, 0, 71),
-    c(73, 73, 73, 0, 0,
-      0, 73, 73),
+    c(71, 71, 71, 71, 71),
+    #  0, 0, 71),
+    c(73, 73, 73, 0, 0),
+    #  0, 73, 73),
     100
 )
