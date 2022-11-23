@@ -361,7 +361,7 @@ additional_farm_parameters = list(
 
 run_67 = function(common_parameters, additional_facility_parameters,
                   additional_farm_parameters, kConstants, farm_or_facility,
-                  changed_parameters) {
+                  changed_parameters, parameters_to_test = NULL) {
     farm_or_facility == tolower(farm_or_facility)
     if(farm_or_facility == 'farm') {
         additional_parameters = additional_farm_parameters
@@ -403,7 +403,10 @@ run_67 = function(common_parameters, additional_facility_parameters,
     #                               'p_trans_IM')) {
     #cat('ASS\nASS\nASS\nASS!\n')
     unique_id = all_parameters[['unique_id']]
-    for(sensitivity_variable in names(kConstants)) {
+    if(is.null(parameters_to_test)) {
+        parameters_to_test = names(kConstants)
+    }
+    for(sensitivity_variable in parameters_to_test) {
         for(sensitivity_multiplier in c(0.5, 1.5)) {
             kConstants_ = kConstants
             #if(!is.null(sensitivity_variable)) {
@@ -422,15 +425,37 @@ run_67 = function(common_parameters, additional_facility_parameters,
             writeLines(paste0('###\n###\n', sensitivity_variable, ' x ', sensitivity_multiplier, '\n###\n###\n'))
 
             all_parameters[['kConstants']] = kConstants_
-            all_parameters[['unique_id']] = paste0('farmlike-facility-pass-6-', sensitivity_variable, '-', sensitivity_multiplier)
+            all_parameters[['unique_id']] = paste0(unique_id, '-', sensitivity_variable, '-', sensitivity_multiplier)
             do.call(full_run, all_parameters)
         }
     }
 }
 
 run_67(common_parameters, additional_facility_parameters,
+       additional_farm_parameters, kConstants, 'facility',
+       list(unique_id = 'farmlike-facility-pass-7',
+            employee_housing = 'Shared', 
+            social_distancing_shared_housing = 'Intermediate',
+            community_transmission = NULL
+       ),
+       c('isolation_duration', 'second_shot_interval', 'max_V1_protection',
+         'V2_ramp_time', 'B_mid_ramp_protection')
+)
+
+run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
-       list(unique_id = 'no-vax-no-recovered-farm-pass-6',
+       list(unique_id = 'simple-no-boost-farm-pass-7',
+            fraction_boosted_ever = 0,
+            fraction_boosted_last_five_months = 0),
+       c('isolation_duration', 'second_shot_interval', 'max_V1_protection',
+         'V2_ramp_time', 'B_mid_ramp_protection')
+)
+
+stop('DONE')
+
+run_67(common_parameters, additional_facility_parameters,
+       additional_farm_parameters, kConstants, 'farm',
+       list(unique_id = 'no-vax-no-recovered-farm-pass-7',
             fraction_recovered = 0,
             fraction_fully_vaccinated = 0,
             ffv_last_five_months = 0,
@@ -440,13 +465,13 @@ run_67(common_parameters, additional_facility_parameters,
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
-       list(unique_id = 'no-recovered-farm-pass-6',
+       list(unique_id = 'no-recovered-farm-pass-7',
             fraction_recovered = 0)
 )
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
-       list(unique_id = 'simple-no-boost-farm-pass-6',
+       list(unique_id = 'simple-no-boost-farm-pass-7',
             fraction_boosted_ever = 0,
             fraction_boosted_last_five_months = 0)
 )
