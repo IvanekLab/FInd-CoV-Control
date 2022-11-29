@@ -431,7 +431,7 @@ run_67 = function(common_parameters, additional_facility_parameters,
     }
 }
 
-comments = scan(what = 'character')
+#comments = scan(what = 'character')
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
@@ -439,7 +439,7 @@ run_67(common_parameters, additional_facility_parameters,
        )
 )
 
-comments = scan(what = 'character')
+#comments = scan(what = 'character')
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
@@ -452,7 +452,7 @@ run_67(common_parameters, additional_facility_parameters,
        )
 )
 
-comments = scan(what = 'character')
+#comments = scan(what = 'character')
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
@@ -465,7 +465,7 @@ run_67(common_parameters, additional_facility_parameters,
        )
 )
 
-comments = scan(what = 'character')
+#comments = scan(what = 'character')
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
@@ -477,7 +477,7 @@ run_67(common_parameters, additional_facility_parameters,
 )
 
 
-comments = scan(what = 'character')
+#comments = scan(what = 'character')
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
        list(folder_name = 'sensitivity-2022-11-22',
@@ -500,6 +500,6 @@ comments = scan(what = 'character')
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'no-recovered-farm',
+            unique_id = 'farm-no-recovered',
             fraction_recovered = 0)
 )
