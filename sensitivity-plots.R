@@ -69,6 +69,15 @@ sensitivity_fn = function(
             ',vax-rate0.02',
             ''
         )
+        initial_recovered_string = ifelse(initial_recovered > 0,
+            paste0(',initial_recovered-', initial_recovered),
+            ''
+        )
+        initial_V2_string = ifelse(initial_V2 > 0,
+            paste0(',initial_V2-', initial_V2),
+            ''
+        )
+        #print(initial_recovered)
         paste0(
             folder_name, '/', unique_id,
             prepended_key,
@@ -79,8 +88,8 @@ sensitivity_fn = function(
             ',E0-', E0,
             vax_string,
             testing_string,
-            ',initial_recovered-', initial_recovered,
-            ',initial_V2-', initial_V2,
+            initial_recovered_string,
+            initial_V2_string,
             ',n_sims-', n_sims,
             'index_i-', index_i,
             '_full-output.rds'
@@ -250,6 +259,11 @@ panelwise_interesting_sensitivity_fn = function(
             '',
             paste0(',initial_V2-', initial_V2s[index_j])
         )
+        initial_recovered_string = ifelse(initial_recovereds[index_j] == 0,
+            '',
+            paste0(',initial_recovered-', initial_recovereds[index_j])
+        )
+        #cat(initial_V2s[index_j], ';', initial_recovereds[index_j],'\n')
         paste0(
             folder_name, '/', unique_ids[index_j],
             prepended_key,
@@ -261,7 +275,7 @@ panelwise_interesting_sensitivity_fn = function(
             ',E0-', E0,
             vax_string,
             testing_string,
-            ',initial_recovered-', initial_recovereds[index_j],
+            initial_recovered_string,
             initial_V2_string,
             ',n_sims-', n_sims,
             'index_i-', index_i,
@@ -468,7 +482,7 @@ panelwise_interesting_sensitivity_fn = function(
                         }
                     ))
                     #print(this_greatest_difference)
-                    if(this_greatest_difference > greatest_difference) {
+                    if(this_greatest_difference >= greatest_difference) {
                         greatest_difference = this_greatest_difference
                         gd_j = j
                         #print(gd_j)
@@ -525,33 +539,38 @@ l = panelwise_interesting_sensitivity_fn(
     c('farm', 'facility', 'facilitylike-farm', 'farmlike-facility',
       'farm-start-of-epidemic', 'facility-start-of-epidemic', 'facilitylike-farm-start-of-epidemic', 'farmlike-facility-start-of-epidemic',
       'farm-dec-11', 'facility-dec-11', 'facilitylike-farm-dec-11', 'farmlike-facility-dec-11',
-      'farm-no-recovered', 'facility-no-recovered', 'facilitylike-farm-no-recovered', 'farmlike-facility-no-recovered'),
+      # 'farm-no-recovered',
+      'facility-no-recovered', 'facilitylike-farm-no-recovered', 'farmlike-facility-no-recovered'),
     c(TRUE, TRUE, FALSE, FALSE,
       FALSE, FALSE, FALSE, FALSE,
       FALSE, FALSE, FALSE, FALSE,
-      FALSE, FALSE, FALSE, FALSE),
+      # FALSE, 
+      FALSE, FALSE, FALSE),
     c(0, 0.002, 0.002, 0,
       0, 0.002, 0.002, 0,
       0, 0.002, 0.002, 0,
-      0, 0.002, 0.002, 0),
+      #0,
+      0.002, 0.002, 0),
     c(6, 6, 6, 6,
       6, 6, 6, 6,
       6, 6, 6, 6,
-      6, 6, 6, 6),
+      #6,
+      6, 6, 6),
     c(2, 0, 0, 2,
       2, 0, 0, 2,
       2, 0, 0, 2,
-      2, 0, 0, 2),
+      #2,
+      0, 0, 2),
     1,
     c(71, 71, 71, 71,
       0, 0, 0, 0,
-      0.22, 0.22, 0.22, 0.22,
-      0, 0, 0, 0),
-    #  0, 0, 71),
+      23, 23, 23, 23,
+      #0,
+      0, 0, 0),
     c(73, 73, 73, 73,
       0, 0, 0, 0,
       0, 0, 0, 0,
-      73, 73, 73, 73),
-    #  0, 73, 73),
+      #73, 
+      73, 73, 73),
     100
 )
