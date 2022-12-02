@@ -77,7 +77,6 @@ sensitivity_fn = function(
             paste0(',initial_V2-', initial_V2),
             ''
         )
-        #print(initial_recovered)
         paste0(
             folder_name, '/', unique_id,
             prepended_key,
@@ -107,13 +106,8 @@ sensitivity_fn = function(
         d
     }
     d = make_batch(list(), '')
-#d <<- d
-#print(summary(d))
     get_real_multiplier = function(sensitivity_variable,
                                    theoretical_multiplier) {
-        #if(theoretical_multiplier == 1) { # This shouldn't be necessary
-        #    return(1)
-        #}
         kConstants_ = kConstants
         kConstants_[[sensitivity_variable]] = theoretical_multiplier * kConstants_[[sensitivity_variable]]
         ccl = check_consistency(kConstants_, altered_single_parameter = sensitivity_variable)
@@ -123,39 +117,33 @@ sensitivity_fn = function(
         }
         get(sensitivity_variable, kConstants_fixed) / get(sensitivity_variable, kConstants)
     }
+
     sensitivity_multipliers = c(0.5, 1, 1.5)
-#print('split')
+
     for(sensitivity_variable in names(kConstants)) {
         real_multipliers = sapply(sensitivity_multipliers, function(m) get_real_multiplier(sensitivity_variable, m))
         for(sensitivity_multiplier in real_multipliers) {
             if(sensitivity_multiplier != 1) {
                 key = paste0(sensitivity_variable, '-', sensitivity_multiplier)
                 d = make_batch(d, key)
-#print(summary(d))
             }
         }
     }
-d_test <<- d
-#print('derp')
+#d_test <<- d
     make_paneled_plot = function(filename, outcome_fn, ylab) {
-#print(summary(d))
         si = lapply(d, outcome_fn)
-#print('bing')
         si_mean_max = max(sapply(si, mean)) 
         si_mean_min = min(sapply(si, mean))
 
         png(filename, height = 200*5, width = 200*7)
         layout(matrix(c(1:29, 34, 30:34), ncol = 7))
-#print('bleeb')    
+
         for(sensitivity_variable in names(kConstants)) {
             real_multipliers = sapply(
                 sensitivity_multipliers,
                 function(m) get_real_multiplier(sensitivity_variable, m)
             )
 
-            #key_05 = paste0(sensitivity_variable, '-', sensitivity_multiplier_05)
-            #key_15 = paste0(sensitivity_variable, '-', sensitivity_multiplier_15)
-#print('hung')        
             for(i in 1:5) {
                 keys = sapply(
                     real_multipliers,
@@ -166,13 +154,9 @@ d_test <<- d
                         )
                     }
                 )
-#print('dwang!')
-                #keys = c(
-                #    paste0(i,key_05),
-                #    i,
-                #    paste0(i,key_15)
-                #)
+
                 values = sapply(keys, function(s) mean(si[[s]]))
+
                 if(i == 1) {
                     plot(
                         real_multipliers,
@@ -200,9 +184,7 @@ d_test <<- d
         dev.off()
 
     }
-#print('weeb')
     make_paneled_plot('duplicate-farmlike-facility-betterer-sensitivity-plots-si.png', symptomatic_infections, 'Mean total symptomatic infections')
-#print('wob')
     make_paneled_plot('duplicate-farmlike-facility-betterer-sensitivity-plots-su.png', shiftwise_unavailable, 'Mean total shifts unavailable')
 }
 
@@ -222,14 +204,6 @@ panelwise_interesting_sensitivity_fn = function(
     n_sims
 ) {
     max_j = length(unique_ids)
-    #dormitory_R0s = sapply(
-    #    dormitory_R0s,
-    #    function(i) {
-    #        ifelse(i == 0),
-    #        '',
-    #        i
-    #    }
-    #)
 
     rds_filename = function(prepended_key, index_i, index_j) { #j being the index to all the parameters that are plurals
         work_id_multiplier = ifelse(index_i == 4,
@@ -263,7 +237,7 @@ panelwise_interesting_sensitivity_fn = function(
             '',
             paste0(',initial_recovered-', initial_recovereds[index_j])
         )
-        #cat(initial_V2s[index_j], ';', initial_recovereds[index_j],'\n')
+
         paste0(
             folder_name, '/', unique_ids[index_j],
             prepended_key,
@@ -290,23 +264,16 @@ panelwise_interesting_sensitivity_fn = function(
         )
         for(i in 1:5) {
             filename = rds_filename(prepended_key, i, index_j)
-            #print(filename)
-            d[[paste0(i, key)]] = readRDS(filename)#rds_filename(prepended_key, i, index_j))
+            d[[paste0(i, key)]] = readRDS(filename)
         }
         d
     }
     dd = list()
     for(index_j in 1:max_j) {
-        #unique_id = unique_ids[index_j]
         dd[[index_j]] = make_batch(list(), '', index_j)
     }
-#d <<- d
-#print(summary(d))
     get_real_multiplier = function(sensitivity_variable,
                                    theoretical_multiplier) {
-        #if(theoretical_multiplier == 1) { # This shouldn't be necessary
-        #    return(1)
-        #}
         kConstants_ = kConstants
         kConstants_[[sensitivity_variable]] = theoretical_multiplier * kConstants_[[sensitivity_variable]]
         ccl = check_consistency(kConstants_, altered_single_parameter = sensitivity_variable)
@@ -318,7 +285,7 @@ panelwise_interesting_sensitivity_fn = function(
     }
 
     sensitivity_multipliers = c(0.5, 1, 1.5)
-#print('split')
+
     for(sensitivity_variable in names(kConstants)) {
         real_multipliers = sapply(sensitivity_multipliers, function(m) get_real_multiplier(sensitivity_variable, m))
         for(sensitivity_multiplier in real_multipliers) {
@@ -327,7 +294,6 @@ panelwise_interesting_sensitivity_fn = function(
                 for(index_j in 1:max_j) {
                     dd[[index_j]] = make_batch(dd[[index_j]], key, index_j)
                 }
-#print(summary(d))
             }
         }
     }
@@ -342,27 +308,10 @@ panelwise_interesting_sensitivity_fn = function(
         )
     }
 
-    #dn_1 = unique(sapply(names(dd_), function(name) substr(name, 2, nchar(name))))
-    #dn_2 = list()
-    
-    #for(k in 1:(length(dn_1))) {#############
-    #    dn_2[[k]] = c(
-    #}
+    #dd_ <<- dd_
+    #dd <<- dd
 
-    dd_ <<- dd_
-    dd <<- dd
-
-#stop('Good enough for now')
-#print('derp')
     make_paneled_plot = function(filename, outcome_fn, ylab) {
-#print(summary(d))
-        #si = lapply(
-        #    dd,
-        #    function(l) {
-        #        lapply(l, symptomatic_infections)#outcome_fn)
-        #    }
-        #)
-        #si_ = sapply(dd, function)
         si_mean_max = max(sapply(
             dd,
             function(dd_j) {
@@ -385,14 +334,9 @@ panelwise_interesting_sensitivity_fn = function(
                 ))
             }
         ))
-#print('bing')
-        #si_mean_max = max(sapply(si, mean)) 
-        #si_mean_min = min(sapply(si, mean))
 
         png(filename, height = 200*5, width = 200*7)
         layout(matrix(c(1:29, 34, 30:34), ncol = 7))
-#print('bleeb')
-
 
         #figuring out bounds:
         greatest_positive_difference = 0
@@ -500,14 +444,12 @@ panelwise_interesting_sensitivity_fn = function(
                     plot(
                         real_multipliers,
                         log(values) - log(null_value),
-                        #ylim = c(-greatest_difference, greatest_difference)#c(log(si_mean_min) - log(null_value), log(si_mean_max) - log(null_value)),
                         ylim = c(greatest_negative_difference, greatest_positive_difference),
                         xlim = c(0.5, 1.5),
                         xlab = paste0(sensitivity_variable, ' (multiplier)'),
                         ylab = ylab,
-                        #main = unique_ids[gd_j],
                         type = 'b',
-                        lwd = 4#9#8#4
+                        lwd = 4
                     )
                 } else {
                     points(
@@ -515,7 +457,7 @@ panelwise_interesting_sensitivity_fn = function(
                         log(values) - log(null_value),
                         type = 'b',
                         col = colors[i],
-                        lwd = 4#9 - 2*i#4
+                        lwd = 4
                     )
                 }
             }
@@ -527,10 +469,12 @@ panelwise_interesting_sensitivity_fn = function(
         dev.off()
         list(gd = greatest_differences, gdim = greatest_difference_indices_matrix)
     }
-#print('weeb')
-    l_si = make_paneled_plot('v4-summary-sensitivity-plots-si.png', symptomatic_infections, 'Symptomatic infections (multiplier)')
-#print('wob')
-    l_su = make_paneled_plot('v4-summary-sensitivity-plots-su.png', shiftwise_unavailable, 'Shifts unavailable (multiplier)')
+
+    l_si = make_paneled_plot('v5-summary-sensitivity-plots-si.png', symptomatic_infections, 'Symptomatic infections (multiplier)')
+    l_su = make_paneled_plot('v5-summary-sensitivity-plots-su.png', shiftwise_unavailable, 'Shifts unavailable (multiplier)')
+    #l_tc = make_paneled_plot('v5-summary-sensitivity-plots-tc.png', total_cost, 'Total cost (multiplier)')
+
+    #list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim)
     list(gd_si = l_si$gd, gd_su = l_su$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim)
 }
 
