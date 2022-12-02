@@ -360,18 +360,8 @@ panelwise_interesting_sensitivity_fn = function(
                 )
                 for(j in 1:max_j) {
                     values = sapply(keys, function(key) mean(outcome_fn(dd[[j]][[key]])))
-                    this_greatest_positive_difference = max(sapply(
-                        values,
-                        function(value) {
-                            log(value) - log(null_value)
-                        }
-                    ))
-                    this_greatest_negative_difference = min(sapply(
-                        values,
-                        function(value) {
-                            log(value) - log(null_value)
-                        }
-                    ))
+                    this_greatest_positive_difference = log(values[3] / values[2])
+                    this_greatest_negative_difference = log(values[1] / values[2])
                     if(this_greatest_positive_difference >= greatest_positive_difference) {
                         greatest_positive_difference = this_greatest_positive_difference
                     }
@@ -483,38 +473,38 @@ l = panelwise_interesting_sensitivity_fn(
     c('farm', 'facility', 'facilitylike-farm', 'farmlike-facility',
       'farm-start-of-epidemic', 'facility-start-of-epidemic', 'facilitylike-farm-start-of-epidemic', 'farmlike-facility-start-of-epidemic',
       'farm-dec-11', 'facility-dec-11', 'facilitylike-farm-dec-11', 'farmlike-facility-dec-11',
-      # 'farm-no-recovered',
+      'no-recovered-farm',
       'facility-no-recovered', 'facilitylike-farm-no-recovered', 'farmlike-facility-no-recovered'),
     c(TRUE, TRUE, FALSE, FALSE,
       FALSE, FALSE, FALSE, FALSE,
       FALSE, FALSE, FALSE, FALSE,
-      # FALSE, 
+      FALSE, 
       FALSE, FALSE, FALSE),
     c(0, 0.002, 0.002, 0,
       0, 0.002, 0.002, 0,
       0, 0.002, 0.002, 0,
-      #0,
+      0,
       0.002, 0.002, 0),
     c(6, 6, 6, 6,
       6, 6, 6, 6,
       6, 6, 6, 6,
-      #6,
+      6,
       6, 6, 6),
     c(2, 0, 0, 2,
       2, 0, 0, 2,
       2, 0, 0, 2,
-      #2,
+      2,
       0, 0, 2),
     1,
     c(71, 71, 71, 71,
       0, 0, 0, 0,
       23, 23, 23, 23,
-      #0,
+      0,
       0, 0, 0),
     c(73, 73, 73, 73,
       0, 0, 0, 0,
       0, 0, 0, 0,
-      #73, 
+      73, 
       73, 73, 73),
     100
 )
