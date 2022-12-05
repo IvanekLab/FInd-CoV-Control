@@ -266,7 +266,9 @@ make_batch = function(d, key, index_j,
     E0,
     initial_recovereds,
     initial_V2s,
-    n_sims
+    n_sims,
+    summary_names,
+    summary_fns #CONTINUE HERE
 ) {
     prepended_key = ifelse(key == '',
         '',
@@ -281,7 +283,14 @@ make_batch = function(d, key, index_j,
                                 dormitory_R0s, E0, initial_recovereds,
                                 initial_V2s, n_sims)
         #print('Deconfirm')
-        d[[paste0(i, key)]] = readRDS(filename)
+        data_ = readRDS(filename)
+        key_ = paste0(i, key)
+        d[[key_]] = list()
+        #print(summary_names)
+        #print(summary_fns)
+        for(k in 1:length(summary_names)) {
+            d[[key_]][[summary_names[k]]] = summary_fns[[k]](data_)
+        }
     }
     d
 }
@@ -313,7 +322,9 @@ make_dd = function(
     E0,
     initial_recovereds,
     initial_V2s,
-    n_sims
+    n_sims,
+    summary_names,
+    summary_fns
 ) {
     dd = list()
     for(index_j in 1:max_j) {
@@ -322,7 +333,7 @@ make_dd = function(
                                    unique_ids, is_baselines,
                                    community_transmissions, work_R0s,
                                    dormitory_R0s, E0, initial_recovereds,
-                                   initial_V2s, n_sims)
+                                   initial_V2s, n_sims, summary_names, summary_fns)
     }
 
     for(sensitivity_variable in names(kConstants)) {
@@ -338,7 +349,8 @@ make_dd = function(
                                                community_transmissions,
                                                work_R0s, dormitory_R0s, E0,
                                                initial_recovereds, initial_V2s,
-                                               n_sims)
+                                               n_sims,
+                                               summary_names, summary_fns)
                 }
             }
         }
@@ -346,31 +358,8 @@ make_dd = function(
     dd
 }
 
-make_paneled_plot = function(filename, outcome_fn, ylab, dd, kConstants,
+make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
                              sensitivity_multipliers, max_j) {
-    si_mean_max = max(sapply(
-        dd,
-        function(dd_j) {
-            max(sapply(
-                dd_j,
-                function(dd_j_scenario) {
-                    mean(outcome_fn(dd_j_scenario))
-                }
-            ))
-        }
-    ))
-    si_mean_min = min(sapply(
-        dd,
-        function(dd_j) {
-            min(sapply(
-                dd_j,
-                function(dd_j_scenario) {
-                    mean(outcome_fn(dd_j_scenario))
-                }
-            ))
-        }
-    ))
-
     png(filename, height = 200*5, width = 200*7)
     layout(matrix(c(1:29, 34, 30:34), ncol = 7))
 
@@ -384,7 +373,7 @@ make_paneled_plot = function(filename, outcome_fn, ylab, dd, kConstants,
         )
 
         for(i in 1:5) {
-            null_value = mean(outcome_fn(dd[[1]][[paste0(i)]]))
+            null_value = dd[[1]][[paste0(i)]][[outcome_name]]
             keys = sapply(
                 real_multipliers,
                 function(m) {
@@ -395,9 +384,9 @@ make_paneled_plot = function(filename, outcome_fn, ylab, dd, kConstants,
                 }
             )
             for(j in 1:max_j) {
-                values = sapply(keys, function(key) mean(outcome_fn(dd[[j]][[key]])))
-                this_greatest_positive_difference = log(values[3] / values[2])
-                this_greatest_negative_difference = log(values[1] / values[2])
+                values = sapply(keys, function(key) dd[[j]][[key]][[outcome_name]])
+                this_greatest_positive_difference = max(log(values[3] / values[2]), log(values[1] / values[2]))
+                this_greatest_negative_difference = min(log(values[3] / values[2]), log(values[1] / values[2]))
                 if(this_greatest_positive_difference >= greatest_positive_difference) {
                     greatest_positive_difference = this_greatest_positive_difference
                 }
@@ -442,7 +431,7 @@ make_paneled_plot = function(filename, outcome_fn, ylab, dd, kConstants,
             )
 
             for(j in 1:max_j) {
-                values = sapply(keys, function(key) mean(outcome_fn(dd[[j]][[key]])))
+                values = sapply(keys, function(key) dd[[j]][[key]][[outcome_name]])
                 this_greatest_difference = max(sapply(
                     values,
                     function(value) {
@@ -467,8 +456,8 @@ make_paneled_plot = function(filename, outcome_fn, ylab, dd, kConstants,
             greatest_difference_indices[i] = gd_j
 
 
-            values = sapply(keys, function(key) mean(outcome_fn(dd[[gd_j]][[key]])))
-            null_value = mean(outcome_fn(dd[[gd_j]][[paste0(i)]]))
+            values = sapply(keys, function(key) dd[[gd_j]][[key]][[outcome_name]])
+            null_value = dd[[gd_j]][[paste0(i)]][[outcome_name]]
             if(i == 1) {
                 plot(
                     real_multipliers,
@@ -510,7 +499,9 @@ panelwise_interesting_sensitivity_fn = function(
     initial_recovereds,
     initial_V2s,
     n_sims,
-    dd = NULL
+    dd = NULL,
+    summary_names,
+    summary_fns
 ) {
     max_j = length(unique_ids)
     sensitivity_multipliers = c(0.5, 1, 1.5)
@@ -519,16 +510,17 @@ panelwise_interesting_sensitivity_fn = function(
         dd = make_dd(max_j, sensitivity_multipliers, kConstants,
                      folder_name, unique_ids, is_baselines,
                      community_transmissions, work_R0s, dormitory_R0s, E0,
-                     initial_recovereds, initial_V2s, n_sims)
+                     initial_recovereds, initial_V2s, n_sims,
+                     summary_names, summary_fns)
     }
     #dd <<- dd
 
-    l_si = make_paneled_plot('v5-summary-sensitivity-plots-si.png',
-                             symptomatic_infections,
+    l_si = make_paneled_plot('v6-summary-sensitivity-plots-si.png',
+                             'symptomatic_infections',
                              'Symptomatic infections (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j)
-    l_su = make_paneled_plot('v5-summary-sensitivity-plots-su.png',
-                             shiftwise_unavailable, 
+    l_su = make_paneled_plot('v6-summary-sensitivity-plots-su.png',
+                             'shifts_unavailable', 
                              'Shifts unavailable (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j)
     #l_tc = make_paneled_plot('v5-summary-sensitivity-plots-tc.png', total_cost, 'Total cost (multiplier)')
@@ -537,7 +529,7 @@ panelwise_interesting_sensitivity_fn = function(
     list(gd_si = l_si$gd, gd_su = l_su$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, dd = dd)
 }
 
-dd = readRDS('saved_dd.RDS')
+#dd = readRDS('saved_dd.RDS')
 
 l = panelwise_interesting_sensitivity_fn(
     'sensitivity-2022-11-22',
@@ -578,14 +570,17 @@ l = panelwise_interesting_sensitivity_fn(
       73, 
       73, 73, 73),
     100,
-    dd = dd
+    dd = NULL,
+    c('symptomatic_infections', 'shifts_unavailable'),
+    c(function(x) mean(symptomatic_infections(x)),
+      function(x) mean(shiftwise_unavailable(x)))
 )
 v = pmax(l$gd_si, l$gd_su)
 print(sort(v))
 cutoff = sort(v)[16]
 print(names(kConstants)[v >= cutoff])
-#dd = l$dd
-#saveRDS(dd, 'saved_dd.RDS')
+dd = l$dd
+saveRDS(dd, 'saved_dd_6.RDS')
 # [1] 0.02943518 0.03385564 0.05364339 0.05606389 0.07001799 0.07627487
 # [7] 0.07748810 0.08334730 0.10040950 0.11874043 0.12788328 0.18079600
 #[13] 0.19454219 0.20439436 0.26785635 0.30954087 0.31035215 0.31138418
