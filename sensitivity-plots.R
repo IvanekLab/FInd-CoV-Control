@@ -651,9 +651,15 @@ make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
                greatest_negative_difference == -Inf ||
                greatest_positive_difference == Inf) {
                 stop('FAILURE.')
-            } else if(sensitivity_variable %in% variables_to_exclude) {
-                plot.new()
+            #} else if(sensitivity_variable %in% variables_to_exclude) {
+            #    if(i == 1) {
+            #        cat('SKIPPED:', sensitivity_index, ':', sensitivity_variable, '\n')
+            #        plot.new()
+            #    } else {
+            #        cat('\tand again\n')
+            #    }
             } else {
+                #cat('PLOTTED:', sensitivity_index, ':', sensitivity_variable, '\n')
                 #print('on')
                 #print(greatest_negative_difference)
                 #print('mid')
@@ -662,9 +668,32 @@ make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
                 #print(log(values))
                 #print('off')
                 if(i == 1) {
+                    if(null_value == 0) {
+                        log_differences = sign(values) * 10 * (greatest_positive_difference - greatest_negative_difference)
+                    } else {
+                        log_differences = log(values) - log(null_value)
+                    }
+                    #KLUDGE TIME!
+                    #to_print = FALSE
+                    #if(any(log_differences %in% c(-Inf, Inf))) {
+                    #    to_print = TRUE
+                    #    cat(sensitivity_variable, ': 1\n\t', log_differences, '\n', sep = '')
+                    #}
+                    #log_differences = ifelse(log_differences == Inf,
+                    #   10 * (greatest_positive_difference - greatest_negative_difference),
+                    #   ifelse(log_differences == -Inf,
+                    #       -10 * (greatest_positive_difference - greatest_negative_difference),
+                    #       log_differences
+                    #   )
+                    #)
+                    #if(to_print) {
+                    #    cat('\t', log_differences, '\n', sep = '')
+                    #}
+                    #END KLUDGE TIME
                     plot(
                         real_multipliers,
-                        log(values) - log(null_value),
+                        #log(values) - log(null_value),
+                        log_differences,
                         ylim = c(greatest_negative_difference, greatest_positive_difference),
                         xlim = c(0.5, 1.5),
                         xlab = paste0(sensitivity_variable, ' (multiplier)'),
@@ -689,6 +718,7 @@ make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
     plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
     legend("bottom", row.names, lwd = 4, col = colors)
     dev.off()
+    print('PLOT COMPLETE')
     list(gd = greatest_differences, gdim = greatest_difference_indices_matrix)
 }
 
@@ -720,16 +750,17 @@ panelwise_interesting_sensitivity_fn = function(
     }
     #dd <<- dd
 
-    l_si = make_paneled_plot('v7-summary-sensitivity-plots-si.png',
+    l_si = make_paneled_plot('v10-summary-sensitivity-plots-si.png',
                              'symptomatic_infections',
                              'Symptomatic infections (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j)
-    l_su = make_paneled_plot('v7-summary-sensitivity-plots-su.png',
+    l_su = make_paneled_plot('v10-summary-sensitivity-plots-su.png',
                              'shifts_unavailable', 
                              'Shifts unavailable (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j)
-    l_tc = make_paneled_plot('v7-summary-sensitivity-plots-tc.png',
-                             'total_cost', 'Total cost (multiplier)', dd,
+    l_tc = make_paneled_plot('v10-summary-sensitivity-plots-tc.png',
+                             'total_cost',
+                             'Total cost (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j)
 
     #list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
