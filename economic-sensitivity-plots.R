@@ -616,6 +616,11 @@ make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
             for(j in 1:max_j) {
                 values = sapply(keys, function(key) dd[[j]][[key]][[outcome_name]])
                 for(multiplier in real_multipliers) { ######
+                    if(multiplier == 1) { ######
+                        key = paste0(i) ######
+                    } else { ######
+                        key = paste0(i, sensitivity_variable, '-', m) ######
+                    } ######
                     value = dd[[j]][[key]][[outcome_name]] ######
                     values_df = rbind(values_df, data.frame(parameter_set = unique_ids[j], sensitivity_variable = sensitivity_variable, multiplier = multiplier, intervention = intervention, value = value)) ######
                 } ######
@@ -900,6 +905,11 @@ make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstan
             for(j in 1:max_j) {
                 values = sapply(keys, function(key) dd[[j]][[key]][[outcome_name]])
                 for(multiplier in real_multipliers) { ######
+                    if(multiplier == 1) { ######
+                        key = paste0(i) ######
+                    } else { ######
+                        key = paste0(i, sensitivity_variable, '-', m) ######
+                    } ######
                     value = dd[[j]][[key]][[outcome_name]] ######
                     values_df = rbind(values_df, data.frame(parameter_set = unique_ids[j], sensitivity_variable = sensitivity_variable, multiplier = multiplier, intervention = intervention, value = value)) ######
                 } ######
