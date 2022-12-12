@@ -79,6 +79,8 @@ shiftwise_production_loss = function(df, mask,
 
 limited_runs_index = c(1,2,4,9,13)
 
+#TBD: FIX INCORRECT calculation of (potentially negative!) compensation
+
 temperature_screening_cost = function(data,
     mask,
     hourly_wage,
@@ -94,7 +96,7 @@ temperature_screening_cost = function(data,
     screeners = ceiling(scheduled) / (eConstants$ts_limit * 60 / eConstants$ts_time)
     ts_time <- available * eConstants$ts_time / screeners / 3600   # Actual daily screening time in hours
         #the above should be renamed, for clarity
-    compensation <- ts_time * screeners * eConstants$hourly_wage * 2 # have to pay the screeners, and the people being screened
+    compensation <- ts_time * screeners * hourly_wage * 2 # have to pay the screeners, and the people being screened
     screener_training_cost = ceiling(N/100) * hourly_wage #max(screeners) * hourly_wage # 1hour training cost for screeners
     thermometer_cost <- max(screeners) * eConstants$thermometer_cost_each
 
@@ -103,7 +105,7 @@ temperature_screening_cost = function(data,
 
     ongoing_cost[1] = ongoing_cost[1] + initial_cost
 
-    browser()
+    #browser()
 
     ifelse(is.na(ongoing_cost), 0, ongoing_cost) #needs modification if we ever end up plotting over time
 }

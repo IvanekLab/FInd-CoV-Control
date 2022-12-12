@@ -75,7 +75,7 @@ temperature_screening_cost = function(data) {
     ongoing_cost = compensation + (KN95_cost + face_shield_cost/30) * screeners
 
     ongoing_cost[1] = ongoing_cost[1] + initial_cost
-
+    browser()
     ifelse(is.na(ongoing_cost), 0, ongoing_cost) #needs modification if we ever end up plotting over time
 }
 
