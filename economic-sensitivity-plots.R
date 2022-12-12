@@ -603,6 +603,7 @@ make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
         )
 
         for(i in 1:5) {
+            intervention = row.names[i] ######
             null_value = dd[[1]][[paste0(i)]][[outcome_name]]
             keys = sapply(
                 real_multipliers,
@@ -895,6 +896,7 @@ make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstan
         )
 
         for(i in 1:5) {
+            intervention = row.names[i] ######
             null_value = dd[[1]][[paste0(i)]][[outcome_name]]
             keys = sapply(
                 real_multipliers,
