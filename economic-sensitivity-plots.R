@@ -584,7 +584,8 @@ make_dd = function(
 #}
 
 make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
-                             sensitivity_multipliers, max_j) {#, selection_mode) {
+                             sensitivity_multipliers, max_j,
+                             csv_filename) {#, selection_mode) {  ######
     #print(outcome_name)
     filename; outcome_name; ylab; dd; kConstants; sensitivity_multipliers; max_j#; selection_mode
     png(filename, height = 200*5, width = 200*7)
@@ -594,6 +595,7 @@ make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
     greatest_positive_difference = 0
     greatest_negative_difference = 0
     variables_to_exclude = list()
+    values_df = data.frame(parameter_set = character(), sensitivity_variable = character(), multiplier = numeric(), intervention = character(), value = numeric()) ######
     for(sensitivity_variable in names(kConstants)) {
         real_multipliers = sapply(
             sensitivity_multipliers,
@@ -613,6 +615,10 @@ make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
             )
             for(j in 1:max_j) {
                 values = sapply(keys, function(key) dd[[j]][[key]][[outcome_name]])
+                for(multiplier in real_multipliers) { ######
+                    value = dd[[j]][[key]][[outcome_name]] ######
+                    values_df = rbind(values_df, data.frame(parameter_set = unique_ids[j], sensitivity_variable = sensitivity_variable, multiplier = multiplier, intervention = intervention, value = value)) ######
+                } ######
                 #print('on')
                 #print(values)
                 #print('off')
@@ -646,6 +652,7 @@ make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
             }
         }
     }
+    write.csv(values_df, csv_filename) ######
 
 #print(greatest_negative_difference)
 #print(greatest_positive_difference)
@@ -823,15 +830,18 @@ panelwise_interesting_sensitivity_fn = function(
     l_si = make_paneled_plot('v12-summary-sensitivity-plots-si.png',
                              'symptomatic_infections',
                              'Symptomatic infections (multiplier)', dd,
-                             kConstants, sensitivity_multipliers, max_j)
+                             kConstants, sensitivity_multipliers, max_j,
+                             'v12-sensitivity-symptomatic-infections.csv') ######
     l_su = make_paneled_plot('v12-summary-sensitivity-plots-su.png',
                              'shifts_unavailable', 
                              'Shifts unavailable (multiplier)', dd,
-                             kConstants, sensitivity_multipliers, max_j)
+                             kConstants, sensitivity_multipliers, max_j,
+                             'v12-sensitivity-shifts-unavailable.csv') ######
     l_tc = make_paneled_plot('v12-summary-sensitivity-plots-tc.png',
                              'total_cost',
                              'Total cost (multiplier)', dd,
-                             kConstants, sensitivity_multipliers, max_j)
+                             kConstants, sensitivity_multipliers, max_j,
+                             'v12-sensitivity-total-cost.csv') ######
 
     #list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
     list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim, dd = dd)
@@ -859,7 +869,8 @@ get_real_economic_multiplier = function(sensitivity_variable,
 
 
 make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstants,
-                             sensitivity_multipliers, max_j) {#, selection_mode) {
+                             sensitivity_multipliers, max_j,
+                             csv_filename) {#, selection_mode) {  ######
     filename; outcome_name; ylab; dd; eConstants; sensitivity_multipliers; max_j#; selection_mode
     png(filename, height = 200*5, width = 200*7)
     layout(matrix(c(1:29, 34, 30:34), ncol = 7))
@@ -868,6 +879,7 @@ make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstan
     greatest_positive_difference = 0
     greatest_negative_difference = 0
     variables_to_exclude = list()
+    values_df = data.frame(parameter_set = character(), sensitivity_variable = character(), multiplier = numeric(), intervention = character(), value = numeric()) ######
     for(sensitivity_variable in names(eConstants)) {
         real_multipliers = sapply(
             sensitivity_multipliers,
@@ -887,6 +899,10 @@ make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstan
             )
             for(j in 1:max_j) {
                 values = sapply(keys, function(key) dd[[j]][[key]][[outcome_name]])
+                for(multiplier in real_multipliers) { ######
+                    value = dd[[j]][[key]][[outcome_name]] ######
+                    values_df = rbind(values_df, data.frame(parameter_set = unique_ids[j], sensitivity_variable = sensitivity_variable, multiplier = multiplier, intervention = intervention, value = value)) ######
+                } ######
                 this_greatest_positive_difference = max(0, log(values[3] / values[2]), log(values[1] / values[2]), na.rm = TRUE)
                 this_greatest_negative_difference = min(0, log(values[3] / values[2]), log(values[1] / values[2]), na.rm = TRUE)
                 if(this_greatest_positive_difference >= greatest_positive_difference) {
@@ -908,6 +924,7 @@ make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstan
             }
         }
     }
+    write.csv(values_df, csv_filename) ######
 
     greatest_differences = c()
     greatest_difference_indices_matrix = c()
@@ -1170,7 +1187,8 @@ pi_economic_sensitivity_fn = function(
     l_tc = make_paneled_economic_plot('v12-summary-sensitivity-plots-economic-tc.png',
                              'total_cost',
                              'Total cost (multiplier)', dd,
-                             eConstants, sensitivity_multipliers, max_j)
+                             eConstants, sensitivity_multipliers, max_j,
+                             'v12-sensitivity-economic-only-parameters-total-cost.csv') ######)
 
     list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
 }
@@ -1195,7 +1213,7 @@ output_per_shifts = rep(1680000 / 10, 16)
 hourly_wages = rep(13.89, 16)
 #eConstants
 
-"l = panelwise_interesting_sensitivity_fn(
+l = panelwise_interesting_sensitivity_fn(
     'sensitivity-2022-11-22',
     c('farm', 'facility', 'facilitylike-farm', 'farmlike-facility',
       'farm-start-of-epidemic', 'facility-start-of-epidemic', 'facilitylike-farm-start-of-epidemic', 'farmlike-facility-start-of-epidemic',
@@ -1248,7 +1266,7 @@ cutoff = sort(v)[15]
 print(names(kConstants)[v >= cutoff])
 
 dd = l$dd
-saveRDS(dd, 'saved_dd_12.RDS')"
+saveRDS(dd, 'saved_dd_12.RDS')
 
 l2 = pi_economic_sensitivity_fn(
     'sensitivity-2022-11-22',
@@ -1295,6 +1313,9 @@ l2 = pi_economic_sensitivity_fn(
     masks,
     output_per_shifts, hourly_wages, eConstants
 )
+
+dd2 = l2$dd
+saveRDS(dd2, 'saved_dd2_12.RDS')
 
 # [1] 0.02943518 0.03385564 0.05364339 0.05606389 0.07001799 0.07627487
 # [7] 0.07748810 0.08334730 0.10040950 0.11874043 0.12788328 0.18079600
