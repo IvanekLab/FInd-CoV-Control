@@ -43,10 +43,6 @@ shiftwise_scheduled = function(data) {
     data[,'qn_scheduled',]
 }
 
-#shiftwise_scheduled = function(data) {
-#    data[,'qn_scheduled',]
-#}
-
 shiftwise_unavailable_fraction = function(df) {
     #print(summary(df))
     #print(dimnames(df))
@@ -67,6 +63,9 @@ shiftwise_production_loss = function(df, mask,
     #print(mask)
     df = df[mask,,]
     fraction_available = 1 - shiftwise_unavailable_fraction(df)
+    #print(mean(fraction_available))
+    #print(eConstants$threshold)
+    #browser()
     adjusted_fraction_available = pmin(fraction_available / eConstants$threshold, 1)
     fractional_production = adjusted_fraction_available^eConstants$exponent
     fractional_loss = 1 - fractional_production
@@ -132,19 +131,20 @@ vaccination_cost = function(data, mask, hourly_wage, eConstants) {
     ############## Vaccination ############
     # 0.75 hour paid sick leave per vaccination  
     # no production loss
-    data[,'doses',] * eConstants$hourly_wage * eConstants$vaccination_time
+    data[,'doses',] * hourly_wage * eConstants$vaccination_time
 }
 
 R0_reduction_cost = function(data, kludge_index,
     mask, hourly_wage, eConstants
 ) {
     data; kludge_index; hourly_wage; eConstants
-    bi_available <- shiftwise_scheduled(data) - shiftwise_unavailable(data,
+    "bi_available <- shiftwise_scheduled(data) - shiftwise_unavailable(data,
                                                                       mask,
                                                                       limited_i,
                                                                       output_per_shift,
                                                                       hourly_wage,
-                                                                      eConstants)
+                                                                      eConstants)"
+    bi_available = data[,'qn_scheduled',] - data[,'qn_absent',]
     bi_avilable = ifelse(is.na(bi_available), 0, bi_available)
 #    array(0, c(dim(data)[1], dim(data)[3]))
     if(kludge_index == 8) {
@@ -157,6 +157,7 @@ R0_reduction_cost = function(data, kludge_index,
     } else {
         stop(kludge_index)
     }
+    #print(dim(bi_cost))
     #print(dim(bi_cost))
 
     bi_cost
@@ -180,6 +181,8 @@ intervention_expenses_function = function(data, limited_i,
         vaccination_cost(data, mask, hourly_wage, eConstants)
     } else {
         R0_reduction_cost(data, i, mask, hourly_wage, eConstants)
+        #print(dim(x))
+        #x
     }
 }
 
@@ -187,9 +190,11 @@ g = function(data, mask, limited_i,
     output_per_shift, hourly_wage, eConstants
 ) {
     data; mask; limited_i; output_per_shift; hourly_wage; eConstants
-    cat('\nlimited_i:', limited_i, '\noutput_per_shift:', output_per_shift, '\nmask:', mask, '\nhourly_wage:', hourly_wage, '\n\n')
+    #cat('\nlimited_i:', limited_i, '\noutput_per_shift:', output_per_shift, '\nmask:', mask, '\nhourly_wage:', hourly_wage, '\n\n')
     fd = shiftwise_production_loss(data, mask, output_per_shift, eConstants)
     r = intervention_expenses_function(data, limited_i, output_per_shift, mask, hourly_wage, eConstants)
+    #print(dim(r))
+    #if(limited_i == 5) browser()
     total = apply(fd, 2, sum) + apply(r, 2, sum)
     "cat(
         '\n\n\nlimited_i:', limited_i, '\ni:', limited_runs_index[limited_i],
@@ -559,15 +564,15 @@ make_dd = function(
                 key = paste0(sensitivity_variable, '-', sensitivity_multiplier)
                 for(index_j in 1:max_j) {
                     dd[[index_j]] = make_batch(dd[[index_j]], key, index_j,
-                                               max_j,
-                                               folder_name, unique_ids,
+                                               max_j, folder_name, unique_ids,
                                                is_baselines,
                                                community_transmissions,
                                                work_R0s, dormitory_R0s, E0,
                                                initial_recovereds, initial_V2s,
-                                               n_sims,
-                                               summary_names, summary_fns,
-                                               masks)
+                                               n_sims, summary_names,
+                                               summary_fns, masks,
+                                               output_per_shifts, hourly_wages,
+                                               eConstants)
                 }
             }
         }
@@ -575,13 +580,13 @@ make_dd = function(
     dd
 }
 
-select = function(..., selection_mode) {
-}
+#select = function(..., selection_mode) {
+#}
 
 make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
-                             sensitivity_multipliers, max_j, selection_mode) {
+                             sensitivity_multipliers, max_j) {#, selection_mode) {
     #print(outcome_name)
-    filename; outcome_name; ylab; dd; kConstants; sensitivity_multipliers; max_j; selection_mode
+    filename; outcome_name; ylab; dd; kConstants; sensitivity_multipliers; max_j#; selection_mode
     png(filename, height = 200*5, width = 200*7)
     layout(matrix(c(1:29, 34, 30:34), ncol = 7))
 
@@ -611,6 +616,7 @@ make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
                 #print('on')
                 #print(values)
                 #print('off')
+                #browser()
                 this_greatest_positive_difference = max(0, log(values[3] / values[2]), log(values[1] / values[2]), na.rm = TRUE)
                 this_greatest_negative_difference = min(0, log(values[3] / values[2]), log(values[1] / values[2]), na.rm = TRUE)
                 if(this_greatest_positive_difference >= greatest_positive_difference) {
@@ -814,15 +820,15 @@ panelwise_interesting_sensitivity_fn = function(
     }
     #dd <<- dd
 
-    l_si = make_paneled_plot('v11-summary-sensitivity-plots-si.png',
+    l_si = make_paneled_plot('v12-summary-sensitivity-plots-si.png',
                              'symptomatic_infections',
                              'Symptomatic infections (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j)
-    l_su = make_paneled_plot('v11-summary-sensitivity-plots-su.png',
+    l_su = make_paneled_plot('v12-summary-sensitivity-plots-su.png',
                              'shifts_unavailable', 
                              'Shifts unavailable (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j)
-    l_tc = make_paneled_plot('v11-summary-sensitivity-plots-tc.png',
+    l_tc = make_paneled_plot('v12-summary-sensitivity-plots-tc.png',
                              'total_cost',
                              'Total cost (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j)
@@ -831,6 +837,344 @@ panelwise_interesting_sensitivity_fn = function(
     list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim, dd = dd)
     #list(gd_si = l_si$gd, gd_su = l_su$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, dd = dd)
 }
+
+get_real_economic_multiplier = function(sensitivity_variable,
+                               theoretical_multiplier,
+                               eConstants) {
+    sensitivity_variable; theoretical_multiplier; kConstants
+    eConstants_ = eConstants
+    eConstants_[[sensitivity_variable]] = theoretical_multiplier * eConstants_[[sensitivity_variable]]
+    if(sensitivity_variable == 'threshold' && eConstants_[['threshold']] > 1) {
+        eConstants_[['threshold']] = 1
+    }
+    #browser()
+    list(get(sensitivity_variable, eConstants_) / get(sensitivity_variable, eConstants), eConstants_)
+    #ccl = check_economic_consistency(eConstants_, altered_single_parameter = sensitivity_variable)
+    #eConstants_fixed = get('fixed_constants', ccl)
+    #if(!get('consistent', ccl) && !get('fixed', ccl)) {
+    #    stop('Unfixable constants')
+    #}
+    #get(sensitivity_variable, eConstants_fixed) / get(sensitivity_variable, eConstants)
+}
+
+
+make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstants,
+                             sensitivity_multipliers, max_j) {#, selection_mode) {
+    filename; outcome_name; ylab; dd; eConstants; sensitivity_multipliers; max_j#; selection_mode
+    png(filename, height = 200*5, width = 200*7)
+    layout(matrix(c(1:29, 34, 30:34), ncol = 7))
+
+    #figuring out bounds:
+    greatest_positive_difference = 0
+    greatest_negative_difference = 0
+    variables_to_exclude = list()
+    for(sensitivity_variable in names(eConstants)) {
+        real_multipliers = sapply(
+            sensitivity_multipliers,
+            function(m) get_real_economic_multiplier(sensitivity_variable, m, eConstants)[[1]]
+        )
+
+        for(i in 1:5) {
+            null_value = dd[[1]][[paste0(i)]][[outcome_name]]
+            keys = sapply(
+                real_multipliers,
+                function(m) {
+                    ifelse(m == 1,
+                        paste0(i),
+                        paste0(i, sensitivity_variable, '-', m)
+                    )
+                }
+            )
+            for(j in 1:max_j) {
+                values = sapply(keys, function(key) dd[[j]][[key]][[outcome_name]])
+                this_greatest_positive_difference = max(0, log(values[3] / values[2]), log(values[1] / values[2]), na.rm = TRUE)
+                this_greatest_negative_difference = min(0, log(values[3] / values[2]), log(values[1] / values[2]), na.rm = TRUE)
+                if(this_greatest_positive_difference >= greatest_positive_difference) {
+                    if(this_greatest_positive_difference == Inf) {
+                        cat('\nPositive Infinite:\n', sensitivity_variable, '\n', i, '\n', j, '\n', values, '\n\n')
+                        variables_to_exclude = c(variables_to_exclude, sensitivity_variable)
+                    } else {
+                        greatest_positive_difference = this_greatest_positive_difference
+                    }
+                }
+                if(this_greatest_negative_difference <= greatest_negative_difference) {
+                    if(this_greatest_negative_difference == Inf) {
+                        cat('\nNegative Infinite:\n', sensitivity_variable, '\n', i, '\n', j, '\n', values, '\n\n')
+                        variables_to_exclude = c(variables_to_exclude, sensitivity_variable)
+                    } else {
+                        greatest_negative_difference = this_greatest_negative_difference
+                    }
+                }
+            }
+        }
+    }
+
+    greatest_differences = c()
+    greatest_difference_indices_matrix = c()
+
+    #actually doing it
+    print(variables_to_exclude)
+    for(sensitivity_index in 1:length(eConstants)) {
+        sensitivity_variable = names(eConstants)[sensitivity_index]
+        real_multipliers = sapply(
+            sensitivity_multipliers,
+            function(m) get_real_economic_multiplier(sensitivity_variable, m, eConstants)[[1]]
+        )
+        
+        greatest_difference_all_5 = 0
+        greatest_difference_indices = rep(0, 5)
+
+        for(i in 1:5) {
+            greatest_difference = 0
+            gd_j = NULL
+        
+            keys = sapply(
+                real_multipliers,
+                function(m) {
+                    ifelse(m == 1,
+                        paste0(i),
+                        paste0(i, sensitivity_variable, '-', m)
+                    )
+                }
+            )
+
+            for(j in 1:max_j) {
+                values = sapply(keys, function(key) dd[[j]][[key]][[outcome_name]])
+                #cat(i, ':', j, '\n')
+                #browser()
+                this_greatest_difference = max(sapply(
+                    values,
+                    function(value) {
+                        max(0,
+                            sapply(
+                                values,
+                                function(value_) {
+                                    abs(log(value) - log(value_))
+                                }
+                            ),
+                            na.rm = TRUE
+                        )
+                    }
+                ))
+                if(this_greatest_difference >= greatest_difference) {
+                    greatest_difference = this_greatest_difference
+                    gd_j = j
+                }
+            }
+            if(greatest_difference > greatest_difference_all_5) {
+                greatest_difference_all_5 = greatest_difference
+            }
+            greatest_difference_indices[i] = gd_j
+
+
+            values = sapply(keys, function(key) dd[[gd_j]][[key]][[outcome_name]])
+            null_value = dd[[gd_j]][[paste0(i)]][[outcome_name]]
+            if(greatest_negative_difference == greatest_positive_difference ||
+               greatest_negative_difference == -Inf ||
+               greatest_positive_difference == Inf) {
+                stop('FAILURE.')
+            } else {
+                if(i == 1) {
+                    if(null_value == 0) {
+                        log_differences = sign(values) * 10 * (greatest_positive_difference - greatest_negative_difference)
+                    } else {
+                        log_differences = log(values) - log(null_value)
+                    }
+                    plot(
+                        real_multipliers,
+                        log_differences,
+                        ylim = c(greatest_negative_difference, greatest_positive_difference),
+                        xlim = c(0.5, 1.5),
+                        xlab = paste0(sensitivity_variable, ' (multiplier)'),
+                        ylab = ylab,
+                        type = 'b',
+                        lwd = 4
+                    )
+                } else {
+                    points(
+                        real_multipliers,
+                        log(values) - log(null_value),
+                        type = 'b',
+                        col = colors[i],
+                        lwd = 4
+                    )
+                }
+            }
+        }
+        greatest_differences = c(greatest_differences, greatest_difference_all_5)
+        greatest_difference_indices_matrix = rbind(greatest_difference_indices_matrix, greatest_difference_indices)
+    }
+    plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
+    legend("bottom", row.names, lwd = 4, col = colors)
+    dev.off()
+    print('PLOT COMPLETE')
+    list(gd = greatest_differences, gdim = greatest_difference_indices_matrix)
+}
+
+
+make_economic_batch = function(d, keys, index_j,
+    max_j,
+    folder_name,
+    unique_ids,
+    is_baselines,
+    community_transmissions,
+    work_R0s,
+    dormitory_R0s,
+    E0,
+    initial_recovereds,
+    initial_V2s,
+    n_sims,
+    summary_names,
+    summary_fns, #CONTINUE HERE
+    masks,
+    output_per_shifts,
+    hourly_wages,
+    eConstants
+) {
+    d; keys; index_j; max_j; folder_name; unique_ids; is_baselines; community_transmissions; work_R0s; dormitory_R0s; E0; initial_recovereds; initial_V2s; n_sims; summary_names; summary_fns; masks; output_per_shifts; hourly_wages; eConstants
+    #prepended_key = ifelse(key == '',
+    #    '',
+    #    paste0('-', key)
+    #)
+    for(i in 1:5) {
+        filename = rds_filename('', i, index_j, max_j, folder_name,
+                                unique_ids, is_baselines,
+                                community_transmissions, work_R0s,
+                                dormitory_R0s, E0, initial_recovereds,
+                                initial_V2s, n_sims)
+        data_ = readRDS(filename)
+
+        for(key in keys) {
+            if(length(key) == 1 && key == '') {
+                key_ = paste0(i)
+                eConstants_ = eConstants
+            } else {
+                key_ = paste0(i, key[[1]], '-', key[[2]])
+                eConstants_ = key[[3]]
+                #browser()
+            }
+            
+            d[[key_]] = list()
+            #browser()
+            for(k in 1:length(summary_names)) {
+                d[[key_]][[summary_names[k]]] = summary_fns[[k]](
+                    data_, masks[[index_j]], i, output_per_shifts[[index_j]],
+                    hourly_wages[[index_j]], eConstants_#key[[3]]
+                )
+            }
+        }
+    }
+    d
+}
+
+make_economic_dd = function(
+    max_j,
+    sensitivity_multipliers,
+    kConstants,
+    folder_name,
+    unique_ids,
+    is_baselines,
+    community_transmissions,
+    work_R0s,
+    dormitory_R0s,
+    E0,
+    initial_recovereds,
+    initial_V2s,
+    n_sims,
+    summary_names,
+    summary_fns,
+    masks,
+    output_per_shifts, hourly_wages, eConstants
+) {
+    max_j; sensitivity_multipliers; kConstants; folder_name; unique_ids; is_baselines; community_transmissions; work_R0s; dormitory_R0s; E0; initial_recovereds; initial_V2s; n_sims; summary_names; summary_fns; masks; output_per_shifts; hourly_wages; eConstants
+    dd = list()
+
+    keys = list('')
+    for(sensitivity_variable in names(eConstants)) {
+        real_multipliers = lapply(sensitivity_multipliers, function(m) get_real_economic_multiplier(sensitivity_variable, m, eConstants))
+        for(sensitivity_multiplier in real_multipliers) {
+            if(sensitivity_multiplier[[1]] != 1) {
+                keys[[length(keys) + 1]] = list(sensitivity_variable, sensitivity_multiplier[[1]], sensitivity_multiplier[[2]])
+            }
+        }
+    }   
+
+    for(index_j in 1:max_j) {
+        #cat('\n\n', index_j, ':', dormitory_R0s, '\n\n')
+        dd[[index_j]] = make_economic_batch(list(), keys, index_j, max_j, folder_name,
+                                   unique_ids, is_baselines,
+                                   community_transmissions, work_R0s,
+                                   dormitory_R0s, E0, initial_recovereds,
+                                   initial_V2s, n_sims, summary_names, summary_fns,
+                                   masks, output_per_shifts, hourly_wages,
+                                   eConstants)
+    }
+
+"    for(sensitivity_variable in names(kConstants)) {
+        real_multipliers = sapply(sensitivity_multipliers, function(m) get_real_multiplier(sensitivity_variable, m, kConstants))
+        for(sensitivity_multiplier in real_multipliers) {
+            if(sensitivity_multiplier != 1) {
+                key = paste0(sensitivity_variable, '-', sensitivity_multiplier)
+                for(index_j in 1:max_j) {
+                    dd[[index_j]] = make_batch(dd[[index_j]], key, index_j,
+                                               max_j, folder_name, unique_ids,
+                                               is_baselines,
+                                               community_transmissions,
+                                               work_R0s, dormitory_R0s, E0,
+                                               initial_recovereds, initial_V2s,
+                                               n_sims, summary_names,
+                                               summary_fns, masks,
+                                               output_per_shifts, hourly_wages,
+                                               eConstants)
+                }
+            }
+        }
+    }"
+    dd
+}
+
+
+pi_economic_sensitivity_fn = function(
+    folder_name,
+    unique_ids,
+    is_baselines,
+    community_transmissions,
+    work_R0s,
+    dormitory_R0s,
+    E0,
+    initial_recovereds,
+    initial_V2s,
+    n_sims,
+    dd = NULL,
+    summary_names,
+    summary_fns,
+    masks,
+    output_per_shifts,
+    hourly_wages,
+    eConstants
+) {
+    folder_name; unique_ids; is_baselines; community_transmissions; work_R0s; dormitory_R0s; E0; initial_recovereds; initial_V2s; n_sims; dd = NULL; summary_names; summary_fns; masks; output_per_shifts; hourly_wages; eConstants
+    max_j = length(unique_ids)
+    sensitivity_multipliers = c(0.5, 1, 1.5)
+
+    if(is.null(dd)) {
+        dd = make_economic_dd(max_j, sensitivity_multipliers, kConstants,
+                     folder_name, unique_ids, is_baselines,
+                     community_transmissions, work_R0s, dormitory_R0s, E0,
+                     initial_recovereds, initial_V2s, n_sims,
+                     summary_names, summary_fns, masks,
+                     output_per_shifts, hourly_wages, eConstants)
+    }
+    #dd <<- dd
+    #return here
+    l_tc = make_paneled_economic_plot('v12-summary-sensitivity-plots-economic-tc.png',
+                             'total_cost',
+                             'Total cost (multiplier)', dd,
+                             eConstants, sensitivity_multipliers, max_j)
+
+    list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
+}
+
 
 #dd = readRDS('saved_dd.RDS')
 
@@ -851,7 +1195,62 @@ output_per_shifts = rep(1680000 / 10, 16)
 hourly_wages = rep(13.89, 16)
 #eConstants
 
-l = panelwise_interesting_sensitivity_fn(
+"l = panelwise_interesting_sensitivity_fn(
+    'sensitivity-2022-11-22',
+    c('farm', 'facility', 'facilitylike-farm', 'farmlike-facility',
+      'farm-start-of-epidemic', 'facility-start-of-epidemic', 'facilitylike-farm-start-of-epidemic', 'farmlike-facility-start-of-epidemic',
+      'farm-dec-11', 'facility-dec-11', 'facilitylike-farm-dec-11', 'farmlike-facility-dec-11',
+      'no-recovered-farm',
+      'facility-no-recovered', 'facilitylike-farm-no-recovered', 'farmlike-facility-no-recovered'),
+    c(TRUE, TRUE, FALSE, FALSE,
+      FALSE, FALSE, FALSE, FALSE,
+      FALSE, FALSE, FALSE, FALSE,
+      FALSE, 
+      FALSE, FALSE, FALSE),
+    c(0, 0.002, 0.002, 0,
+      0, 0.002, 0.002, 0,
+      0, 0.002, 0.002, 0,
+      0,
+      0.002, 0.002, 0),
+    c(6, 6, 6, 6,
+      6, 6, 6, 6,
+      6, 6, 6, 6,
+      6,
+      6, 6, 6),
+    c(2, 0, 0, 2,
+      2, 0, 0, 2,
+      2, 0, 0, 2,
+      2,
+      0, 0, 2),
+    1,
+    c(71, 71, 71, 71,
+      0, 0, 0, 0,
+      23, 23, 23, 23,
+      0,
+      0, 0, 0),
+    c(73, 73, 73, 73,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
+      73, 
+      73, 73, 73),
+    100,
+    dd = NULL, #readRDS('saved_dd_12.RDS'),#NULL,
+    c('symptomatic_infections', 'shifts_unavailable', 'total_cost'),
+    c(mean_fn(symptomatic_infections),
+      mean_fn(shiftwise_unavailable),
+      mean_fn(g)),
+    masks,
+    output_per_shifts, hourly_wages, eConstants
+)
+v = pmax(l$gd_si, l$gd_su, l$gd_tc)
+print(sort(v))
+cutoff = sort(v)[15]
+print(names(kConstants)[v >= cutoff])
+
+dd = l$dd
+saveRDS(dd, 'saved_dd_12.RDS')"
+
+l2 = pi_economic_sensitivity_fn(
     'sensitivity-2022-11-22',
     c('farm', 'facility', 'facilitylike-farm', 'farmlike-facility',
       'farm-start-of-epidemic', 'facility-start-of-epidemic', 'facilitylike-farm-start-of-epidemic', 'farmlike-facility-start-of-epidemic',
@@ -891,19 +1290,12 @@ l = panelwise_interesting_sensitivity_fn(
       73, 73, 73),
     100,
     dd = NULL,
-    c('symptomatic_infections', 'shifts_unavailable', 'total_cost'),
-    c(mean_fn(symptomatic_infections),
-      mean_fn(shiftwise_unavailable),
-      mean_fn(g)),
+    c('total_cost'),
+    c(mean_fn(g)),
     masks,
     output_per_shifts, hourly_wages, eConstants
 )
-v = pmax(l$gd_si, l$gd_su, l$gd_tc)
-print(sort(v))
-cutoff = sort(v)[15]
-print(names(kConstants)[v >= cutoff])
-dd = l$dd
-saveRDS(dd, 'saved_dd_7.RDS')
+
 # [1] 0.02943518 0.03385564 0.05364339 0.05606389 0.07001799 0.07627487
 # [7] 0.07748810 0.08334730 0.10040950 0.11874043 0.12788328 0.18079600
 #[13] 0.19454219 0.20439436 0.26785635 0.30954087 0.31035215 0.31138418
