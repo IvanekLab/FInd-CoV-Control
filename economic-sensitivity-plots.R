@@ -585,7 +585,7 @@ make_dd = function(
 
 make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
                              sensitivity_multipliers, max_j,
-                             csv_filename) {#, selection_mode) {  ######
+                             csv_filename, unique_ids) {#, selection_mode) {  ######
     #print(outcome_name)
     filename; outcome_name; ylab; dd; kConstants; sensitivity_multipliers; max_j#; selection_mode
     png(filename, height = 200*5, width = 200*7)
@@ -836,17 +836,20 @@ panelwise_interesting_sensitivity_fn = function(
                              'symptomatic_infections',
                              'Symptomatic infections (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'v12-sensitivity-symptomatic-infections.csv') ######
+                             'v12-sensitivity-symptomatic-infections.csv', ######
+                             unique_ids) ######
     l_su = make_paneled_plot('v12-summary-sensitivity-plots-su.png',
                              'shifts_unavailable', 
                              'Shifts unavailable (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'v12-sensitivity-shifts-unavailable.csv') ######
+                             'v12-sensitivity-shifts-unavailable.csv', ######
+                             unique_ids) ######
     l_tc = make_paneled_plot('v12-summary-sensitivity-plots-tc.png',
                              'total_cost',
                              'Total cost (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'v12-sensitivity-total-cost.csv') ######
+                             'v12-sensitivity-total-cost.csv', ######
+                             unique_ids) ######
 
     #list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
     list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim, dd = dd)
@@ -875,7 +878,7 @@ get_real_economic_multiplier = function(sensitivity_variable,
 
 make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstants,
                              sensitivity_multipliers, max_j,
-                             csv_filename) {#, selection_mode) {  ######
+                             csv_filename, unique_ids) {#, selection_mode) {  ######
     filename; outcome_name; ylab; dd; eConstants; sensitivity_multipliers; max_j#; selection_mode
     png(filename, height = 200*5, width = 200*7)
     layout(matrix(c(1:29, 34, 30:34), ncol = 7))
@@ -1198,7 +1201,8 @@ pi_economic_sensitivity_fn = function(
                              'total_cost',
                              'Total cost (multiplier)', dd,
                              eConstants, sensitivity_multipliers, max_j,
-                             'v12-sensitivity-economic-only-parameters-total-cost.csv') ######)
+                             'v12-sensitivity-economic-only-parameters-total-cost.csv', ######
+                             unique_ids) ######
 
     list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
 }
@@ -1262,7 +1266,7 @@ l = panelwise_interesting_sensitivity_fn(
       73, 
       73, 73, 73),
     100,
-    dd = NULL, #readRDS('saved_dd_12.RDS'),#NULL,
+    dd = readRDS('saved_dd_12.RDS'),#NULL,
     c('symptomatic_infections', 'shifts_unavailable', 'total_cost'),
     c(mean_fn(symptomatic_infections),
       mean_fn(shiftwise_unavailable),
