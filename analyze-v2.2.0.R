@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-output_per_shift = output_per_week / (5 * (1 + (supervisors > 1))) #N * 60.1 * 4 #wrong, but it's okay
+output_per_shift = output_per_week / (5 * (1 + (supervisors > 1 && tolower(farm_or_facility) == 'facility'))) #N * 60.1 * 4 #wrong, but it's okay
 #hourly_wage = 13.89
 #size = 1000
 

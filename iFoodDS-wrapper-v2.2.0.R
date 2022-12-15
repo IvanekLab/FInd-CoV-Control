@@ -212,8 +212,9 @@ full_run = function(
         } else if(tolower(community_transmission) == 'high'){
             double_wrap_community_foi = 0.01
         } else {
-            stop(paste('Invalid community_transmission:',
-                       community_transmission))
+            double_wrap_community_foi = safe.numeric(community_transmission)
+            #stop(paste('Invalid community_transmission:',
+            #           community_transmission))
         }
         if(variant == 'delta' || variant == 'omicron') {
             double_wrap_community_foi = 2 * double_wrap_community_foi
@@ -231,8 +232,9 @@ full_run = function(
         } else if(tolower(social_distancing_shared_housing) == 'low') {
             dormitory_R0 = 2 
         } else {
-            stop(paste('Invalid social_distancing_shared_housing:',
-                       social_distancing_shared_housing))
+            dormitory_R0 = safe.numeric(social_distancing_shared_housing)
+            #stop(paste('Invalid social_distancing_shared_housing:',
+            #           social_distancing_shared_housing))
         }
         if(variant == 'delta' || variant == 'omicron') {
             dormitory_R0 = 2 * dormitory_R0
@@ -250,7 +252,8 @@ full_run = function(
     } else if(tolower(social_distancing_work) == 'low') {  
         double_wrap_baseline_work_R0 = 4
     } else {
-        stop(paste('Invalid social_distancing_work:', social_distancing_work))
+        double_wrap_baseline_work_R0 = safe.numeric(social_distancing_work)
+        #stop(paste('Invalid social_distancing_work:', social_distancing_work))
     }
 
     if(variant == 'delta' || variant == 'omicron') {
@@ -286,8 +289,8 @@ full_run = function(
     }
     steps = days * 3
     step_index = (1:steps) * (1/3)
-    #source('analyze-v2.2.0.R', local = TRUE)
-    #analyze_fn()
+    source('analyze-v2.2.0.R', local = TRUE)
+    analyze_fn()
 }
 
 FIXED_SEED = TRUE
@@ -311,7 +314,7 @@ common_parameters = list(
     n_no_symptoms = '1',        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'sensitivity-2022-10-29',#'debugging-tests',   # relative to working directory
+    folder_name = 'scenario-2022-12-15',#'debugging-tests',   # relative to working directory
     analyze_only = 'FALSE',
     PARALLEL = TRUE,
     fraction_recovered = 0.69,
@@ -349,10 +352,25 @@ additional_farm_parameters = list(
     social_distancing_shared_housing = 'Intermediate',
     community_transmission = NULL,
     #unique_id = 'farm-default-v24', #actually lower, but going for consistency
-    output_per_week = 1680000, #/ (5 * (1 + (supervisors > 1))) #N * 60.1 * 4 #wrong, but it's okay
+    output_per_week = 247612.00,#1680000, #/ (5 * (1 + (supervisors > 1))) #N * 60.1 * 4 #wrong, but it's okay
     hourly_wage = 13.89,
     size = NA
 )
+
+double_wrap_num_sims = 1000
+
+do.call(full_run, c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-shared', kConstants = kConstants)))
+do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual', kConstants = kConstants)))
+all_params = c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-individual', kConstants = kConstants))
+all_params$employee_housing = 'individual'
+all_params$social_distancing_shared_housing = NULL
+all_params$community_transmission = 'intermediate'
+do.call(full_run, all_params)
+all_params = c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-shared', kConstants = kConstants))
+all_params$employee_housing = 'shared'
+all_params$social_distancing_shared_housing = 'intermediate'
+all_params$community_transmission = NULL
+do.call(full_run, all_params)
 
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
 #common_parameters[['analyze_only']] = TRUE
@@ -436,16 +454,16 @@ run_67 = function(common_parameters, additional_facility_parameters,
        list(folder_name = 'sensitivity-2022-11-22',
             unique_id = 'farm'
        )
-)"
+)
 
-"run_67(common_parameters, additional_facility_parameters,
+run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
        list(folder_name = 'sensitivity-2022-11-22',
             unique_id = 'facility'
        )
-)"
+)
 
-"run_67(common_parameters, additional_facility_parameters,
+run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
             unique_id = 'facilitylike-farm',
@@ -453,10 +471,10 @@ run_67 = function(common_parameters, additional_facility_parameters,
             social_distancing_shared_housing = NULL,
             community_transmission = 'Intermediate'
        )
-)"
+)
 
 
-"run_67(common_parameters, additional_facility_parameters,
+run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
        list(folder_name = 'sensitivity-2022-11-22',
             unique_id = 'farmlike-facility',
@@ -464,10 +482,10 @@ run_67 = function(common_parameters, additional_facility_parameters,
             social_distancing_shared_housing = 'Intermediate',
             community_transmission = NULL
        )
-)"
+)
 
 
-"run_67(common_parameters, additional_facility_parameters,
+run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
             unique_id = 'farm-start-of-epidemic',
@@ -477,7 +495,7 @@ run_67 = function(common_parameters, additional_facility_parameters,
             fraction_boosted_ever = 0,
             fraction_boosted_last_five_months = 0
        )
-)"
+)
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
@@ -522,7 +540,7 @@ run_67(common_parameters, additional_facility_parameters,
 )
 
 
-"run_67(common_parameters, additional_facility_parameters,
+run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
             unique_id = 'farm-dec-11',
@@ -532,7 +550,7 @@ run_67(common_parameters, additional_facility_parameters,
             fraction_boosted_ever = 0,
             fraction_boosted_last_five_months = 0
        )
-)"
+)
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
@@ -576,13 +594,13 @@ run_67(common_parameters, additional_facility_parameters,
        )
 )
 
-"run_67(common_parameters, additional_facility_parameters,
+run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
             unique_id = 'farm-no-recovered',
             fraction_recovered = 0
        )
-)"
+)
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
@@ -612,5 +630,5 @@ run_67(common_parameters, additional_facility_parameters,
             social_distancing_shared_housing = 'Intermediate',
             community_transmission = NULL
        )
-)
+)"
 

@@ -141,12 +141,12 @@ double_wrapped_fn = function(kConstants, protection_functions) {
         registerDoParallel(5) # For my home computer
     } #if not, %dopar% is equivalent to %do% (with a warning)
 
-    limited_runs_index = c(1,2,4,9,13)
-    k_max = 5
-    row.names = row.names[limited_runs_index]
-    colors = colors[limited_runs_index]
-    ltys = ltys[limited_runs_index]
-    parameter_sets = parameter_sets[limited_runs_index,]
+    #limited_runs_index = c(1,2,4,9,13)
+    #k_max = 5
+    #row.names = row.names[limited_runs_index]
+    #colors = colors[limited_runs_index]
+    #ltys = ltys[limited_runs_index]
+    #parameter_sets = parameter_sets[limited_runs_index,]
     #NB: cost plots will be off
 
     full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
@@ -176,5 +176,5 @@ double_wrapped_fn = function(kConstants, protection_functions) {
     }
     DOUBLE_WRAPPED = FALSE
 
-    #list(row.names, colors, ltys, full_output_filenames)
+    list(row.names, colors, ltys, full_output_filenames)
 } #double_wrapped_fn
