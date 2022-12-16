@@ -278,8 +278,6 @@ vaccination_interval = get('second_shot_interval', kConstants)
 
 workday = c('ps_1', 'ps_2', 'cs')
 day_off = c('weekend_ps_1', 'weekend_ps_2', 'weekend_cs')
-week = c(rep(workday, 5), rep(day_off, 2))
-schedule = rep(week, ceiling(days/7))[1:(3 * days)]
 step_length_list = list(ps_1 = 1/3, ps_2 = 1/3, cs = 1/3, weekend_ps_1 = 1/3,
                         weekend_ps_2 = 1/3, weekend_cs = 1/3)
 testing_rate_list = list(ps_1 = get('work_testing_rate', scenario_parameters),
@@ -302,6 +300,19 @@ if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
 
 sys_time_start = Sys.time()
 for (i in 1:num_sims) {
+
+    start_day = sample(1:7, 1)
+    #week = c(rep(workday, 5), rep(day_off, 2))
+    if(start_day %in% 1:5) {
+        week = c(rep(workday, 6 - start_day),
+                 rep(day_off, 2),
+                 rep(workday, start_day - 1))
+    } else {
+        week = c(rep(day_off, 8 - start_day),
+                 rep(workday, 5),
+                 rep(day_off, start_day - 6))
+    }
+    schedule = rep(week, ceiling(days/7))[1:(3 * days)]
 
     floater_randomizers = runif(N, 0, 1)
     on_ps_1_randomized = floater_randomizers <= on_ps_1
@@ -350,9 +361,11 @@ for (i in 1:num_sims) {
         full_output = array(0, c(steps, dim(as.matrix(output))[2], num_sims))
         #doing this this way guarantees it gets created with the right number of
         #return variables
+        start_days = numeric(num_sims)
     }
     full_output[,,i] = as.matrix(output) #this works; for whatever reason,
                                          #as.array does not
+    start_days[i] = start_day
 } # for (i in 1:num_sims)
 #print_rand_state(paste('intervention:', index_i, 'printing state'))
 
@@ -363,4 +376,9 @@ cat(sys_time_end - sys_time_start, 'for', row_name,'\n')
 
 colnames(full_output) = colnames(output)
 saveRDS(full_output, full_output_save_name)
+fragments = unlist(strsplit(full_output_save_name, '/'))
+        #start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
+start_days_save_name = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
+print(start_days_save_name)
+saveRDS(start_days, start_days_save_name)
 } #main_produce_farm_fn 

@@ -357,10 +357,18 @@ additional_farm_parameters = list(
     size = NA
 )
 
-double_wrap_num_sims = 1000
+#double_wrap_num_sims = 1000
 
-do.call(full_run, c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-shared', kConstants = kConstants)))
-do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual', kConstants = kConstants)))
+#do.call(full_run, c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-shared', kConstants = kConstants)))
+#do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual', kConstants = kConstants)))
+double_wrap_num_sims = 10
+all_params = c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual-random-start', kConstants = kConstants))
+#all_params[['analyze_only']] = TRUE
+do.call(full_run, all_params)
+stop('OKAY!')
+double_wrap_num_sims = 1000
+do.call(full_run, all_params)
+stop('Hold on here for now.')
 all_params = c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-individual', kConstants = kConstants))
 all_params$employee_housing = 'individual'
 all_params$social_distancing_shared_housing = NULL

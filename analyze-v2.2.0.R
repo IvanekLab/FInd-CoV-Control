@@ -43,10 +43,6 @@ if(farm_or_facility == 'farm') {
     cleaning_shift_size = 0
     workday = c('work', 'home', 'home')
     day_off = c('home', 'home', 'home')
-    week = c(rep(workday, 5), rep(day_off, 2))
-    schedule = rep(week, ceiling(days/7))[1:(3 * days)]
-    production_shifts = work_shifts = (schedule == 'work')
-
 } else {
 
     psX_only_size = 1 + workers_per_crew * crews_per_supervisor + n_shift_floaters
@@ -68,15 +64,42 @@ if(farm_or_facility == 'farm') {
     } 
     day_off = c('home', 'home', 'sleep')
     week = c(rep(workday, 5), rep(day_off, 2))
-    schedule = rep(week, ceiling(days/7))[1:(3 * days)]
-    work_shifts = (schedule == 'work')
     
     production_shift_size = sum(on_ps_1)
     cleaning_shift_size =  sum(on_cs)
 }
-    
+
+work_shifts = function(start_day) {
+    if(start_day %in% 1:5) {
+        week = c(rep(workday, 6 - start_day),
+                 rep(day_off, 2),
+                 rep(workday, start_day - 1))
+    } else {
+        week = c(rep(day_off, 8 - start_day),
+                 rep(workday, 5),
+                 rep(day_off, start_day - 6))
+    }
+    schedule = rep(week, ceiling(days/7))[1:(3 * days)]
+    #production_shifts = work_shifts = (schedule == 'work')
+    (schedule == 'work')
+}
+
+production_shifts = function(start_day) {
+    ws = work_shifts(start_day)
+    l = length(ws)
+    (ws & ((1:l) %% 3 != 0))
+}
+
+cleaning_shifts = function(start_day) {
+    ws = work_shifts(start_day)
+    l = length(ws)
+    (ws & ((1:l) %% 3 == 0))
+}
+
+
 #summary plots
-combine = function(data, outcome_fn, summary_fn) { 
+combine = function(data, outcome_fn, summary_fn, mask, default_value = NA, default_detector = is.na) { 
+    #2022-12-15 mask now his dimensions of times (e.g., 270) x runs (e.g., 100 or 1000)
     dimnames(data) = list(rep(NA, dim(data)[1]),
                           colnames(data),
                           rep(NA, dim(data)[3])
@@ -84,7 +107,26 @@ combine = function(data, outcome_fn, summary_fn) {
     #above is a bit kludgey, but it works -- at some point in the future,
     #we may explicitly save data with dimnames
     outcomes = outcome_fn(data)
-    summarized = apply(outcomes, 1, summary_fn)
+    #summarized = apply(outcomes, 1, summary_fn)
+    summarize = function(i) { #time index
+        if(sum(mask[i,]) == 0) {
+            #browser() #realistically, this shouldn't happen, even at 100 runs
+                        #Except for cleaning shifts when calculating production plots and the like
+            default_value
+        } else {
+            summary_fn(outcomes[i,][mask[i,]])
+        }
+    }
+    if(!is.na(mask)) {
+        summarized = sapply(1:dim(outcomes)[1], summarize)
+        sanity_check = sapply(1:dim(outcomes)[1], function(i) sum(mask[i,]) != 0)
+        if(any(default_detector(summarized[sanity_check]))) {
+            browser() #realistically, this shouldn't happen, even at 100 runs
+        }
+    } else {
+        summarized = apply(outcomes, 1, summary_fn)
+    }
+
     summarized
 }
 
@@ -108,34 +150,47 @@ oneplot = function(
                    ylim,
                    ylab,
                    main_title = NULL,
-                   mask = NA
+                   mask_fn = function(d) NA
                    ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png',
               sep = ''),
         height = 1000, width = 1000)
 
-    if(!is.na(mask)[1]) {
-        step_index = step_index[mask]
-    }
+    #TBD: replace this functionality - 2022-12-15
+    #if(!is.na(mask)[1]) {
+    #    step_index = step_index[mask]
+    #}
 
     #bit of a kludge, but should ensure sane limits
     ys = list()
+    step_indices = list()
     for (i in 1:length(full_output_filenames)) {
         full_output = readRDS(full_output_filenames[i])
+        fragments = unlist(strsplit(full_output_filenames[i], '/'))
+        start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
+        mask = mask_fn(start_days)
 
-        if(!is.na(mask)[1]) {
-            full_output = full_output[mask,,]
+        #if(!is.na(mask)[1]) {
+        #    full_output = full_output[mask,,]
+        #}
+        #ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn)
+        ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn, mask)
+        step_indices[[i]] = step_index
+        if(!is.na(mask)) {
+            include = sapply(1:dim(mask)[1], function(i) sum(mask[i,]) != 0)
+            ys[[i]] = ys[[i]][include]
+            step_indices[[i]] = step_indices[[i]][include]
         }
-        ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn)
     }
     #print(max(unlist(ys)))
     for(i in 1:length(full_output_filenames)) {
         if(i == 1) {
             par(mar = c(5,5,4,2))
-            plot(step_index, ys[[i]], type = 'l', col = colors[i],
+            plot(step_indices[[i]], ys[[i]], type = 'l', col = colors[i],
                  ylim = c(min(ylim[1], min(sapply(ys, function(x) min(x)))),
                           max(ylim[2], max(sapply(ys, function(x) max(x))))
                         ),
+                 #xlim = c(0, days),
                  lwd = 4,
                  xlab = "Day", ylab = ylab, cex.axis = 1.5, cex.lab = 1.5,
                  lty = ltys[i])
@@ -153,7 +208,7 @@ oneplot = function(
                 axis(1, at=days, cex.axis = 1.5)
             }
         } else {
-            points(step_index, ys[[i]], col = colors[i], lwd = 4, type = 'l', lty = ltys[i])
+            points(step_indices[[i]], ys[[i]], col = colors[i], lwd = 4, type = 'l', lty = ltys[i])
         }
     }
     legend("topright",inset = .06, row.names, lwd = 4,
@@ -546,15 +601,30 @@ end_barplot = function(
 }
 
 
-oneplot('Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))
-oneplot('Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically Infected (out of ', N, ' total)', sep = ''))
+oneplot('reframed-Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))
+oneplot('reframed-Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically Infected (out of ', N, ' total)', sep = ''))
 
+production_shifts_mask_fn = function(start_days) {
+    sapply(1:length(step_index), function(x) production_shifts(start_days[x]))
+}
 
-l = length(work_shifts)
-production_shifts = work_shifts & ((1:l) %% 3 != 0)
-cleaning_shifts =  work_shifts & ((1:l) %% 3 == 0)
+cleaning_shifts_mask_fn = function(start_days) {
+    sapply(1:length(step_index), function(x) cleaning_shifts(start_days[x]))
+}
+work_shifts_mask_fn = function(start_days) {
+    sapply(1:length(step_index), function(x) work_shifts(start_days[x]))
+}
 
-oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', round(production_shift_size,2), ' total)', sep = ''), mask = production_shifts)
+oneplot('reframed-Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', round(production_shift_size,2), ' total)', sep = ''), mask_fn = production_shifts_mask_fn)
+
+#pulled up here for comparison, without having to fix boxplots etc.
+if(farm_or_facility == 'facility') {
+    oneplot('reframed-Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', round(cleaning_shift_size,2), ' total)', sep = ''), mask_fn = cleaning_shifts_mask_fn)
+    oneplot('reframed-Unavailable-all', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Shift (out of ', round(cleaning_shift_size,2), 'to' , round(production_shift_size,2), ' total)', sep = ''), mask_fn = work_shifts_mask_fn)
+}
+
+"print('Got what I could done for now.')
+browser()
 
 main_title = ''
 
@@ -690,7 +760,7 @@ if(farm_or_facility == 'facility') {
 #    f_farm(subdirectory, unique_id, VERSION, output_per_week = N * 60.1 * 40, hourly_wage = 13.89)
 #} else { #i.e., facility
 #    source('processing.R', local = TRUE)
-#}
+#}"
 
 ANALYZE = FALSE
 
