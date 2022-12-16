@@ -375,10 +375,13 @@ sys_time_end = Sys.time()
 cat(sys_time_end - sys_time_start, 'for', row_name,'\n')
 
 colnames(full_output) = colnames(output)
+#cat('\n\nfull_output_save_name:', full_output_save_name, '\n\n')
 saveRDS(full_output, full_output_save_name)
+#cat('through the first hurdle\n')
 fragments = unlist(strsplit(full_output_save_name, '/'))
+#cat(fragments[1],'\n',
         #start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
-start_days_save_name = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
-print(start_days_save_name)
+start_days_save_name = paste0(fragments[1], '/start_days--', fragments[2])
+#cat('\n\nstart_days_save_name:', start_days_save_name, '\n\n')
 saveRDS(start_days, start_days_save_name)
 } #main_produce_farm_fn 

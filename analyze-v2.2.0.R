@@ -70,6 +70,7 @@ if(farm_or_facility == 'farm') {
 }
 
 work_shifts = function(start_day) {
+    #print(start_day)
     if(start_day %in% 1:5) {
         week = c(rep(workday, 6 - start_day),
                  rep(day_off, 2),
@@ -605,14 +606,14 @@ oneplot('reframed-Infected', infected, mean, c(0,0), paste('People Infectious (o
 oneplot('reframed-Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically Infected (out of ', N, ' total)', sep = ''))
 
 production_shifts_mask_fn = function(start_days) {
-    sapply(1:length(step_index), function(x) production_shifts(start_days[x]))
+    sapply(1:double_wrap_num_sims, function(x) production_shifts(start_days[x]))
 }
 
 cleaning_shifts_mask_fn = function(start_days) {
-    sapply(1:length(step_index), function(x) cleaning_shifts(start_days[x]))
+    sapply(1:double_wrap_num_sims, function(x) cleaning_shifts(start_days[x]))
 }
 work_shifts_mask_fn = function(start_days) {
-    sapply(1:length(step_index), function(x) work_shifts(start_days[x]))
+    sapply(1:double_wrap_num_sims, function(x) work_shifts(start_days[x]))
 }
 
 oneplot('reframed-Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', round(production_shift_size,2), ' total)', sep = ''), mask_fn = production_shifts_mask_fn)
@@ -651,8 +652,8 @@ first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day
 oneplot('Production-Loss', shiftwise_production_loss, mean, c(0,0), 'Production Loss (Dollars ($) per production shift)', mask = production_shifts)
 end_boxplot('Total-Production-Loss', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts)
 end_boxplot('Total-Production-Loss-vioplot', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts, function_ = vioplot)
-end_boxplot('Total-Intervention-Expenses', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)"')
-end_boxplot('Total-Intervention-Expenses-vioplot', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)"', function_ = vioplot)
+end_boxplot('Total-Intervention-Expenses', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)')
+end_boxplot('Total-Intervention-Expenses-vioplot', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)', function_ = vioplot)
 
 intervention_expenses_function = generate_intervention_expenses_function()
 #below is massively kludged, to deal with production loss fn not handling
@@ -674,7 +675,7 @@ end_boxplot('Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + 
 #print('before')
 #scatter_plot(filename = 'Scatterplot--Production-Losses',
 #                       outcome_fn_x = shiftwise_production_loss,
-#                       xlab = "Total Production Losses in Dollars ($)",
+#                       xlab = 'Total Production Losses in Dollars ($)',
 #                       mask_x = production_shifts,
 #                       outcome_fn_y = function(data) data[,'new_infections',],
 #                       ylab = 'Total Infections',
@@ -700,7 +701,7 @@ end_boxplot('Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + 
 #print('mid')
 #scatter_plot(filename = 'Scatterplot--Total-Cost',
 #                       outcome_fn_x = g,
-#                       xlab = "Total Cost (Intervention Expenses + Production Losses) in Dollars ($)",
+#                       xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)',
 #                       mask_x = NA, #production_shifts,
 #                       outcome_fn_y = function(data) data[,'new_infections',],
 #                       ylab = 'Total Infections',
