@@ -833,23 +833,23 @@ panelwise_interesting_sensitivity_fn = function(
     }
     #dd <<- dd
 
-    l_si = make_paneled_plot('v12-summary-sensitivity-plots-si.png',
+    l_si = make_paneled_plot('v14-summary-sensitivity-plots-si.png',
                              'symptomatic_infections',
                              'Symptomatic infections (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'v12-sensitivity-symptomatic-infections.csv', ######
+                             'v14-sensitivity-symptomatic-infections.csv', ######
                              unique_ids) ######
-    l_su = make_paneled_plot('v12-summary-sensitivity-plots-su.png',
+    l_su = make_paneled_plot('v14-summary-sensitivity-plots-su.png',
                              'shifts_unavailable', 
                              'Shifts unavailable (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'v12-sensitivity-shifts-unavailable.csv', ######
+                             'v14-sensitivity-shifts-unavailable.csv', ######
                              unique_ids) ######
-    l_tc = make_paneled_plot('v12-summary-sensitivity-plots-tc.png',
+    l_tc = make_paneled_plot('v14-summary-sensitivity-plots-tc.png',
                              'total_cost',
                              'Total cost (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'v12-sensitivity-total-cost.csv', ######
+                             'v14-sensitivity-total-cost.csv', ######
                              unique_ids) ######
 
     #list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
@@ -1199,11 +1199,11 @@ pi_economic_sensitivity_fn = function(
     }
     #dd <<- dd
     #return here
-    l_tc = make_paneled_economic_plot('v12-summary-sensitivity-plots-economic-tc.png',
+    l_tc = make_paneled_economic_plot('v14-summary-sensitivity-plots-economic-tc.png',
                              'total_cost',
                              'Total cost (multiplier)', dd,
                              eConstants, sensitivity_multipliers, max_j,
-                             'v12-sensitivity-economic-only-parameters-total-cost.csv', ######
+                             'v14-sensitivity-economic-only-parameters-total-cost.csv', ######
                              unique_ids) ######
 
     list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
@@ -1223,10 +1223,10 @@ mean_fn = function(fn) {
     }
 }
 
-#output_per_shifts = rep(c(247612.00 / 10, 784346.67 / 5), 8) 
-#hourly_wages = rep(c(13.89, 16.57), 8)
-output_per_shifts = rep(1680000 / 10, 16)
-hourly_wages = rep(13.89, 16)
+output_per_shifts = rep(c(247612.00 / 5, 784346.67 / 10), 8) 
+hourly_wages = rep(c(13.89, 16.57), 8)
+#output_per_shifts = rep(1680000 / 10, 16)
+#hourly_wages = rep(13.89, 16)
 #eConstants
 
 l = panelwise_interesting_sensitivity_fn(
@@ -1268,7 +1268,7 @@ l = panelwise_interesting_sensitivity_fn(
       73, 
       73, 73, 73),
     100,
-    dd = readRDS('saved_dd_12.RDS'),#NULL,
+    dd = NULL,
     c('symptomatic_infections', 'shifts_unavailable', 'total_cost'),
     c(mean_fn(symptomatic_infections),
       mean_fn(shiftwise_unavailable),
@@ -1282,7 +1282,7 @@ cutoff = sort(v)[15]
 print(names(kConstants)[v >= cutoff])
 
 dd = l$dd
-saveRDS(dd, 'saved_dd_12.RDS')
+saveRDS(dd, 'saved_dd_13.RDS')
 
 l2 = pi_economic_sensitivity_fn(
     'sensitivity-2022-11-22',
@@ -1331,7 +1331,7 @@ l2 = pi_economic_sensitivity_fn(
 )
 
 dd2 = l2$dd
-saveRDS(dd2, 'saved_dd2_12.RDS')
+saveRDS(dd2, 'saved_dd2_13.RDS')
 
 # [1] 0.02943518 0.03385564 0.05364339 0.05606389 0.07001799 0.07627487
 # [7] 0.07748810 0.08334730 0.10040950 0.11874043 0.12788328 0.18079600
