@@ -894,7 +894,9 @@ make_one_parameter_paneled_plots = function(filename, outcome_name, ylab, dd, kC
         greatest_difference_all_5 = 0
         #greatest_difference_indices = rep(0, 5)
 
-        for(j in 1:max_j) {
+        #for(j in 1:max_j) {
+        #changed order to reuse existing .RDS while making visual comparison a little easier
+        for(j in c(1, 4, 2, 3, 5, 8, 6, 7, 9, 12, 10, 11, 13, 16, 14, 15)) {
             #print('L2+')
             for(i in 1:5) {
                 #print('L2++')
