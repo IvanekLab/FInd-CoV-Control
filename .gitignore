@@ -3,7 +3,8 @@
 *.tar.gz
 *.txt
 nohup.out
-*.png
+*.png*
 *.rds
+*.RDS
 *.csv
 */*

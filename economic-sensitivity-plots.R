@@ -913,11 +913,11 @@ make_one_parameter_paneled_plots = function(filename, outcome_name, ylab, dd, kC
                 values = sapply(keys, function(key) dd[[j]][[key]][[outcome_name]])
                 null_value = dd[[j]][[paste0(i)]][[outcome_name]]
                 if(linear) {
-                    difference_function = function(value_) {
+                    difference_function = function(value, value_) {
                         abs(value - value_)
                     }
                 } else {
-                    difference_function = function(value_) {
+                    difference_function = function(value, value_) {
                         abs(log(value) - log(value_))
                     }
                 }
@@ -927,7 +927,7 @@ make_one_parameter_paneled_plots = function(filename, outcome_name, ylab, dd, kC
                         max(0,
                             sapply(
                                 values,
-                                difference_function
+                                function(value_) difference_function(value, value_)
                             ),
                             na.rm = TRUE
                         )
