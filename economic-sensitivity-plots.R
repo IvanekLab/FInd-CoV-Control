@@ -961,7 +961,7 @@ make_one_parameter_paneled_plots = function(filename, outcome_name, ylab, dd, kC
                             type = 'b',
                             lwd = 4
                         )
-                        title(unique_ids[sensitivity_index])
+                        title(unique_ids[j])
                     } else {
                         points(
                             real_multipliers,
