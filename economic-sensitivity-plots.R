@@ -1448,7 +1448,7 @@ l = panelwise_interesting_sensitivity_fn(
     'sensitivity-2022-11-22',
     c('farm', 'facility', 'facilitylike-farm', 'farmlike-facility',
       'farm-start-of-epidemic', 'facility-start-of-epidemic', 'facilitylike-farm-start-of-epidemic', 'farmlike-facility-start-of-epidemic',
-      'farm-dec-11', 'facility-dec-11', 'facilitylike-farm-dec-11', 'farmlike-facility-dec-11',
+      'farm-no-vax', 'facility-no-vax', 'facilitylike-farm-no-vax', 'farmlike-facility-no-vax',
       'no-recovered-farm',
       'facility-no-recovered', 'facilitylike-farm-no-recovered', 'farmlike-facility-no-recovered'),
     c(TRUE, TRUE, FALSE, FALSE,

@@ -457,7 +457,7 @@ run_67 = function(common_parameters, additional_facility_parameters,
     }
 }
 
-run_67(common_parameters, additional_facility_parameters,
+"run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
             unique_id = 'farm'
@@ -545,14 +545,13 @@ run_67(common_parameters, additional_facility_parameters,
             social_distancing_shared_housing = 'Intermediate',
             community_transmission = NULL
        )
-)
+)"
 
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'farm-dec-11',
-            fraction_recovered = 0.22,
+            unique_id = 'farm-no-vax',
             fraction_fully_vaccinated = 0,
             ffv_last_five_months = 0,
             fraction_boosted_ever = 0,
@@ -563,8 +562,7 @@ run_67(common_parameters, additional_facility_parameters,
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
        list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'facility-dec-11',
-            fraction_recovered = 0.22,
+            unique_id = 'facility-no-vax',
             fraction_fully_vaccinated = 0,
             ffv_last_five_months = 0,
             fraction_boosted_ever = 0,
@@ -575,8 +573,7 @@ run_67(common_parameters, additional_facility_parameters,
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'facilitylike-farm-dec-11',
-            fraction_recovered = 0.22,
+            unique_id = 'facilitylike-farm-no-vax',
             fraction_fully_vaccinated = 0,
             ffv_last_five_months = 0,
             fraction_boosted_ever = 0,
@@ -590,8 +587,7 @@ run_67(common_parameters, additional_facility_parameters,
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
        list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'farmlike-facility-dec-11',
-            fraction_recovered = 0.22,
+            unique_id = 'farmlike-facility-no-vax',
             fraction_fully_vaccinated = 0,
             ffv_last_five_months = 0,
             fraction_boosted_ever = 0,
@@ -602,7 +598,7 @@ run_67(common_parameters, additional_facility_parameters,
        )
 )
 
-run_67(common_parameters, additional_facility_parameters,
+"run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'farm',
        list(folder_name = 'sensitivity-2022-11-22',
             unique_id = 'farm-no-recovered',
@@ -638,5 +634,5 @@ run_67(common_parameters, additional_facility_parameters,
             social_distancing_shared_housing = 'Intermediate',
             community_transmission = NULL
        )
-)
+)"
 
