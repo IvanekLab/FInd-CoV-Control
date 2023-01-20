@@ -457,46 +457,15 @@ run_67 = function(common_parameters, additional_facility_parameters,
     }
 }
 
-"run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'farm',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'farm'
+run_67(common_parameters, additional_facility_parameters,
+       additional_farm_parameters, kConstants, 'facility',
+       list(unique_id = 'facility'
        )
 )
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'facility'
-       )
-)
-
-run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'farm',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'facilitylike-farm',
-            employee_housing = 'Individual', 
-            social_distancing_shared_housing = NULL,
-            community_transmission = 'Intermediate'
-       )
-)
-
-
-run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'facility',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'farmlike-facility',
-            employee_housing = 'Shared', 
-            social_distancing_shared_housing = 'Intermediate',
-            community_transmission = NULL
-       )
-)
-
-
-run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'farm',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'farm-start-of-epidemic',
+       list(unique_id = 'facility-start-of-epidemic',
             fraction_recovered = 0,
             fraction_fully_vaccinated = 0,
             ffv_last_five_months = 0,
@@ -507,51 +476,7 @@ run_67(common_parameters, additional_facility_parameters,
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'facility-start-of-epidemic',
-            fraction_recovered = 0,
-            fraction_fully_vaccinated = 0,
-            ffv_last_five_months = 0,
-            fraction_boosted_ever = 0,
-            fraction_boosted_last_five_months = 0
-       )
-)
-
-run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'farm',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'facilitylike-farm-start-of-epidemic',
-            fraction_recovered = 0,
-            fraction_fully_vaccinated = 0,
-            ffv_last_five_months = 0,
-            fraction_boosted_ever = 0,
-            fraction_boosted_last_five_months = 0,
-            employee_housing = 'Individual', 
-            social_distancing_shared_housing = NULL,
-            community_transmission = 'Intermediate'
-       )
-)
-
-run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'facility',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'farmlike-facility-start-of-epidemic',
-            fraction_recovered = 0,
-            fraction_fully_vaccinated = 0,
-            ffv_last_five_months = 0,
-            fraction_boosted_ever = 0,
-            fraction_boosted_last_five_months = 0,
-            employee_housing = 'Shared', 
-            social_distancing_shared_housing = 'Intermediate',
-            community_transmission = NULL
-       )
-)"
-
-
-run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'farm',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'farm-no-vax',
+       list(unique_id = 'facility-no-vax',
             fraction_fully_vaccinated = 0,
             ffv_last_five_months = 0,
             fraction_boosted_ever = 0,
@@ -561,78 +486,54 @@ run_67(common_parameters, additional_facility_parameters,
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'facility-no-vax',
-            fraction_fully_vaccinated = 0,
-            ffv_last_five_months = 0,
-            fraction_boosted_ever = 0,
-            fraction_boosted_last_five_months = 0
-       )
-)
-
-run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'farm',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'facilitylike-farm-no-vax',
-            fraction_fully_vaccinated = 0,
-            ffv_last_five_months = 0,
-            fraction_boosted_ever = 0,
-            fraction_boosted_last_five_months = 0,
-            employee_housing = 'Individual', 
-            social_distancing_shared_housing = NULL,
-            community_transmission = 'Intermediate'
-       )
-)
-
-run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'facility',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'farmlike-facility-no-vax',
-            fraction_fully_vaccinated = 0,
-            ffv_last_five_months = 0,
-            fraction_boosted_ever = 0,
-            fraction_boosted_last_five_months = 0,
-            employee_housing = 'Shared', 
-            social_distancing_shared_housing = 'Intermediate',
-            community_transmission = NULL
-       )
-)
-
-"run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'farm',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'farm-no-recovered',
+       list(unique_id = 'facility-no-recovered',
             fraction_recovered = 0
        )
 )
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'facility-no-recovered',
-            fraction_recovered = 0
-       )
-)
-
-run_67(common_parameters, additional_facility_parameters,
-       additional_farm_parameters, kConstants, 'farm',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'facilitylike-farm-no-recovered',
-            fraction_recovered = 0,
-            employee_housing = 'Individual', 
-            social_distancing_shared_housing = NULL,
-            community_transmission = 'Intermediate'
+       list(unique_id = 'farmlike-facility',
+            employee_housing = 'Shared', 
+            social_distancing_shared_housing = 'Intermediate',
+            community_transmission = NULL
        )
 )
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
-       list(folder_name = 'sensitivity-2022-11-22',
-            unique_id = 'farmlike-facility-no-recovered',
+       list(unique_id = 'farmlike-facility-start-of-epidemic',
+            fraction_recovered = 0,
+            fraction_fully_vaccinated = 0,
+            ffv_last_five_months = 0,
+            fraction_boosted_ever = 0,
+            fraction_boosted_last_five_months = 0,
+            employee_housing = 'Shared', 
+            social_distancing_shared_housing = 'Intermediate',
+            community_transmission = NULL
+       )
+)
+
+run_67(common_parameters, additional_facility_parameters,
+       additional_farm_parameters, kConstants, 'facility',
+       list(unique_id = 'farmlike-facility-no-vax',
+            fraction_fully_vaccinated = 0,
+            ffv_last_five_months = 0,
+            fraction_boosted_ever = 0,
+            fraction_boosted_last_five_months = 0,
+            employee_housing = 'Shared', 
+            social_distancing_shared_housing = 'Intermediate',
+            community_transmission = NULL
+       )
+)
+
+run_67(common_parameters, additional_facility_parameters,
+       additional_farm_parameters, kConstants, 'facility',
+       list(unique_id = 'farmlike-facility-no-recovered',
             fraction_recovered = 0,
             employee_housing = 'Shared', 
             social_distancing_shared_housing = 'Intermediate',
             community_transmission = NULL
        )
-)"
+)
 
