@@ -457,7 +457,7 @@ run_67 = function(common_parameters, additional_facility_parameters,
     }
 }
 
-run_67(common_parameters, additional_facility_parameters,
+"run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
        list(unique_id = 'facility'
        )
@@ -489,7 +489,7 @@ run_67(common_parameters, additional_facility_parameters,
        list(unique_id = 'facility-no-recovered',
             fraction_recovered = 0
        )
-)
+)"
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',

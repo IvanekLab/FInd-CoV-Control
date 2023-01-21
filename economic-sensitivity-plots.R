@@ -884,7 +884,7 @@ make_one_parameter_paneled_plots = function(filename, outcome_name, ylab, dd, kC
     for(sensitivity_index in 1:length(kConstants)) {
         sensitivity_variable = names(kConstants)[sensitivity_index]
         png(paste0(filename,'-', sensitivity_variable), height = 200*4, width = 200*6)
-        layout(matrix(c(1:20, 17, 21, 22, 23), ncol = 6))
+        layout(matrix(c(1:4), ncol = 2))
 
         real_multipliers = sapply(
             sensitivity_multipliers,
@@ -896,7 +896,7 @@ make_one_parameter_paneled_plots = function(filename, outcome_name, ylab, dd, kC
 
         #for(j in 1:max_j) {
         #changed order to reuse existing .RDS while making visual comparison a little easier
-        for(j in c(1, 4, 2, 3, 5, 8, 6, 7, 9, 12, 10, 11, 13, 16, 14, 15)) {
+        for(j in 1:4) {
             #print('L2+')
             for(i in 1:5) {
                 #print('L2++')
@@ -978,8 +978,8 @@ make_one_parameter_paneled_plots = function(filename, outcome_name, ylab, dd, kC
         }
         greatest_differences = c(greatest_differences, greatest_difference_all_5)
         #greatest_difference_indices_matrix = rbind(greatest_difference_indices_matrix, greatest_difference_indices)
-        plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
-        legend("bottom", row.names, lwd = 4, col = colors)
+        #plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
+        #legend("bottom", row.names, lwd = 4, col = colors)
         dev.off()
         print(paste0(sensitivity_variable, ':', greatest_difference_all_5))
     }
@@ -1021,46 +1021,27 @@ panelwise_interesting_sensitivity_fn = function(
                      output_per_shifts, hourly_wages, eConstants)
     }
     #dd <<- dd
-    l_si = make_one_parameter_paneled_plots('linear-v15-summary-sensitivity-plots-si.png',
+    l_si = make_one_parameter_paneled_plots('v16-summary-sensitivity-plots-si.png',
                              'symptomatic_infections',
                              'Symptomatic infections (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'linear-v15-sensitivity-symptomatic-infections.csv', ######
-                             unique_ids, TRUE) ######
-    l_su = make_one_parameter_paneled_plots('linear-v15-summary-sensitivity-plots-su.png',
+                             'v16-sensitivity-symptomatic-infections.csv', ######
+                             unique_ids) ######
+    l_su = make_one_parameter_paneled_plots('v16-summary-sensitivity-plots-su.png',
                              'shifts_unavailable', 
                              'Shifts unavailable (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'linear-v15-sensitivity-shifts-unavailable.csv', ######
-                             unique_ids, TRUE) ######
-    l_tc = make_one_parameter_paneled_plots('linear-v15-summary-sensitivity-plots-tc.png',
+                             'v16-sensitivity-shifts-unavailable.csv', ######
+                             unique_ids) ######
+    l_tc = make_one_parameter_paneled_plots('v16-summary-sensitivity-plots-tc.png',
                              'total_cost',
                              'Total cost (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'linear-v15-sensitivity-total-cost.csv', ######
-                             unique_ids, TRUE) ######
-
-    l_si = make_one_parameter_paneled_plots('v15-summary-sensitivity-plots-si.png',
-                             'symptomatic_infections',
-                             'Symptomatic infections (multiplier)', dd,
-                             kConstants, sensitivity_multipliers, max_j,
-                             'v15-sensitivity-symptomatic-infections.csv', ######
-                             unique_ids) ######
-    l_su = make_one_parameter_paneled_plots('v15-summary-sensitivity-plots-su.png',
-                             'shifts_unavailable', 
-                             'Shifts unavailable (multiplier)', dd,
-                             kConstants, sensitivity_multipliers, max_j,
-                             'v15-sensitivity-shifts-unavailable.csv', ######
-                             unique_ids) ######
-    l_tc = make_one_parameter_paneled_plots('v15-summary-sensitivity-plots-tc.png',
-                             'total_cost',
-                             'Total cost (multiplier)', dd,
-                             kConstants, sensitivity_multipliers, max_j,
-                             'v15-sensitivity-total-cost.csv', ######
+                             'v16-sensitivity-total-cost.csv', ######
                              unique_ids) ######
 
-    list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
-    #list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim, dd = dd)
+    #list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
+    list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim, dd = dd)
     #list(gd_si = l_si$gd, gd_su = l_su$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, dd = dd)
 }
 
@@ -1197,7 +1178,7 @@ make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstan
                                 values,
                                 function(value_) {
                                     abs(log(value) - log(value_))
-                                }
+       sensitivity-2022-11-22                         }
                             ),
                             na.rm = TRUE
                         )
@@ -1438,52 +1419,35 @@ mean_fn = function(fn) {
     }
 }
 
-output_per_shifts = rep(c(247612.00 / 5, 784346.67 / 10), 8) 
-hourly_wages = rep(c(13.89, 16.57), 8)
+output_per_shifts = rep(784346.67 / 10, 4) 
+hourly_wages = rep(16.57, 4)
 #output_per_shifts = rep(1680000 / 10, 16)
 #hourly_wages = rep(13.89, 16)
 #eConstants
 
 l = panelwise_interesting_sensitivity_fn(
-    'sensitivity-2022-11-22',
-    c('farm', 'facility', 'facilitylike-farm', 'farmlike-facility',
-      'farm-start-of-epidemic', 'facility-start-of-epidemic', 'facilitylike-farm-start-of-epidemic', 'farmlike-facility-start-of-epidemic',
-      'farm-no-vax', 'facility-no-vax', 'facilitylike-farm-no-vax', 'farmlike-facility-no-vax',
-      'no-recovered-farm',
-      'facility-no-recovered', 'facilitylike-farm-no-recovered', 'farmlike-facility-no-recovered'),
-    c(TRUE, TRUE, FALSE, FALSE,
-      FALSE, FALSE, FALSE, FALSE,
-      FALSE, FALSE, FALSE, FALSE,
-      FALSE, 
-      FALSE, FALSE, FALSE),
-    c(0, 0.002, 0.002, 0,
-      0, 0.002, 0.002, 0,
-      0, 0.002, 0.002, 0,
-      0,
-      0.002, 0.002, 0),
-    c(6, 6, 6, 6,
-      6, 6, 6, 6,
-      6, 6, 6, 6,
-      6,
-      6, 6, 6),
-    c(2, 0, 0, 2,
-      2, 0, 0, 2,
-      2, 0, 0, 2,
-      2,
-      0, 0, 2),
+    'random-start-sensitivity',
+    c('farmlike-facility',
+      'farmlike-facility-no-vax',
+      'farmlike-facility-no-recovered',
+      'farmlike-facility-start-of-epidemic'),
+    c(FALSE, FALSE, FALSE, FALSE
+      ),
+    c(0,0,0,0),
+    c(6, 6, 6, 6),
+    c(2,2,
+      2,2),
     1,
-    c(71, 71, 71, 71,
-      0, 0, 0, 0,
-      23, 23, 23, 23,
+    c(71,
+      71,
       0,
-      0, 0, 0),
-    c(73, 73, 73, 73,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
-      73, 
-      73, 73, 73),
+      0),
+    c(73,
+      0, 
+      73,
+      0),
     100,
-    dd = readRDS('saved_dd_14.RDS'),#NULL,
+    dd = NULL, #readRDS('saved_dd_14.RDS'),#NULL,
     c('symptomatic_infections', 'shifts_unavailable', 'total_cost'),
     c(mean_fn(symptomatic_infections),
       mean_fn(shiftwise_unavailable),
@@ -1497,47 +1461,28 @@ cutoff = sort(v)[15]
 #print(names(kConstants)[v >= cutoff])
 
 dd = l$dd
+saveRDS(dd, 'saved_dd_16.RDS')
 stop('Good enough for the moment.')
-saveRDS(dd, 'saved_dd_14.RDS')
 
 l2 = pi_economic_sensitivity_fn(
     'sensitivity-2022-11-22',
-    c('farm', 'facility', 'facilitylike-farm', 'farmlike-facility',
-      'farm-start-of-epidemic', 'facility-start-of-epidemic', 'facilitylike-farm-start-of-epidemic', 'farmlike-facility-start-of-epidemic',
-      'farm-dec-11', 'facility-dec-11', 'facilitylike-farm-dec-11', 'farmlike-facility-dec-11',
-      'no-recovered-farm',
-      'facility-no-recovered', 'facilitylike-farm-no-recovered', 'farmlike-facility-no-recovered'),
-    c(TRUE, TRUE, FALSE, FALSE,
-      FALSE, FALSE, FALSE, FALSE,
-      FALSE, FALSE, FALSE, FALSE,
-      FALSE, 
-      FALSE, FALSE, FALSE),
-    c(0, 0.002, 0.002, 0,
-      0, 0.002, 0.002, 0,
-      0, 0.002, 0.002, 0,
+    c('farmlike-facility',
+      'farmlike-facility-start-of-epidemic',
+      'farmlike-facility-no-vax',
+      'farmlike-facility-no-recovered'),
+    c(FALSE, FALSE, FALSE, FALSE),
+    c(0, 0,
       0,
-      0.002, 0.002, 0),
-    c(6, 6, 6, 6,
-      6, 6, 6, 6,
-      6, 6, 6, 6,
-      6,
+      0),
+    c(6,
       6, 6, 6),
-    c(2, 0, 0, 2,
-      2, 0, 0, 2,
-      2, 0, 0, 2,
-      2,
-      0, 0, 2),
+    c(2, 2, 2, 2),
     1,
-    c(71, 71, 71, 71,
-      0, 0, 0, 0,
-      23, 23, 23, 23,
-      0,
-      0, 0, 0),
-    c(73, 73, 73, 73,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
-      73, 
-      73, 73, 73),
+    c(71,
+      0, 
+      71,0),
+    c(73, 0, 0,
+      73,),
     100,
     dd = NULL,
     c('total_cost'),
