@@ -1427,16 +1427,15 @@ hourly_wages = rep(16.57, 4)
 
 l = panelwise_interesting_sensitivity_fn(
     'random-start-sensitivity',
-    c('farmlike-facility',
-      'farmlike-facility-no-vax',
-      'farmlike-facility-no-recovered',
-      'farmlike-facility-start-of-epidemic'),
-    c(FALSE, FALSE, FALSE, FALSE
+    c('facility',
+      'facility-no-vax',
+      'facility-no-recovered',
+      'facility-start-of-epidemic'),
+    c(TRUE, FALSE, FALSE, FALSE
       ),
-    c(0,0,0,0),
+    c(0.002,0.002,0.002,0.002),
     c(6, 6, 6, 6),
-    c(2,2,
-      2,2),
+    c(0,0,0,0),
     1,
     c(71,
       71,
@@ -1461,7 +1460,7 @@ cutoff = sort(v)[15]
 #print(names(kConstants)[v >= cutoff])
 
 dd = l$dd
-saveRDS(dd, 'saved_dd_16.RDS')
+saveRDS(dd, 'saved_dd_16b.RDS')
 stop('Good enough for the moment.')
 
 l2 = pi_economic_sensitivity_fn(
