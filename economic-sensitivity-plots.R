@@ -897,6 +897,7 @@ make_one_parameter_paneled_plots = function(filename, outcome_name, ylab, dd, kC
         #for(j in 1:max_j) {
         #changed order to reuse existing .RDS while making visual comparison a little easier
         for(j in 1:4) {
+            FAIL_FLAG = FALSE
             #print('L2+')
             for(i in 1:5) {
                 #print('L2++')
@@ -942,7 +943,14 @@ make_one_parameter_paneled_plots = function(filename, outcome_name, ylab, dd, kC
                 if(greatest_negative_difference == greatest_positive_difference ||
                    greatest_negative_difference == -Inf ||
                    greatest_positive_difference == Inf) {
-                    stop('FAILURE.')
+                        if(i == 1) {
+                            plot(NULL, xaxt='n',yaxt='n',bty='n',ylab='',xlab='', xlim=0:1, ylim=0:1)
+                            print(paste0(sensitivity_variable, 'has failed in panel:', j))
+                        } else if(!FAIL_FLAG) {
+                            print(paste0(sensitivity_variable, 'has failed late in panel:', j, ':', i))
+                        }
+                    FAIL_FLAG = TRUE
+                    #stop('FAILURE.')
                 } else {
                     if(linear) {
                         plotting_values = values
@@ -974,7 +982,8 @@ make_one_parameter_paneled_plots = function(filename, outcome_name, ylab, dd, kC
                         )
                     }
                 }
-            }    
+            }
+            FAIL_FLAG = FALSE
         }
         greatest_differences = c(greatest_differences, greatest_difference_all_5)
         #greatest_difference_indices_matrix = rbind(greatest_difference_indices_matrix, greatest_difference_indices)
@@ -1033,12 +1042,20 @@ panelwise_interesting_sensitivity_fn = function(
                              kConstants, sensitivity_multipliers, max_j,
                              'v16-sensitivity-shifts-unavailable.csv', ######
                              unique_ids) ######
-    l_tc = make_one_parameter_paneled_plots('v16-summary-sensitivity-plots-tc.png',
+#    l_tc = make_one_parameter_paneled_plots('v16-summary-sensitivity-plots-tc.png',
+#                             'total_cost',
+#                             'Total cost (multiplier)', dd,
+#                             kConstants, sensitivity_multipliers, max_j,
+#                             'v16-sensitivity-total-cost.csv', ######
+#                             unique_ids) ######
+    l_tc = make_one_parameter_paneled_plots('v16-linear-summary-sensitivity-plots-tc.png',
                              'total_cost',
                              'Total cost (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
                              'v16-sensitivity-total-cost.csv', ######
-                             unique_ids) ######
+                             unique_ids,
+                             linear = TRUE) ######
+
 
     #list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
     list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim, dd = dd)
@@ -1072,22 +1089,18 @@ make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstan
     png(filename, height = 200*5, width = 200*7)
     layout(matrix(c(1:29, 34, 30:34), ncol = 7))
 
-    print('In function')
-
     #figuring out bounds:
     greatest_positive_difference = 0
     greatest_negative_difference = 0
     variables_to_exclude = list()
     values_df = data.frame(parameter_set = character(), sensitivity_variable = character(), multiplier = numeric(), intervention = character(), value = numeric()) ######
     for(sensitivity_variable in names(eConstants)) {
-        print('In first loop')
         real_multipliers = sapply(
             sensitivity_multipliers,
             function(m) get_real_economic_multiplier(sensitivity_variable, m, eConstants)[[1]]
         )
 
         for(i in 1:5) {
-            print('In first loop: nested once')
             intervention = row.names[i] ######
             null_value = dd[[1]][[paste0(i)]][[outcome_name]]
             keys = sapply(
@@ -1100,7 +1113,6 @@ make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstan
                 }
             )
             for(j in 1:max_j) {
-                print('In first loop: nested twice')
                 values = sapply(keys, function(key) dd[[j]][[key]][[outcome_name]])
                 for(multiplier in real_multipliers) { ######
                     if(multiplier == 1) { ######
@@ -1140,7 +1152,6 @@ make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstan
     #actually doing it
     print(variables_to_exclude)
     for(sensitivity_index in 1:length(eConstants)) {
-        print('In second loop')
         sensitivity_variable = names(eConstants)[sensitivity_index]
         real_multipliers = sapply(
             sensitivity_multipliers,
@@ -1151,7 +1162,6 @@ make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstan
         greatest_difference_indices = rep(0, 5)
 
         for(i in 1:5) {
-            print('In second loop: nested once')
             greatest_difference = 0
             gd_j = NULL
         
@@ -1166,7 +1176,6 @@ make_paneled_economic_plot = function(filename, outcome_name, ylab, dd, eConstan
             )
 
             for(j in 1:max_j) {
-                print('In second loop: nested twice')
                 values = sapply(keys, function(key) dd[[j]][[key]][[outcome_name]])
                 #cat(i, ':', j, '\n')
                 #browser()
