@@ -25,6 +25,14 @@ eConstants = list(
     life = 3 * 365                 # 3year life of air_cleaner
 )
 
+#NB: This will only work if the data has new_internal_infections, and will only
+#be *right* if the destination of transmission has been changed from E to R, as
+#in branch r0-testing
+r_eff = function(df, mask, limited_i, output_per_shift, hourly_wage, eConstants) {
+    df; mask; limited_i; output_per_shift; hourly_wage; eConstants
+    apply(df[,'new_internal_infections',], 2, sum)
+}
+
 symptomatic_infections = function(df, mask, limited_i,
     output_per_shift, hourly_wage, eConstants
 ) { 
@@ -1030,17 +1038,17 @@ panelwise_interesting_sensitivity_fn = function(
                      output_per_shifts, hourly_wages, eConstants)
     }
     #dd <<- dd
-    l_si = make_paneled_plot('v17-summary-sensitivity-plots-si.png',
+    l_si = make_paneled_plot('v17-shared-summary-sensitivity-plots-si.png',
                              'symptomatic_infections',
                              'Symptomatic infections (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'v17-sensitivity-symptomatic-infections.csv', ######
+                             'v17-shared-sensitivity-symptomatic-infections.csv', ######
                              unique_ids) ######
-    l_su = make_paneled_plot('v17-summary-sensitivity-plots-su.png',
+    l_su = make_paneled_plot('v17-shared-summary-sensitivity-plots-su.png',
                              'shifts_unavailable', 
                              'Shifts unavailable (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'v17-sensitivity-shifts-unavailable.csv', ######
+                             'v17-shared-sensitivity-shifts-unavailable.csv', ######
                              unique_ids) ######
 #    l_tc = make_one_parameter_paneled_plots('v16-summary-sensitivity-plots-tc.png',
 #                             'total_cost',
@@ -1060,6 +1068,52 @@ panelwise_interesting_sensitivity_fn = function(
     #list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim, dd = dd)
     list(gd_si = l_si$gd, gd_su = l_su$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, dd = dd)
 }
+
+panelwise_r_eff_sensitivity_fn = function(
+    folder_name,
+    unique_ids,
+    is_baselines,
+    community_transmissions,
+    work_R0s,
+    dormitory_R0s,
+    E0,
+    initial_recovereds,
+    initial_V2s,
+    n_sims,
+    dd = NULL,
+    summary_names,
+    summary_fns,
+    masks,
+    output_per_shifts,
+    hourly_wages,
+    eConstants
+) {
+    folder_name; unique_ids; is_baselines; community_transmissions; work_R0s; dormitory_R0s; E0; initial_recovereds; initial_V2s; n_sims; dd = NULL; summary_names; summary_fns; masks; output_per_shifts; hourly_wages; eConstants
+    max_j = length(unique_ids)
+    sensitivity_multipliers = c(0.5, 1, 1.5)
+
+    if(is.null(dd)) {
+        dd = make_dd(max_j, sensitivity_multipliers, kConstants,
+                     folder_name, unique_ids, is_baselines,
+                     community_transmissions, work_R0s, dormitory_R0s, E0,
+                     initial_recovereds, initial_V2s, n_sims,
+                     summary_names, summary_fns, masks,
+                     output_per_shifts, hourly_wages, eConstants)
+    }
+    #dd <<- dd
+    l_r_eff = make_paneled_plot('v17-shared-summary-sensitivity-plots-r_eff.png',
+                             'r_eff',
+                             'Effective reproduction number (internal)', dd,
+                             kConstants, sensitivity_multipliers, max_j,
+                             'v17-shared-sensitivity-r_eff.csv', ######
+                             unique_ids) ######
+
+    #list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
+    #list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim, dd = dd)
+    #list(gd_si = l_si$gd, gd_su = l_su$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, dd = dd)
+    l_r_eff
+}
+
 
 get_real_economic_multiplier = function(sensitivity_variable,
                                theoretical_multiplier,
@@ -1435,18 +1489,55 @@ hourly_wages = rep(16.57, 4)
 
 l = panelwise_interesting_sensitivity_fn(
     'random-start-sensitivity',
-    c('facility'#,
+    c('farmlike-facility'#,
       # 'facility-no-vax',
       # 'facility-no-recovered',
       # 'facility-start-of-epidemic'
       ),
-    c(TRUE#, FALSE, FALSE, FALSE
+    c(FALSE#, FALSE, FALSE, FALSE
       ),
-    c(0.002#,0.002,0.002,0.002
+    c(0#,0.002,0.002,0.002
       ),
     c(6#, 6, 6, 6
       ),
-    c(0#,0,0,0
+    c(2#,0,0,0
+      ),
+    1,
+    c(71#, 71, 0, 0
+      ),
+    c(73#, 0, 73, 0
+      ),
+    100,
+    dd = readRDS('saved_dd_17-farmlike.RDS'),#NULL,
+    c('symptomatic_infections', 'shifts_unavailable', 'total_cost'),
+    c(mean_fn(symptomatic_infections),
+      mean_fn(shiftwise_unavailable),
+      mean_fn(g)),
+    masks,
+    output_per_shifts, hourly_wages, eConstants
+)
+#v = pmax(l$gd_si, l$gd_su, l$gd_tc)
+#print(sort(v))
+#cutoff = sort(v)[15]
+#print(names(kConstants)[v >= cutoff])
+
+dd = l$dd
+saveRDS(dd, 'saved_dd_17-shared.RDS')
+
+l_r_eff = panelwise_r_eff_sensitivity_fn(
+    'sensitivity-r0s',
+    c('farmlike-facility'#,
+      # 'facility-no-vax',
+      # 'facility-no-recovered',
+      # 'facility-start-of-epidemic'
+      ),
+    c(FALSE#, FALSE, FALSE, FALSE
+      ),
+    c(0#,0.002,0.002,0.002
+      ),
+    c(6#, 6, 6, 6
+      ),
+    c(2#,0,0,0
       ),
     1,
     c(71#, 71, 0, 0
@@ -1455,20 +1546,20 @@ l = panelwise_interesting_sensitivity_fn(
       ),
     100,
     dd = NULL, #readRDS('saved_dd_14.RDS'),#NULL,
-    c('symptomatic_infections', 'shifts_unavailable', 'total_cost'),
-    c(mean_fn(symptomatic_infections),
-      mean_fn(shiftwise_unavailable),
-      mean_fn(g)),
+    c('r_eff'),
+    c(mean_fn(r_eff)),
     masks,
     output_per_shifts, hourly_wages, eConstants
 )
-v = pmax(l$gd_si, l$gd_su, l$gd_tc)
-print(sort(v))
-cutoff = sort(v)[15]
+#v = pmax(l$gd_si, l$gd_su, l$gd_tc)
+#print(sort(v))
+#cutoff = sort(v)[15]
 #print(names(kConstants)[v >= cutoff])
 
 dd = l$dd
-saveRDS(dd, 'saved_dd_17.RDS')
+saveRDS(dd, 'saved_dd_17-shared-r_eff.RDS')
+
+
 stop('Good enough for the moment.')
 
 l2 = pi_economic_sensitivity_fn(
