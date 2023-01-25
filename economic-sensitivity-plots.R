@@ -1,4 +1,5 @@
 source('constants.R')
+library(abind)
 
 #TBD: FIX THIS
 #facility
@@ -69,7 +70,14 @@ shiftwise_production_loss = function(df, mask,
     #print(dimnames(df))
     #print('---')
     #print(mask)
-    df = df[mask,,]
+    #df = df[mask,,]
+    runs = dim(mask)[2]
+    df = abind(sapply(1:runs, function(run) df[mask[,run],, run][1:128,], simplify = FALSE), along = 3)
+    #kludged as hell
+    #TBD: fix
+    #df = tryCatch(abind(sapply(1:runs, function(run) df[mask[,run],, run], simplify = FALSE), along = 0),
+    #              error = function(e) browser())
+    #print(dimnames(df))
     fraction_available = 1 - shiftwise_unavailable_fraction(df)
     #print(mean(fraction_available))
     #print(eConstants$threshold)
@@ -153,7 +161,7 @@ R0_reduction_cost = function(data, kludge_index,
                                                                       hourly_wage,
                                                                       eConstants)"
     bi_available = data[,'qn_scheduled',] - data[,'qn_absent',]
-    bi_avilable = ifelse(is.na(bi_available), 0, bi_available)
+    bi_available = ifelse(is.na(bi_available), 0, bi_available)
 #    array(0, c(dim(data)[1], dim(data)[3]))
     if(kludge_index == 8) {
         bi_cost = eConstants$KN95_cost * bi_available
@@ -202,7 +210,8 @@ g = function(data, mask, limited_i,
     fd = shiftwise_production_loss(data, mask, output_per_shift, eConstants)
     r = intervention_expenses_function(data, limited_i, output_per_shift, mask, hourly_wage, eConstants)
     #print(dim(r))
-    #if(limited_i == 5) browser()
+    #if(limited_i != 1) browser()
+    #browser()
     total = apply(fd, 2, sum) + apply(r, 2, sum)
     "cat(
         '\n\n\nlimited_i:', limited_i, '\ni:', limited_runs_index[limited_i],
@@ -736,6 +745,7 @@ make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
             if(greatest_negative_difference == greatest_positive_difference ||
                greatest_negative_difference == -Inf ||
                greatest_positive_difference == Inf) {
+                browser()
                 stop('FAILURE.')
             #} else if(sensitivity_variable %in% variables_to_exclude) {
             #    if(i == 1) {
@@ -1056,17 +1066,17 @@ panelwise_interesting_sensitivity_fn = function(
 #                             kConstants, sensitivity_multipliers, max_j,
 #                             'v16-sensitivity-total-cost.csv', ######
 #                             unique_ids) ######
-#    l_tc = make_paneled_plot('v17summary-sensitivity-plots-tc.png',
-#                             'total_cost',
-#                             'Total cost (multiplier)', dd,
-#                             kConstants, sensitivity_multipliers, max_j,
-#                             'v17-sensitivity-total-cost.csv', ######
-#                             unique_ids) ######
+    l_tc = make_paneled_plot('v17summary-sensitivity-plots-tc.png',
+                             'total_cost',
+                             'Total cost (multiplier)', dd,
+                             kConstants, sensitivity_multipliers, max_j,
+                            'v17-sensitivity-total-cost.csv', ######
+                             unique_ids) ######
 
 
     #list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
     #list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim, dd = dd)
-    list(gd_si = l_si$gd, gd_su = l_su$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, dd = dd)
+    list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim, dd = dd)
 }
 
 panelwise_r_eff_sensitivity_fn = function(
@@ -1470,10 +1480,45 @@ pi_economic_sensitivity_fn = function(
 
 #dd = readRDS('saved_dd.RDS')
 
-facility_production_mask = c(sapply(0:13, function(y) 21 * y + c(sapply(0:4, function(x) 3*x + 1:2))))[1:130]
-farm_production_mask = c(sapply(0:13, function(y) 21 * y + c(sapply(0:4, function(x) 3*x + 1))))[1:65]
+#facility_production_mask = c(sapply(0:13, function(y) 21 * y + c(sapply(0:4, function(x) 3*x + 1:2))))[1:130]
+#farm_production_mask = c(sapply(0:13, function(y) 21 * y + c(sapply(0:4, function(x) 3*x + 1))))[1:65]
 
-masks = rep(list(farm_production_mask, facility_production_mask), 8)
+workday = c('work', 'work', 'work')
+day_off = c('home', 'home', 'sleep')
+#week = c(rep(workday, 5), rep(day_off, 2))
+days = 90
+
+work_shifts = function(start_day) {
+    #print(start_day)
+    if(start_day %in% 1:5) {
+        week = c(rep(workday, 6 - start_day),
+                 rep(day_off, 2),
+                 rep(workday, start_day - 1))
+    } else {
+        week = c(rep(day_off, 8 - start_day),
+                 rep(workday, 5),
+                 rep(day_off, start_day - 6))
+    }
+    schedule = rep(week, ceiling(days/7))[1:(3 * days)]
+    #production_shifts = work_shifts = (schedule == 'work')
+    (schedule == 'work')
+}
+
+production_shifts = function(start_day) {
+    ws = work_shifts(start_day)
+    l = length(ws)
+    (ws & ((1:l) %% 3 != 0))
+}
+
+production_shifts_mask_fn = function(start_days) {
+    sapply(1:100, function(x) production_shifts(start_days[x]))
+}
+
+#start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
+start_days = readRDS('random-start-sensitivity/start_days--farmlike-facility_community-0,work_R0-6,dormitory_R0-2,E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-1_full-output.rds')
+
+masks = list(production_shifts_mask_fn(start_days)) #note that this is now a list of 270 x 100 matrices, not 
+#masks = list(facility_production_mask)#rep(list(farm_production_mask, facility_production_mask), 8)
 
 mean_fn = function(fn) {
     function(x, mask, limited_i, output_per_shift, hourly_wage, eConstants) {
@@ -1556,11 +1601,63 @@ l_r_eff = panelwise_r_eff_sensitivity_fn(
 #cutoff = sort(v)[15]
 #print(names(kConstants)[v >= cutoff])
 
-dd = l$dd
+dd = l_r_eff$dd
 saveRDS(dd, 'saved_dd_17-shared-r_eff.RDS')
 
 
 stop('Good enough for the moment.')
+
+#Bits to do by hand, probably
+#this bit probably actually linear
+custom_linear_panel = function(outcome_name, ylab, dd, kConstants,
+                             sensitivity_multipliers, unique_id,
+                             sensitivity_variable, ylim, gd_j = 1) {#, selection_mode) {  ######
+    #print(outcome_name)
+    outcome_name; ylab; dd; kConstants; sensitivity_multipliers; unique_id
+
+    #actually doing it
+    real_multipliers = sapply(
+        sensitivity_multipliers,
+        function(m) get_real_multiplier(sensitivity_variable, m, kConstants)
+    )
+    for(i in 1:5) {        
+        keys = sapply(
+            real_multipliers,
+            function(m) {
+                ifelse(m == 1,
+                    paste0(i),
+                    paste0(i, sensitivity_variable, '-', m)
+                )
+            }
+        )
+        values = sapply(keys, function(key) dd[[gd_j]][[key]][[outcome_name]])
+        null_value = dd[[gd_j]][[paste0(i)]][[outcome_name]]
+        if(i == 1) {
+            plot(
+                real_multipliers,
+                values,
+                ylim = ylim,
+                xlim = c(0.5, 1.5),
+                xlab = paste0(sensitivity_variable, ' (multiplier)'),
+                ylab = ylab,
+                type = 'b',
+                lwd = 4
+            )
+        } else {
+            points(
+                real_multipliers,
+                log(values) - log(null_value),
+                type = 'b',
+                col = colors[i],
+                lwd = 4
+            )
+        }
+    }
+}
+
+
+
+stop('Return to normal running?'
 
 l2 = pi_economic_sensitivity_fn(
     'sensitivity-2022-11-22',
