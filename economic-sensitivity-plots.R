@@ -1121,7 +1121,7 @@ panelwise_r_eff_sensitivity_fn = function(
     #list(gd_tc = l_tc$gd, gdim_tc = l_tc$gdim, dd = dd)
     #list(gd_si = l_si$gd, gd_su = l_su$gd, gd_tc = l_tc$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, gdim_tc = l_tc$gdim, dd = dd)
     #list(gd_si = l_si$gd, gd_su = l_su$gd, gdim_si = l_si$gdim, gdim_su = l_su$gdim, dd = dd)
-    l_r_eff
+    list(gd = l_r_eff$gd, gdim = l_r_eff$gdim, dd = dd)
 }
 
 
@@ -1601,17 +1601,20 @@ l_r_eff = panelwise_r_eff_sensitivity_fn(
 #cutoff = sort(v)[15]
 #print(names(kConstants)[v >= cutoff])
 
-dd = l_r_eff$dd
-saveRDS(dd, 'saved_dd_17-shared-r_eff.RDS')
+dd_l = l_r_eff$dd
+saveRDS(dd_l, 'saved_dd_17-shared-r_eff.RDS')
 
 
-stop('Good enough for the moment.')
+#stop('Good enough for the moment.')
 
 #Bits to do by hand, probably
 #this bit probably actually linear
+
+#custom_linear_panel('r_eff', 'Effective Reproduction Number (internal)', l_r_eff$dd, kConstants, c(0.5, 1, 1.5), 'farmlike-facility', 'B_magnitude_1', c(0,10), 1)
+
 custom_linear_panel = function(outcome_name, ylab, dd, kConstants,
                              sensitivity_multipliers, unique_id,
-                             sensitivity_variable, ylim, gd_j = 1) {#, selection_mode) {  ######
+                             sensitivity_variable, ylim, gd_j = 1, log_scale = FALSE) {#, selection_mode) {  ######
     #print(outcome_name)
     outcome_name; ylab; dd; kConstants; sensitivity_multipliers; unique_id
 
@@ -1631,7 +1634,11 @@ custom_linear_panel = function(outcome_name, ylab, dd, kConstants,
             }
         )
         values = sapply(keys, function(key) dd[[gd_j]][[key]][[outcome_name]])
-        null_value = dd[[gd_j]][[paste0(i)]][[outcome_name]]
+        if(log_scale) {
+            values = log(values + 1)
+        }
+        #null_value = dd[[gd_j]][[paste0(i)]][[outcome_name]]
+        #browser()
         if(i == 1) {
             plot(
                 real_multipliers,
@@ -1646,7 +1653,7 @@ custom_linear_panel = function(outcome_name, ylab, dd, kConstants,
         } else {
             points(
                 real_multipliers,
-                log(values) - log(null_value),
+                values,
                 type = 'b',
                 col = colors[i],
                 lwd = 4
@@ -1655,9 +1662,19 @@ custom_linear_panel = function(outcome_name, ylab, dd, kConstants,
     }
 }
 
+png('master-summary-log.png', height = 200*4, width = 200*9)
+layout(matrix(1:36, ncol = 9))
+parameters = c('SEVERE_MULTIPLIER', 'duration_IM_mean', 'p_trans_IM', 'B_magnitude_2', 'duration_IS_mean', 'isolation_duration', 'R_question_period', 'duration_IP_mean', 'B_magnitude_1')
+for(i in 1:9) {
+    parameter = parameters[i]
+    custom_linear_panel('symptomatic_infections', 'Symptomatic Infections', l$dd, kConstants, c(0.5, 1, 1.5), 'farmlike-facility', parameter, c(0,40), 1)
+    custom_linear_panel('shifts_unavailable', 'Worker-Shifts Unavailable', l$dd, kConstants, c(0.5, 1, 1.5), 'farmlike-facility', parameter, c(0,110), 1)
+    custom_linear_panel('r_eff', 'Effective Reproduction Number (internal)', l_r_eff$dd, kConstants, c(0.5, 1, 1.5), 'farmlike-facility', parameter, c(0,6), 1)
+    custom_linear_panel('total_cost', 'log(Total Cost) (log($))', l$dd, kConstants, c(0.5, 1, 1.5), 'farmlike-facility', parameter, c(0,11), 1, TRUE) #was 51000
+}
+dev.off()
 
-
-stop('Return to normal running?'
+stop('Return to normal running?')
 
 l2 = pi_economic_sensitivity_fn(
     'sensitivity-2022-11-22',
