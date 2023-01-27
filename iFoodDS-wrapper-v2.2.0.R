@@ -314,7 +314,7 @@ common_parameters = list(
     n_no_symptoms = '1',        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'random-start-sensitivity',#'debugging-tests',   # relative to working directory
+    folder_name = 'scenario-analysis-take-2',#'debugging-tests',   # relative to working directory
     analyze_only = 'FALSE',
     PARALLEL = TRUE,
     fraction_recovered = 0.69,
@@ -357,7 +357,7 @@ additional_farm_parameters = list(
     size = NA
 )
 
-"double_wrap_num_sims = 1000
+double_wrap_num_sims = 1000
 
 do.call(full_run, c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-shared-random-start', kConstants = kConstants)))
 do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual-random-start', kConstants = kConstants)))
@@ -489,7 +489,7 @@ run_67(common_parameters, additional_facility_parameters,
        list(unique_id = 'facility-no-recovered',
             fraction_recovered = 0
        )
-)"
+)
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
@@ -535,5 +535,5 @@ run_67(common_parameters, additional_facility_parameters,
             social_distancing_shared_housing = 'Intermediate',
             community_transmission = NULL
        )
-)
+)"
 
