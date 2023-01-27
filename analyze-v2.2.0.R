@@ -100,7 +100,7 @@ cleaning_shifts = function(start_day) {
 
 #summary plots
 combine = function(data, outcome_fn, summary_fn, mask, default_value = NA, default_detector = is.na) { 
-    #2022-12-15 mask now his dimensions of times (e.g., 270) x runs (e.g., 100 or 1000)
+    #2022-12-15 mask now has dimensions of times (e.g., 270) x runs (e.g., 100 or 1000)
     dimnames(data) = list(rep(NA, dim(data)[1]),
                           colnames(data),
                           rep(NA, dim(data)[3])
@@ -111,8 +111,13 @@ combine = function(data, outcome_fn, summary_fn, mask, default_value = NA, defau
     #summarized = apply(outcomes, 1, summary_fn)
     summarize = function(i) { #time index
         if(sum(mask[i,]) == 0) {
-            #browser() #realistically, this shouldn't happen, even at 100 runs
-                        #Except for cleaning shifts when calculating production plots and the like
+            # Meaning: for this time i, there is no run j for which
+            # mask[i,j] == TRUE
+            # Realistically, this shouldn't happen solely by chance, due to
+            # random start days, even at only 100 runs, let alone 1000. But it
+            # can happen deterministically, e.g., for cleaning shifts when
+            # calculating production plots, because we always start at the same
+            # time of day, just not necessarily the same day of the week.
             default_value
         } else {
             summary_fn(outcomes[i,][mask[i,]])
@@ -122,7 +127,10 @@ combine = function(data, outcome_fn, summary_fn, mask, default_value = NA, defau
         summarized = sapply(1:dim(outcomes)[1], summarize)
         sanity_check = sapply(1:dim(outcomes)[1], function(i) sum(mask[i,]) != 0)
         if(any(default_detector(summarized[sanity_check]))) {
-            browser() #realistically, this shouldn't happen, even at 100 runs
+            # This means that we are getting a default value from summarized,
+            # for one or more times that *do* have runs for which that time is
+            # included.
+            browser() # TBD: replace with an error when publishing code to the server
         }
     } else {
         summarized = apply(outcomes, 1, summary_fn)
@@ -157,11 +165,6 @@ oneplot = function(
               sep = ''),
         height = 1000, width = 1000)
 
-    #TBD: replace this functionality - 2022-12-15
-    #if(!is.na(mask)[1]) {
-    #    step_index = step_index[mask]
-    #}
-
     #bit of a kludge, but should ensure sane limits
     ys = list()
     step_indices = list()
@@ -171,10 +174,6 @@ oneplot = function(
         start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
         mask = mask_fn(start_days)
 
-        #if(!is.na(mask)[1]) {
-        #    full_output = full_output[mask,,]
-        #}
-        #ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn)
         ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn, mask)
         step_indices[[i]] = step_index
         if(!is.na(mask)) {
@@ -183,7 +182,6 @@ oneplot = function(
             step_indices[[i]] = step_indices[[i]][include]
         }
     }
-    #print(max(unlist(ys)))
     for(i in 1:length(full_output_filenames)) {
         if(i == 1) {
             par(mar = c(5,5,4,2))
