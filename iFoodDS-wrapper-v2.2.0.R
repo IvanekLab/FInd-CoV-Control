@@ -359,8 +359,8 @@ additional_farm_parameters = list(
 
 double_wrap_num_sims = 1000
 
-do.call(full_run, c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-shared-random-start', kConstants = kConstants)))
 do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual-random-start', kConstants = kConstants)))
+do.call(full_run, c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-shared-random-start', kConstants = kConstants)))
 #double_wrap_num_sims = 10
 #all_params = c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual', kConstants = kConstants))
 #all_params[['analyze_only']] = TRUE

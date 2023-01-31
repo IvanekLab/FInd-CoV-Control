@@ -148,6 +148,51 @@ symptomatic = function(data) {
     data[,'IM',] + data[,'IS',] + data[,'IC',]
 }
 
+day_add_all = function(ys) {
+    len = length(ys)
+    if(len %% 3) {
+        stop('Incorrect ys length:', len)
+    }
+    index = (1:(len/3)) * 3
+    ys[index - 2] + ys[index - 1] + ys[index]
+}
+
+day_last = function(step_index) {
+    len = length(step_index)
+    if(len %% 3) {
+        stop('Incorrect step_index length:', len)
+    }
+    index = (1:(len/3)) * 3
+    step_index[index]
+}
+
+day_average_all = function(ys) {
+    len = length(ys)
+    if(len %% 3) {
+        stop('Incorrect ys length:', len)
+    }
+    index = (1:(len/3)) * 3
+    (ys[index - 2] + ys[index - 1] + ys[index]) / 3
+}
+
+production_add_two = function(ys) {
+    len = length(ys)
+    if(len %% 2) {
+        stop('Incorrect ys length:', len)
+    }
+    index = (1:(len/2)) * 2
+    ys[index - 1] + ys[index]
+}
+
+production_average_two = function(ys) {
+    len = length(ys)
+    if(len %% 2) {
+        stop('Incorrect ys length:', len)
+    }
+    index = (1:(len/2)) * 2
+    (ys[index - 1] + ys[index]) / 2
+}
+
 
 #The following several functions may be combined at some point in the future.
 #main_title is unused in production code, but is kept for consistency with
@@ -159,7 +204,9 @@ oneplot = function(
                    ylim,
                    ylab,
                    main_title = NULL,
-                   mask_fn = function(d) NA
+                   mask_fn = function(d) NA,
+                   step_combiner = function(x) x,
+                   ys_combiner = function(x) x
                    ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png',
               sep = ''),
@@ -176,10 +223,16 @@ oneplot = function(
 
         ys[[i]] = combine(full_output, outcome_fn, primary_summary_fn, mask)
         step_indices[[i]] = step_index
+        len = length(step_indices[[i]])
         if(!is.na(mask)) {
             include = sapply(1:dim(mask)[1], function(i) sum(mask[i,]) != 0)
             ys[[i]] = ys[[i]][include]
             step_indices[[i]] = step_indices[[i]][include]
+        }
+        step_indices[[i]] = step_combiner(step_indices[[i]])
+        ys[[i]] = ys_combiner(ys[[i]])
+        if(i == 1) {
+            cat('\n', len, length(step_indices[[i]]), '\n')
         }
     }
     for(i in 1:length(full_output_filenames)) {
@@ -599,9 +652,10 @@ end_barplot = function(
     }
 }
 
-
-oneplot('reframed-Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''))
-oneplot('reframed-Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically Infected (out of ', N, ' total)', sep = ''))
+print('Infected:')
+oneplot('reresmoothed-Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all)
+print('Symptomatic:')
+oneplot('reresmoothed-Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically Infected (out of ', N, ' total)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all)
 
 production_shifts_mask_fn = function(start_days) {
     sapply(1:double_wrap_num_sims, function(x) production_shifts(start_days[x]))
@@ -614,16 +668,31 @@ work_shifts_mask_fn = function(start_days) {
     sapply(1:double_wrap_num_sims, function(x) work_shifts(start_days[x]))
 }
 
-oneplot('reframed-Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', round(production_shift_size,2), ' total)', sep = ''), mask_fn = production_shifts_mask_fn)
+if(farm_or_facility == 'facility' && supervisors > 1) {
+    production_step_combiner = production_average_two
+    production_ys_combiner = production_add_two
+    print('Two')
+} else {
+    production_step_combiner = function(x) x
+    production_ys_combiner = function(x) x
+    print('One')
+}
+
+#stop('Got enough for the moment.')
+#TBD: Make more general (encompassing farm, one-shift facility)
+print('Production:')
+oneplot('reresmoothed-Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', round(production_shift_size,2), ' total)', sep = ''), mask_fn = production_shifts_mask_fn, step_combiner = production_step_combiner, ys_combiner = production_ys_combiner)
 
 #pulled up here for comparison, without having to fix boxplots etc.
 if(farm_or_facility == 'facility') {
-    oneplot('reframed-Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', round(cleaning_shift_size,2), ' total)', sep = ''), mask_fn = cleaning_shifts_mask_fn)
-    oneplot('reframed-Unavailable-all', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Shift (out of ', round(cleaning_shift_size,2), 'to' , round(production_shift_size,2), ' total)', sep = ''), mask_fn = work_shifts_mask_fn)
+    print('Cleaning:')
+    oneplot('reresmoothed-Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', round(cleaning_shift_size,2), ' total)', sep = ''), mask_fn = cleaning_shifts_mask_fn)
+    print('All:')
+    oneplot('reresmoothed-Unavailable-all', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Shift (out of ', round(cleaning_shift_size,2), 'to' , round(production_shift_size,2), ' total)', sep = ''), mask_fn = work_shifts_mask_fn, step_combiner = day_average_all, ys_combiner = day_add_all)
 }
 
-"print('Got what I could done for now.')
-browser()
+print('Got what I could done for now.')
+"browser()
 
 main_title = ''
 
