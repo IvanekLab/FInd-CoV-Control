@@ -308,7 +308,7 @@ double_wrap_num_sims = 100#0
 #git diff --no-index --word-diff --ignore-all-space a.txt b.txt
 common_parameters = list(
     workers_per_crew = '10',    # FM: workers per line
-    crews_per_supervisor = 6, #'3', # FM: / lines per shift
+    #crews_per_supervisor = 6, #'3', # FM: / lines per shift
     days = '90',
     social_distancing_work = 'Intermediate',
     n_no_symptoms = '1',        #i.e., exposed 
@@ -328,10 +328,10 @@ common_parameters = list(
 
 additional_facility_parameters = list(
     farm_or_facility = 'facility',
-    supervisors = 1, #'2',          # FM: shifts
-    n_shift_floaters = '20',     # FM only (for farm model, will require NULL/NA)
+    #supervisors = 1, #'2',          # FM: shifts
+    #n_shift_floaters = '20',     # FM only (for farm model, will require NULL/NA)
     n_cleaners = '10',          # FM only (for farm model, will require NULL/NA)
-    n_all_floaters = 12, #'11',      # FM only (for farm model, will require NULL/NA)
+    #n_all_floaters = 12, #'11',      # FM only (for farm model, will require NULL/NA)
     employee_housing = 'Private', 
     social_distancing_shared_housing = NULL,
     community_transmission = 'Intermediate',
@@ -358,10 +358,10 @@ additional_farm_parameters = list(
 )
 
 double_wrap_num_sims = 100#0
-do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'one-shift-facility-individual-random-start', kConstants = kConstants)))
-
-"do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual-random-start', kConstants = kConstants)))
-do.call(full_run, c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-shared-random-start', kConstants = kConstants)))
+do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'one-shift-facility-individual-random-start', kConstants = kConstants, crews_per_supervisor = 6, supervisors = 1, n_all_floaters = 12, n_shift_floaters = '20')))
+double_wrap_num_sims = 1000
+do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual-random-start', kConstants = kConstants, crews_per_supervisor = 3, supervisors = 2, n_all_floaters = 11, n_shift_floaters = '10')))
+do.call(full_run, c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-shared-random-start', kConstants = kConstants, crews_per_supervisor = 3)))
 #double_wrap_num_sims = 10
 #all_params = c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual', kConstants = kConstants))
 #all_params[['analyze_only']] = TRUE
@@ -370,21 +370,21 @@ do.call(full_run, c(common_parameters, additional_farm_parameters, list(unique_i
 #double_wrap_num_sims = 1000
 #do.call(full_run, all_params)
 #stop('Hold on here for now.')
-all_params = c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-individual-random-start', kConstants = kConstants))
+all_params = c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-individual-random-start', kConstants = kConstants, crews_per_supervisor = 3))
 all_params$employee_housing = 'individual'
 all_params$social_distancing_shared_housing = NULL
 all_params$community_transmission = 'intermediate'
 do.call(full_run, all_params)
-all_params = c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-shared-random-start', kConstants = kConstants))
+all_params = c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-shared-random-start', kConstants = kConstants, crews_per_supervisor = 3, supervisors = 2, n_all_floaters = 11, n_shift_floaters = '10'))
 all_params$employee_housing = 'shared'
 all_params$social_distancing_shared_housing = 'intermediate'
 all_params$community_transmission = NULL
-do.call(full_run, all_params)"
+do.call(full_run, all_params)
 
 #do.call(full_run, c(common_parameters, additional_farm_parameters))
 #common_parameters[['analyze_only']] = TRUE
 #do.call(full_run, c(common_parameters, additional_facility_parameters))
-#kConstants_ = kConstants"
+#kConstants_ = kConstants
 
 run_67 = function(common_parameters, additional_facility_parameters,
                   additional_farm_parameters, kConstants, farm_or_facility,

@@ -70,7 +70,6 @@ if(farm_or_facility == 'farm') {
 }
 
 work_shifts = function(start_day) {
-    #print(start_day)
     if(start_day %in% 1:5) {
         week = c(rep(workday, 6 - start_day),
                  rep(day_off, 2),
@@ -81,8 +80,6 @@ work_shifts = function(start_day) {
                  rep(day_off, start_day - 6))
     }
     schedule = rep(week, ceiling(days/7))[1:(3 * days)]
-    #production_shifts = work_shifts = (schedule == 'work')
-    #print(sum(schedule == 'work'))
     (schedule == 'work')
 }
 
@@ -227,9 +224,6 @@ oneplot = function(
         len = length(step_indices[[i]])
         if(!is.na(mask)) {
             include = sapply(1:dim(mask)[1], function(i) sum(mask[i,]) != 0)
-            if(i == 1) {
-                print(include)
-            }
             ys[[i]] = ys[[i]][include]
             step_indices[[i]] = step_indices[[i]][include]
         }
@@ -657,9 +651,9 @@ end_barplot = function(
 }
 
 print('Infected:')
-oneplot('reresmoothed-Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all)
+oneplot('v4-Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all)
 print('Symptomatic:')
-oneplot('reresmoothed-Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically Infected (out of ', N, ' total)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all)
+oneplot('v4-Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically Infected (out of ', N, ' total)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all)
 
 production_shifts_mask_fn = function(start_days) {
     sapply(1:double_wrap_num_sims, function(x) production_shifts(start_days[x]))
@@ -695,14 +689,14 @@ if(farm_or_facility == 'facility') {
 #stop('Got enough for the moment.')
 #TBD: Make more general (encompassing farm, one-shift facility)
 print('Production:')
-oneplot('reresmoothed-Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', round(production_shift_size,2), ' total)', sep = ''), mask_fn = production_shifts_mask_fn, step_combiner = production_step_combiner, ys_combiner = production_ys_combiner)
+oneplot('v4-Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', round(production_shift_size,2), ' total)', sep = ''), mask_fn = production_shifts_mask_fn, step_combiner = production_step_combiner, ys_combiner = production_ys_combiner)
 
 #pulled up here for comparison, without having to fix boxplots etc.
 if(farm_or_facility == 'facility') {
     print('Cleaning:')
-    oneplot('reresmoothed-Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', round(cleaning_shift_size,2), ' total)', sep = ''), mask_fn = cleaning_shifts_mask_fn)
+    oneplot('v4-Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', round(cleaning_shift_size,2), ' total)', sep = ''), mask_fn = cleaning_shifts_mask_fn)
     print('All:')
-    oneplot('reresmoothed-Unavailable-all', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Shift (out of ', round(cleaning_shift_size,2), 'to' , round(production_shift_size,2), ' total)', sep = ''), mask_fn = work_shifts_mask_fn, step_combiner = all_step_combiner, ys_combiner = all_ys_combiner)
+    oneplot('v4-Unavailable-all', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Shift (out of ', round(cleaning_shift_size,2), 'to' , round(production_shift_size,2), ' total)', sep = ''), mask_fn = work_shifts_mask_fn, step_combiner = all_step_combiner, ys_combiner = all_ys_combiner)
 }
 
 print('Got what I could done for now.')
