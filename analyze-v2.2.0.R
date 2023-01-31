@@ -82,6 +82,7 @@ work_shifts = function(start_day) {
     }
     schedule = rep(week, ceiling(days/7))[1:(3 * days)]
     #production_shifts = work_shifts = (schedule == 'work')
+    #print(sum(schedule == 'work'))
     (schedule == 'work')
 }
 
@@ -226,6 +227,9 @@ oneplot = function(
         len = length(step_indices[[i]])
         if(!is.na(mask)) {
             include = sapply(1:dim(mask)[1], function(i) sum(mask[i,]) != 0)
+            if(i == 1) {
+                print(include)
+            }
             ys[[i]] = ys[[i]][include]
             step_indices[[i]] = step_indices[[i]][include]
         }
@@ -668,14 +672,24 @@ work_shifts_mask_fn = function(start_days) {
     sapply(1:double_wrap_num_sims, function(x) work_shifts(start_days[x]))
 }
 
-if(farm_or_facility == 'facility' && supervisors > 1) {
-    production_step_combiner = production_average_two
-    production_ys_combiner = production_add_two
-    print('Two')
+if(farm_or_facility == 'facility') {
+    if(supervisors > 1) {
+        production_step_combiner = production_average_two
+        production_ys_combiner = production_add_two
+        all_step_combiner = day_average_all
+        all_ys_combiner = day_add_all
+        print('Two.')
+    } else {
+        production_step_combiner = function(x) x
+        production_ys_combiner = function(x) x
+        all_step_combiner = production_average_two
+        all_ys_combiner = production_add_two
+        print('One, facility.')
+    }
 } else {
     production_step_combiner = function(x) x
     production_ys_combiner = function(x) x
-    print('One')
+    print('One, farm.')
 }
 
 #stop('Got enough for the moment.')
@@ -688,7 +702,7 @@ if(farm_or_facility == 'facility') {
     print('Cleaning:')
     oneplot('reresmoothed-Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', round(cleaning_shift_size,2), ' total)', sep = ''), mask_fn = cleaning_shifts_mask_fn)
     print('All:')
-    oneplot('reresmoothed-Unavailable-all', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Shift (out of ', round(cleaning_shift_size,2), 'to' , round(production_shift_size,2), ' total)', sep = ''), mask_fn = work_shifts_mask_fn, step_combiner = day_average_all, ys_combiner = day_add_all)
+    oneplot('reresmoothed-Unavailable-all', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Shift (out of ', round(cleaning_shift_size,2), 'to' , round(production_shift_size,2), ' total)', sep = ''), mask_fn = work_shifts_mask_fn, step_combiner = all_step_combiner, ys_combiner = all_ys_combiner)
 }
 
 print('Got what I could done for now.')
