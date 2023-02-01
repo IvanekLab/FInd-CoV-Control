@@ -396,31 +396,56 @@ end_boxplot = function(
                        xlim = NULL,
                        percent = FALSE,
                        main_title = NULL,
-                       mask = NA,
-                       function_ = boxplot
+                       mask_fn = function(d) NA,
+                       function_ = boxplot,
+                       #step_combiner = function(x) x,
+                       ys_combiner = function(x) x
                        ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
 
-    if(!is.na(mask)[1]) {
-        step_index = step_index[mask]
-    }
+    #if(!is.na(mask)[1]) {
+    #    step_index = step_index[mask]
+    #}
 
     means = numeric(length(full_output_filenames))
+    #step_indices = list() #??
     for (i in 1:length(full_output_filenames)) {
         full_output = readRDS(full_output_filenames[i])
         
-        if(!is.na(mask)[1]) {
-            full_output = full_output[mask,,]
-        }
-
+        #if(!is.na(mask)[1]) {
+        #    full_output = full_output[mask,,]
+        #}
+        fragments = unlist(strsplit(full_output_filenames[i], '/'))
+        start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
+        mask = mask_fn(start_days)
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
-        outcomes = outcome_fn(full_output)
-        outcomes = apply(outcomes, 2, cumsum)
+        obtain_value = function(j) { #run index; note difference from approach in combine()
+                                     #TBD: create a better function name (and
+                                     #better intermediate vector names
+            #sum(outcome_fn(full_output[mask[, , j, drop = FALSE]]))
+            v = full_output[mask[,j], , , drop = FALSE] # prevent reduction in dimensions, so the same outcome_fn can be used
+            vv = outcome_fn(v)
+            vvv = ys_combiner(vv)
+            len <<- length(vvv)
+            #print(v)
+            #print(vv)
+            #print(vvv)
+            sum(vvv)
+        }
+        
+        #outcomes = outcome_fn(full_output)
+        #outcomes = apply(outcomes, 2, cumsum)
+
         #cat('max of outcomes is:', max(outcomes), '\n')
 
-        final = as.vector(outcomes[dim(full_output)[1],])
+        #final = as.vector(outcomes[dim(full_output)[1],])
+        #print(dim(full_output))
+        #print(1:(dim(full_output)[3]))
+        final = sapply(1:(dim(full_output)[3]), obtain_value)
+
         if(average) {
-            final = final / length(step_index)
+            #final = final / length(step_index)
+            final = final / len
         }
         #cat('max of final is:', max(final), '\n')
         
@@ -650,9 +675,9 @@ end_barplot = function(
     }
 }
 
-print('Infected:')
+#print('Infected:')
 oneplot('v4-Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all)
-print('Symptomatic:')
+#print('Symptomatic:')
 oneplot('v4-Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically Infected (out of ', N, ' total)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all)
 
 production_shifts_mask_fn = function(start_days) {
@@ -672,40 +697,49 @@ if(farm_or_facility == 'facility') {
         production_ys_combiner = production_add_two
         all_step_combiner = day_average_all
         all_ys_combiner = day_add_all
-        print('Two.')
+        #print('Two.')
+        n_shifts = 2
     } else {
         production_step_combiner = function(x) x
         production_ys_combiner = function(x) x
         all_step_combiner = production_average_two
         all_ys_combiner = production_add_two
-        print('One, facility.')
+        #print('One, facility.')
+        n_shifts = 1
     }
 } else {
     production_step_combiner = function(x) x
     production_ys_combiner = function(x) x
-    print('One, farm.')
+    #print('One, farm.')
+    n_shifts = 1
 }
 
 #stop('Got enough for the moment.')
 #TBD: Make more general (encompassing farm, one-shift facility)
-print('Production:')
-oneplot('v4-Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', round(production_shift_size,2), ' total)', sep = ''), mask_fn = production_shifts_mask_fn, step_combiner = production_step_combiner, ys_combiner = production_ys_combiner)
+#print('Production:')
+oneplot('v4-Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', round(production_shift_size * n_shifts, 2), ' total)', sep = ''), mask_fn = production_shifts_mask_fn, step_combiner = production_step_combiner, ys_combiner = production_ys_combiner)
 
 #pulled up here for comparison, without having to fix boxplots etc.
 if(farm_or_facility == 'facility') {
-    print('Cleaning:')
+    #print('Cleaning:')
     oneplot('v4-Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', round(cleaning_shift_size,2), ' total)', sep = ''), mask_fn = cleaning_shifts_mask_fn)
-    print('All:')
+    #print('All:')
     oneplot('v4-Unavailable-all', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Shift (out of ', round(cleaning_shift_size,2), 'to' , round(production_shift_size,2), ' total)', sep = ''), mask_fn = work_shifts_mask_fn, step_combiner = all_step_combiner, ys_combiner = all_ys_combiner)
 }
 
 print('Got what I could done for now.')
-"browser()
+#browser()
 
 main_title = ''
 
-end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts)
-end_boxplot('Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts, function_ = vioplot)
+sys_time_start = Sys.time()
+end_boxplot('Daily-Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Production Worker Absences per Day (out of ', round(production_shift_size * n_shifts,2), ' workers)'), average = TRUE, main_title = main_title, mask_fn = production_shifts_mask_fn, ys_combiner = production_ys_combiner)
+sys_time_middle = Sys.time()
+#cat('First function took:', sys_time_end - sys_time_start, 'for', row_name,'\n')
+print(sys_time_middle - sys_time_start)
+end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask_fn = production_shifts_mask_fn)
+print(Sys.time() - sys_time_middle)
+"end_boxplot('Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts, function_ = vioplot)
 
 end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
 end_boxplot('Total-Infections-violin', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title, function_ = vioplot)
