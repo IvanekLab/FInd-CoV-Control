@@ -459,7 +459,7 @@ end_boxplot = function(
         } else {
             all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final))
         }
-        print(Sys.time() - intervention_start
+        print(Sys.time() - intervention_start)
     }
 
     all_outcomes$intervention = factor(all_outcomes$intervention, levels = unique(all_outcomes$intervention), ordered = TRUE)
