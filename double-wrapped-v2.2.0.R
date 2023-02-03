@@ -165,7 +165,7 @@ double_wrapped_fn = function(kConstants, protection_functions) {
         # below returns full_output_save_name
         # use of i is a temporary kludge to address the lack of encoding of
         # boosting rate in filenames (TBD: Change this)
-        full_output_save_name = wrapper_fn(i, kConstants)
+        full_output_save_name = wrapper_fn(limited_runs_index[i], kConstants)
                                           
         full_output_save_name
     }
