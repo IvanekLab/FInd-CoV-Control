@@ -396,7 +396,7 @@ end_boxplot = function(
                        xlim = NULL,
                        percent = FALSE,
                        main_title = NULL,
-                       mask_fn = function(d) NA,
+                       mask_fn = NULL,#function(d) NA,
                        function_ = boxplot,
                        #step_combiner = function(x) x,
                        ys_combiner = function(x) x
@@ -419,6 +419,10 @@ end_boxplot = function(
         #}
         fragments = unlist(strsplit(full_output_filenames[i], '/'))
         start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
+        if((i == 1) && is.null(mask_fn)) {
+            trivial_mask = matrix(TRUE, nrow = dim(full_output)[1], ncol = dim(full_output)[3])
+            mask_fn = function(x) trivial_mask
+        }
         mask = mask_fn(start_days)
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
         obtain_value = function(j) { #run index; note difference from approach in combine()
