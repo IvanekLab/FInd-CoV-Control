@@ -787,7 +787,7 @@ g = function(data) {
     #TBD: Make this better, seriously
     ad_hoc_production_mask = rep(c(TRUE, TRUE, FALSE), days)
     #fd = shiftwise_production_loss(data[production_shifts,,])
-    fd = shiftwise_production_loss(data[ad_hoc_production_mask,,])
+    fd = shiftwise_production_loss(data[ad_hoc_production_mask,, drop = FALSE])
     fd = ifelse(is.na(fd), 0, fd)
     #fd = ifelse(is.na(fd), 0, fd)
     #cat('blorp\n')
