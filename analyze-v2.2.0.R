@@ -230,9 +230,9 @@ oneplot = function(
         }
         step_indices[[i]] = step_combiner(step_indices[[i]])
         ys[[i]] = ys_combiner(ys[[i]])
-        if(i == 1) {
-            cat('\n', len, length(step_indices[[i]]), '\n')
-        }
+        #if(i == 1) {
+        #    cat('\n', len, length(step_indices[[i]]), '\n')
+        #}
     }
     for(i in 1:length(full_output_filenames)) {
         if(i == 1) {
@@ -412,7 +412,7 @@ end_boxplot = function(
     means = numeric(length(full_output_filenames))
     #step_indices = list() #??
     for (i in 1:length(full_output_filenames)) {
-        cat(i, '\t')
+        #cat(i, '\t')
         intervention_start = Sys.time()
         full_output = readRDS(full_output_filenames[i])
         
@@ -452,7 +452,7 @@ end_boxplot = function(
         final = sapply(1:(dim(full_output)[3]), obtain_value)
         intervention_middle = Sys.time()
         #print(intervention_middle - intervention_start)
-        cat('\t')
+        #cat('\t')
         
         if(average) {
             #final = final / length(step_index)
@@ -470,7 +470,7 @@ end_boxplot = function(
         }
         intervention_end = Sys.time()
         #print(intervention_end - intervention_middle)
-        cat('\t\t')
+        #cat('\t\t')
         #print(intervention_end - intervention_start)
     }
 
@@ -796,7 +796,8 @@ g = function(data) {
     #fd = ifelse(is.na(fd), 0, fd)
     #cat('blorp\n')
     r = intervention_expenses_function(data)
-    r[production_shifts] = r[production_shifts] + fd
+    #r[production_shifts] = r[production_shifts] + fd
+    r[ad_hoc_production_mask] = r[ad_hoc_production_mask] + fd
     #r = rbind(apply(fd,2,sum) + apply(f(data),2,sum))
     #print(dim(r))
     r
