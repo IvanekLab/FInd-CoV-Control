@@ -425,7 +425,7 @@ end_boxplot = function(
                                      #TBD: create a better function name (and
                                      #better intermediate vector names
             #sum(outcome_fn(full_output[mask[, , j, drop = FALSE]]))
-            v = full_output[mask[,j], , , drop = FALSE] # prevent reduction in dimensions, so the same outcome_fn can be used
+            v = full_output[mask[,j], , j, drop = FALSE] # prevent reduction in dimensions, so the same outcome_fn can be used
             vv = outcome_fn(v)
             vvv = ys_combiner(vv)
             len <<- length(vvv)
