@@ -741,7 +741,7 @@ sys_time_start = Sys.time()
 end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask_fn = production_shifts_mask_fn)
 sys_time_middle = Sys.time()
 print(sys_time_middle - sys_time_start)
-end_boxplot('Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts, function_ = vioplot)
+end_boxplot('Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask_fn = production_shifts_mask_fn, function_ = vioplot)
 print(Sys.time() - sys_time_middle)
 
 "end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
