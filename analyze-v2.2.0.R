@@ -410,6 +410,8 @@ end_boxplot = function(
     means = numeric(length(full_output_filenames))
     #step_indices = list() #??
     for (i in 1:length(full_output_filenames)) {
+        cat(i, '\t')
+        intervention_start = Sys.time()
         full_output = readRDS(full_output_filenames[i])
         
         #if(!is.na(mask)[1]) {
@@ -457,6 +459,7 @@ end_boxplot = function(
         } else {
             all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final))
         }
+        print(Sys.time() - intervention_start
     }
 
     all_outcomes$intervention = factor(all_outcomes$intervention, levels = unique(all_outcomes$intervention), ordered = TRUE)
@@ -732,16 +735,16 @@ print('Got what I could done for now.')
 
 main_title = ''
 
-sys_time_start = Sys.time()
-end_boxplot('Daily-Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Production Worker Absences per Day (out of ', round(production_shift_size * n_shifts,2), ' workers)'), average = TRUE, main_title = main_title, mask_fn = production_shifts_mask_fn, ys_combiner = production_ys_combiner)
-sys_time_middle = Sys.time()
+#end_boxplot('Daily-Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Production Worker Absences per Day (out of ', round(production_shift_size * n_shifts,2), ' workers)'), average = TRUE, main_title = main_title, mask_fn = production_shifts_mask_fn, ys_combiner = production_ys_combiner)
 #cat('First function took:', sys_time_end - sys_time_start, 'for', row_name,'\n')
-print(sys_time_middle - sys_time_start)
+sys_time_start = Sys.time()
 end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask_fn = production_shifts_mask_fn)
+sys_time_middle = Sys.time()
+print(sys_time_middle - sys_time_start)
+end_boxplot('Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts, function_ = vioplot)
 print(Sys.time() - sys_time_middle)
-"end_boxplot('Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = production_shifts, function_ = vioplot)
 
-end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
+"end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
 end_boxplot('Total-Infections-violin', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title, function_ = vioplot)
 
 end_boxplot('Total-Symptomatic-Infections', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = main_title)
