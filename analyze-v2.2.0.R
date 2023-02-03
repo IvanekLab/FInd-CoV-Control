@@ -374,16 +374,17 @@ generate_intervention_expenses_function = function() {
     function(data) {
         i <<- i + 1
         #print(i)
-        if(i == 1) {
+        i_ = limited_runs_index[i]
+        if(i_ == 1) {
             array(0, c(dim(data)[1], dim(data)[3]))
-        } else if(i == 2) {
+        } else if(i_ == 2) {
             temperature_screening_cost(data)
-        } else if(i %in% 3:5) {
+        } else if(i_ %in% 3:5) {
             virus_testing_cost(data)
-        } else if(i %in% c(6:7, 11:13)) {
+        } else if(i_ %in% c(6:7, 11:13)) {
             vaccination_cost(data)
         } else {
-            R0_reduction_cost(data, i)
+            R0_reduction_cost(data, i_)
         }
     }
 }
@@ -776,14 +777,18 @@ end_boxplot('Fraction-Short-production-violin', shiftwise_short, xlab = 'Percent
 end_boxplot('Total-Production-Loss', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts)
 end_boxplot('Total-Production-Loss-vioplot', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts, function_ = vioplot)
 end_boxplot('Total-Intervention-Expenses', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)')
-end_boxplot('Total-Intervention-Expenses-vioplot', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)', function_ = vioplot)
+end_boxplot('Total-Intervention-Expenses-vioplot', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)', function_ = vioplot)"
 
 intervention_expenses_function = generate_intervention_expenses_function()
 #below is massively kludged, to deal with production loss fn not handling
 #cleaning shifts, and cost needing to handle all shifts
 #follow by the need to have two dimensions for handling in end_boxplot
 g = function(data) {
-    fd = shiftwise_production_loss(data[production_shifts,,])
+    #TBD: Make this better, seriously
+    ad_hoc_production_mask = rep(c(TRUE, TRUE, FALSE), days)
+    #fd = shiftwise_production_loss(data[production_shifts,,])
+    fd = shiftwise_production_loss(data[ad_hoc_production_mask,,])
+    fd = ifelse(is.na(fd), 0, fd)
     #fd = ifelse(is.na(fd), 0, fd)
     #cat('blorp\n')
     r = intervention_expenses_function(data)
@@ -792,8 +797,8 @@ g = function(data) {
     #print(dim(r))
     r
 }
-end_boxplot('Total-Cost', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)')
-intervention_expenses_function = generate_intervention_expenses_function()
+#end_boxplot('Total-Cost', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)')
+"intervention_expenses_function = generate_intervention_expenses_function()"
 end_boxplot('Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)', function_ = vioplot)
 #print('before')
 #scatter_plot(filename = 'Scatterplot--Production-Losses',
@@ -833,7 +838,7 @@ end_boxplot('Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + 
 #                       ) 
 #print('post')
 
-if(farm_or_facility == 'facility') {
+"if(farm_or_facility == 'facility') {
     oneplot('Unavailable-cleaning', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Cleaning Shift (out of ', round(cleaning_shift_size,2), ' total)', sep = ''), mask = cleaning_shifts)
     end_boxplot('Average-Unavailable-cleaning', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', round(cleaning_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts)
     end_boxplot('Average-Unavailable-cleaning-violin', shiftwise_unavailable, xlab = paste('Average Absences per Cleaning Shift (out of ', round(cleaning_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask = cleaning_shifts, function_ = vioplot)
