@@ -745,30 +745,30 @@ main_title = ''
 #cat('First function took:', sys_time_end - sys_time_start, 'for', row_name,'\n')
 sys_time_start = Sys.time()
 #suppressing boxplots in favor of vioplots for now
-#end_boxplot('Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask_fn = production_shifts_mask_fn)
+#end_boxplot('tweaked-Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask_fn = production_shifts_mask_fn)
 #sys_time_middle = Sys.time()
 #print(sys_time_middle - sys_time_start)
 end_boxplot('Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask_fn = production_shifts_mask_fn, function_ = vioplot)
 print(Sys.time() - sys_time_start)
 
-"end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
+#end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
 end_boxplot('Total-Infections-violin', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title, function_ = vioplot)
 
-end_boxplot('Total-Symptomatic-Infections', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = main_title)
+#end_boxplot('Total-Symptomatic-Infections', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = main_title)
 end_boxplot('Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = main_title, function_ = vioplot)
 
 #browser()
-end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
-end_boxplot('Fraction-Short-production-violin', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts, function_ = vioplot)
+#end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
+end_boxplot('Fraction-Short-production-violin', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts_mask_fn, function_ = vioplot)
 
-end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
+#end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
 
-first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = production_shifts)
+#first_x_boxplot('First-Day-Short-production', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = production_shifts)
 #first_x_boxplot('First-Day-Short-production-violin', shiftwise_short, xlab = 'First Day Short (among runs that are ever short)', xlim = c(1, days), mask = production_shifts, function_ = vioplot)
 
 #print(output_per_shift)
 
-oneplot('Production-Loss', shiftwise_production_loss, mean, c(0,0), 'Production Loss (Dollars ($) per production shift)', mask = production_shifts)
+"oneplot('Production-Loss', shiftwise_production_loss, mean, c(0,0), 'Production Loss (Dollars ($) per production shift)', mask = production_shifts)
 end_boxplot('Total-Production-Loss', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts)
 end_boxplot('Total-Production-Loss-vioplot', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts, function_ = vioplot)
 end_boxplot('Total-Intervention-Expenses', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)')
