@@ -450,7 +450,7 @@ end_boxplot = function(
         #print(1:(dim(full_output)[3]))
         final = sapply(1:(dim(full_output)[3]), obtain_value)
         intervention_middle = Sys.time()
-        print(intervention_middle - intervention_start)
+        #print(intervention_middle - intervention_start)
         cat('\t')
         
         if(average) {
@@ -468,9 +468,9 @@ end_boxplot = function(
             all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final))
         }
         intervention_end = Sys.time()
-        print(intervention_end - intervention_middle)
+        #print(intervention_end - intervention_middle)
         cat('\t\t')
-        print(intervention_end - intervention_start)
+        #print(intervention_end - intervention_start)
     }
 
     all_outcomes$intervention = factor(all_outcomes$intervention, levels = unique(all_outcomes$intervention), ordered = TRUE)
@@ -741,7 +741,7 @@ if(farm_or_facility == 'facility') {
     oneplot('v4-Unavailable-all', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Shift (out of ', round(cleaning_shift_size,2), 'to' , round(production_shift_size,2), ' total)', sep = ''), mask_fn = work_shifts_mask_fn, step_combiner = all_step_combiner, ys_combiner = all_ys_combiner)
 }
 
-print('Got what I could done for now.')
+#print('Got what I could done for now.')
 #browser()
 
 main_title = ''
@@ -787,6 +787,9 @@ g = function(data) {
     #TBD: Make this better, seriously
     ad_hoc_production_mask = rep(c(TRUE, TRUE, FALSE), days)
     #fd = shiftwise_production_loss(data[production_shifts,,])
+    print('In')
+    print(data)
+    print(dim(data))
     fd = shiftwise_production_loss(data[ad_hoc_production_mask,, drop = FALSE])
     fd = ifelse(is.na(fd), 0, fd)
     #fd = ifelse(is.na(fd), 0, fd)
