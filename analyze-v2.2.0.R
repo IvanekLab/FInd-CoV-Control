@@ -375,10 +375,10 @@ generate_intervention_expenses_function = function() {
     function(data) {
         i <<- i + 1
         #print(i)
-        i_ = limited_runs_index[i]
-        print(i)
-        print(limited_runs_index)
-        cat(i, ':', i_, '\n')
+        i_ = limited_runs_index[ceiling(i / double_wrap_num_sims)]
+        #print(i)
+        #print(limited_runs_index)
+        #cat(i, ':', i_, '\n')
         if(i_ == 1) {
             array(0, c(dim(data)[1], dim(data)[3]))
         } else if(i_ == 2) {
