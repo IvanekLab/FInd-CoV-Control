@@ -295,7 +295,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.2.0'
-double_wrap_num_sims = 100#0
+double_wrap_num_sims = 1000
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -307,22 +307,21 @@ double_wrap_num_sims = 100#0
 #then run
 #git diff --no-index --word-diff --ignore-all-space a.txt b.txt
 common_parameters = list(
-    workers_per_crew = '10',    # FM: workers per line
-    #crews_per_supervisor = 6, #'3', # FM: / lines per shift
+    workers_per_crew = '10',                    # FM: workers per line
+    crews_per_supervisor = 3,                   # FM: / lines per shift
     days = '90',
     social_distancing_work = 'Intermediate',
-    n_no_symptoms = '1',        #i.e., exposed 
+    n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'scenario-analysis-take-2',#'debugging-tests',   # relative to working directory
-    analyze_only = 'TRUE',
+    folder_name = 'scenario-analysis-take-2',   # relative to working directory
+    analyze_only = 'FALSE',
     PARALLEL = TRUE,
-    fraction_recovered = 0.69,
-    fraction_fully_vaccinated = 0.71,
-    ffv_last_five_months = 0.09,
-    fraction_boosted_ever = 0.45,
-    fraction_boosted_last_five_months = 0.45,
-    #protection_functions = protection_functions_45,
+    #fraction_recovered = 0.69,
+    #fraction_fully_vaccinated = 0.71,
+    #ffv_last_five_months = 0.09,
+    #fraction_boosted_ever = 0.45,
+    #fraction_boosted_last_five_months = 0.45,
     variant = 'omicron'
 )
 
@@ -348,28 +347,23 @@ additional_farm_parameters = list(
     n_shift_floaters ='0',      # FM only (for farm model, will require NULL/NA)
     n_cleaners = '0',           # FM only (for farm model, will require NULL/NA)
     n_all_floaters = '0',       # FM only (for farm model, will require NULL/NA)
-    employee_housing = 'Shared', 
-    social_distancing_shared_housing = 'Intermediate',
-    community_transmission = NULL,
+    #employee_housing = 'Shared', 
+    #social_distancing_shared_housing = 'Intermediate',
+    #community_transmission = NULL,
     #unique_id = 'farm-default-v24', #actually lower, but going for consistency
     output_per_week = 247612.00,#1680000, #/ (5 * (1 + (supervisors > 1))) #N * 60.1 * 4 #wrong, but it's okay
     hourly_wage = 13.89,
     size = NA
 )
 
-double_wrap_num_sims = 100#0
+"#Test of one-shift functionality
+double_wrap_num_sims = 100
 do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'one-shift-facility-individual-random-start', kConstants = kConstants, crews_per_supervisor = 6, supervisors = 1, n_all_floaters = 12, n_shift_floaters = '20')))
+#Defaults
 double_wrap_num_sims = 1000
 do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual-random-start', kConstants = kConstants, crews_per_supervisor = 3, supervisors = 2, n_all_floaters = 11, n_shift_floaters = '10')))
 do.call(full_run, c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-shared-random-start', kConstants = kConstants, crews_per_supervisor = 3)))
-#double_wrap_num_sims = 10
-#all_params = c(common_parameters, additional_facility_parameters, list(unique_id = 'facility-individual', kConstants = kConstants))
-#all_params[['analyze_only']] = TRUE
-#do.call(full_run, all_params)
-#stop('OKAY!')
-#double_wrap_num_sims = 1000
-#do.call(full_run, all_params)
-#stop('Hold on here for now.')
+#Un-default combinations of setting and housing
 all_params = c(common_parameters, additional_farm_parameters, list(unique_id = 'farm-individual-random-start', kConstants = kConstants, crews_per_supervisor = 3))
 all_params$employee_housing = 'individual'
 all_params$social_distancing_shared_housing = NULL
@@ -379,12 +373,120 @@ all_params = c(common_parameters, additional_facility_parameters, list(unique_id
 all_params$employee_housing = 'shared'
 all_params$social_distancing_shared_housing = 'intermediate'
 all_params$community_transmission = NULL
+do.call(full_run, all_params)"
+
+#Additional scenarios for Second pass: Start of epidemic vs. "present", across shared vs. individual
+#   NB: Restored some defaults above, while removing others
+#   Farm, shared, start
+all_params = c(
+    common_parameters, additional_farm_parameters,
+    list(
+        unique_id = 'farm-shared-random-start-start-of-epidemic',
+        kConstants = kConstants,
+        fraction_recovered = 0, #0.69,
+        fraction_fully_vaccinated = 0, #0.71,
+        ffv_last_five_months = 0, #0.09,
+        fraction_boosted_ever = 0, #0.45,
+        fraction_boosted_last_five_months = 0, #0.45,
+        employee_housing = 'Shared', 
+        social_distancing_shared_housing = 'Intermediate',
+        community_transmission = NULL
+    )
+)
 do.call(full_run, all_params)
 
-#do.call(full_run, c(common_parameters, additional_farm_parameters))
-#common_parameters[['analyze_only']] = TRUE
-#do.call(full_run, c(common_parameters, additional_facility_parameters))
-#kConstants_ = kConstants
+#   Farm, individual, start
+all_params = c(
+    common_parameters, additional_farm_parameters,
+    list(
+        unique_id = 'farm-individual-random-start-start-of-epidemic',
+        kConstants = kConstants,
+        fraction_recovered = 0, #0.69,
+        fraction_fully_vaccinated = 0, #0.71,
+        ffv_last_five_months = 0, #0.09,
+        fraction_boosted_ever = 0, #0.45,
+        fraction_boosted_last_five_months = 0, #0.45,
+        employee_housing = 'Individual', 
+        social_distancing_shared_housing = NULL,
+        community_transmission = 'Intermediate'
+    )
+)
+do.call(full_run, all_params)
+
+#Additional scenarios for Third pass: Shared, across all four of recovered x vaccinated
+#   Farm, shared, no-vax
+all_params = c(
+    common_parameters, additional_farm_parameters,
+    list(
+        unique_id = 'farm-shared-random-start-no-vax',
+        kConstants = kConstants,
+        fraction_recovered = 0.69,
+        fraction_fully_vaccinated = 0, #0.71,
+        ffv_last_five_months = 0, #0.09,
+        fraction_boosted_ever = 0, #0.45,
+        fraction_boosted_last_five_months = 0, #0.45,
+        employee_housing = 'Shared', 
+        social_distancing_shared_housing = 'Intermediate',
+        community_transmission = NULL
+    )
+)
+do.call(full_run, all_params)
+
+#   Farm, shared, no-recovered
+all_params = c(
+    common_parameters, additional_farm_parameters,
+    list(
+        unique_id = 'farm-shared-random-start-no-recovered',
+        kConstants = kConstants,
+        fraction_recovered = 0, #0.69,
+        fraction_fully_vaccinated = 0.71,
+        ffv_last_five_months = 0.09,
+        fraction_boosted_ever = 0.45,
+        fraction_boosted_last_five_months = 0.45,
+        employee_housing = 'Shared', 
+        social_distancing_shared_housing = 'Intermediate',
+        community_transmission = NULL
+    )
+)
+do.call(full_run, all_params)
+
+#Additional scenarios for Fourth pass: Individual, across all four of recovered x vaccinated
+#   Farm, individual, no-vax
+all_params = c(
+    common_parameters, additional_farm_parameters,
+    list(
+        unique_id = 'farm-individual-random-start-no-vax',
+        kConstants = kConstants,
+        fraction_recovered = 0.69,
+        fraction_fully_vaccinated = 0, #0.71,
+        ffv_last_five_months = 0, #0.09,
+        fraction_boosted_ever = 0, #0.45,
+        fraction_boosted_last_five_months = 0, #0.45,
+        employee_housing = 'Individual', 
+        social_distancing_shared_housing = NULL,
+        community_transmission = 'Intermediate'
+    )
+)
+do.call(full_run, all_params)
+
+#   Farm, individual, no-recovered
+all_params = c(
+    common_parameters, additional_farm_parameters,
+    list(
+        unique_id = 'farm-individual-random-start-no-recovered',
+        kConstants = kConstants,
+        fraction_recovered = 0, #0.69,
+        fraction_fully_vaccinated = 0.71,
+        ffv_last_five_months = 0.09,
+        fraction_boosted_ever = 0.45,
+        fraction_boosted_last_five_months = 0.45,
+        employee_housing = 'Individual', 
+        social_distancing_shared_housing = NULL,
+        community_transmission = 'Intermediate'
+    )
+)
+do.call(full_run, all_params)
+
 
 run_67 = function(common_parameters, additional_facility_parameters,
                   additional_farm_parameters, kConstants, farm_or_facility,
