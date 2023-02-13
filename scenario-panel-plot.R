@@ -117,3 +117,58 @@ keys = c(
 )
 print(plot_grid(plotlist = plots[keys], nrow = 4))
 dev.off()
+
+png('scenario-panel-plots-pass-2.png', height = 4*1000, width = 3 * 1300)
+keys = c(
+    'S:r, H:s, V:d, R:d: Total-Symptomatic-Infections',
+    'S:r, H:s, V:d, R:d: Average-Unavailable-production',
+    'S:r, H:s, V:d, R:d: Total-Cost',
+    'S:r, H:s, V:0, R:0: Total-Symptomatic-Infections',
+    'S:r, H:s, V:0, R:0: Average-Unavailable-production',
+    'S:r, H:s, V:0, R:0: Total-Cost',
+    'S:r, H:i, V:d, R:d: Total-Symptomatic-Infections',
+    'S:r, H:i, V:d, R:d: Average-Unavailable-production',
+    'S:r, H:i, V:d, R:d: Total-Cost',
+    'S:r, H:i, V:d, R:0: Total-Symptomatic-Infections',
+    'S:r, H:i, V:d, R:0: Average-Unavailable-production',
+    'S:r, H:i, V:d, R:0: Total-Cost'    
+)
+print(plot_grid(plotlist = plots[keys], nrow = 4))
+dev.off()
+
+png('scenario-panel-plots-pass-3.png', height = 4*1000, width = 3 * 1300)
+keys = c(
+    'S:r, H:s, V:d, R:d: Total-Symptomatic-Infections',
+    'S:r, H:s, V:d, R:d: Average-Unavailable-production',
+    'S:r, H:s, V:d, R:d: Total-Cost',
+    'S:r, H:s, V:d, R:0: Total-Symptomatic-Infections',
+    'S:r, H:s, V:d, R:0: Average-Unavailable-production',
+    'S:r, H:s, V:d, R:0: Total-Cost',
+    'S:r, H:s, V:0, R:d: Total-Symptomatic-Infections',
+    'S:r, H:s, V:0, R:d: Average-Unavailable-production',
+    'S:r, H:s, V:0, R:d: Total-Cost',
+    'S:r, H:s, V:0, R:0: Total-Symptomatic-Infections',
+    'S:r, H:s, V:0, R:0: Average-Unavailable-production',
+    'S:r, H:s, V:0, R:0: Total-Cost'    
+)
+print(plot_grid(plotlist = plots[keys], nrow = 4))
+dev.off()
+
+png('scenario-panel-plots-pass-4.png', height = 4*1000, width = 3 * 1300)
+keys = c(
+    'S:r, H:i, V:d, R:d: Total-Symptomatic-Infections',
+    'S:r, H:i, V:d, R:d: Average-Unavailable-production',
+    'S:r, H:i, V:d, R:d: Total-Cost',
+    'S:r, H:i, V:d, R:0: Total-Symptomatic-Infections',
+    'S:r, H:i, V:d, R:0: Average-Unavailable-production',
+    'S:r, H:i, V:d, R:0: Total-Cost',
+    'S:r, H:i, V:0, R:d: Total-Symptomatic-Infections',
+    'S:r, H:i, V:0, R:d: Average-Unavailable-production',
+    'S:r, H:i, V:0, R:d: Total-Cost',
+    'S:r, H:i, V:0, R:0: Total-Symptomatic-Infections',
+    'S:r, H:i, V:0, R:0: Average-Unavailable-production',
+    'S:r, H:i, V:0, R:0: Total-Cost'    
+)
+print(plot_grid(plotlist = plots[keys], nrow = 4))
+dev.off()
+
