@@ -315,7 +315,7 @@ common_parameters = list(
     n_mild = '0',
     working_directory = '.',
     folder_name = 'scenario-analysis-take-2',   # relative to working directory
-    analyze_only = 'FALSE',
+    analyze_only = TRUE, #'FALSE',
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
     #fraction_fully_vaccinated = 0.71,
@@ -355,6 +355,43 @@ additional_farm_parameters = list(
     hourly_wage = 13.89,
     size = NA
 )
+
+all_params = c(
+    common_parameters, additional_farm_parameters,
+    list(
+        unique_id = 'farm-shared-random-start-start-of-epidemic',
+        supervisors = '3',
+        kConstants = kConstants,
+        fraction_recovered = 0, #0.69,
+        fraction_fully_vaccinated = 0, #0.71,
+        ffv_last_five_months = 0, #0.09,
+        fraction_boosted_ever = 0, #0.45,
+        fraction_boosted_last_five_months = 0, #0.45,
+        employee_housing = 'Shared', 
+        social_distancing_shared_housing = 'Intermediate',
+        community_transmission = NULL
+    )
+)
+do.call(full_run, all_params)
+
+all_params = c(
+    common_parameters, additional_farm_parameters,
+    list(
+        unique_id = 'farm-shared-random-start',
+        supervisors = '3',
+        kConstants = kConstants,
+        fraction_recovered = 0.69,
+        fraction_fully_vaccinated = 0.71,
+        ffv_last_five_months = 0.09,
+        fraction_boosted_ever = 0.45,
+        fraction_boosted_last_five_months = 0.45,
+        employee_housing = 'Shared', 
+        social_distancing_shared_housing = 'Intermediate',
+        community_transmission = NULL
+    )
+)
+do.call(full_run, all_params)
+
 
 "#Test of one-shift functionality
 double_wrap_num_sims = 100

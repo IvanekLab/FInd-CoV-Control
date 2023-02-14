@@ -404,7 +404,8 @@ end_boxplot = function(
                        mask_fn = NULL,#function(d) NA,
                        function_ = boxplot,
                        #step_combiner = function(x) x,
-                       ys_combiner = function(x) x
+                       ys_combiner = function(x) x,
+                       pairwise_differences = FALSE #implicitly vs. i = 1 for now; can elaborate later
                        ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
 
@@ -466,10 +467,25 @@ end_boxplot = function(
         means[i] = mean(final, na.rm = TRUE)
         #cat('max of means is:', max(means), '\n')
 
-        if(i == 1) {
-            all_outcomes = data.frame(intervention = row.names[i], outcome = final)
+        if(pairwise_differences) {
+            if(i == 1) {    
+                final_1 = final
+            } else if(i == 2) {
+                all_outcomes = data.frame(intervention = row.names[i], outcome = final - final_1)
+                #browser()
+            } else {
+                all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final - final_1))
+                #if(i == 5) {
+                #    browser()
+                #}
+            }
+        
         } else {
-            all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final))
+            if(i == 1) {
+                all_outcomes = data.frame(intervention = row.names[i], outcome = final)
+            } else {
+                all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final))
+            }
         }
         intervention_end = Sys.time()
         #print(intervention_end - intervention_middle)
@@ -479,22 +495,31 @@ end_boxplot = function(
 
     all_outcomes$intervention = factor(all_outcomes$intervention, levels = unique(all_outcomes$intervention), ordered = TRUE)
 
+    if(pairwise_differences) {
+        col = colors[-1]
+        full_output_filenames = full_output_filenames[-1]
+        means = means[-1] - means[1]
+    } else {
+        col = c('white', colors[-1])
+    }
+
     par(mar = c(5,23,4,2))
     if(identical(function_, vioplot)) {
         par(cex.lab = 1.5)
     }
     if(percent) {
         if(identical(function_, vioplot)) {
-            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, yaxt='n')
+            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, yaxt='n')
         } else {
-            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, xaxt='n')
+            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, xaxt='n')
         }
         axis(1, at=pretty(c(all_outcomes$outcome,xlim)), paste0(lab=pretty(c(all_outcomes$outcome,xlim)) * 100, ' %'), las=TRUE, cex.axis = 1.5, cex.lab=1.5)
     } else {
-        function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = c('white', colors[-1]), cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
+        function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
     }
     title(main=main_title, cex.main = 3)
     points(means, 1:length(full_output_filenames), cex =2, pch = 8)
+    abline(v = 0)
     dev.off()
 }
 
@@ -757,18 +782,22 @@ sys_time_start = Sys.time()
 #end_boxplot('tweaked-Average-Unavailable-production', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = main_title, mask_fn = production_shifts_mask_fn)
 #sys_time_middle = Sys.time()
 #print(sys_time_middle - sys_time_start)
-end_boxplot('Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = unique_id, mask_fn = production_shifts_mask_fn, function_ = vioplot)
+end_boxplot('diffable-Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = unique_id, mask_fn = production_shifts_mask_fn, function_ = vioplot)
+end_boxplot('pairwise-differences-Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = unique_id, mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE)
 print(Sys.time() - sys_time_start)
 
 #end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
-end_boxplot('Total-Infections-violin', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title, function_ = vioplot)
+end_boxplot('diffable-Total-Infections-violin', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title, function_ = vioplot)
+end_boxplot('pairwise-differences-Total-Infections-violin', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title, function_ = vioplot, pairwise_differences = TRUE)
 
 #end_boxplot('Total-Symptomatic-Infections', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = main_title)
-end_boxplot('Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot)
+end_boxplot('diffable-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot)
+end_boxplot('pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, pairwise_differences = TRUE)
 
 #browser()
 #end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
-end_boxplot('Fraction-Short-production-violin', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts_mask_fn, function_ = vioplot)
+end_boxplot('diffable-Fraction-Short-production-violin', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts_mask_fn, function_ = vioplot)
+end_boxplot('pairwise-differences-Fraction-Short-production-violin', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE)
 
 #end_barplot('Ever-Short-production', shiftwise_short, xlab = 'Production Shift(s) Ever Short (percentage of runs)', average = TRUE, xlim = c(0,1), percent = TRUE, mask = production_shifts)
 
@@ -807,7 +836,10 @@ g = function(data) {
 }
 #end_boxplot('Total-Cost', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)')
 "intervention_expenses_function = generate_intervention_expenses_function()"
-end_boxplot('Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)', function_ = vioplot, main_title = unique_id)
+end_boxplot('diffable-Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)', function_ = vioplot, main_title = unique_id)
+intervention_expenses_function = generate_intervention_expenses_function()
+end_boxplot('pairwise-differences-Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)', function_ = vioplot, main_title = unique_id, pairwise_differences = TRUE)
+
 #print('before')
 #scatter_plot(filename = 'Scatterplot--Production-Losses',
 #                       outcome_fn_x = shiftwise_production_loss,
