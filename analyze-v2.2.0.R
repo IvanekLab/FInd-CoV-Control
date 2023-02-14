@@ -500,7 +500,11 @@ end_boxplot = function(
         full_output_filenames = full_output_filenames[-1]
         means = means[-1] - means[1]
     } else {
-        col = c('white', colors[-1])
+        if(identical(function_, ecdfs)) {
+            col = colors
+        } else {
+            col = c('white', colors[-1])
+        }
     }
 
     par(mar = c(5,23,4,2))
@@ -523,6 +527,24 @@ end_boxplot = function(
     dev.off()
 }
 
+#parameters to match pattern in end_boxplot
+ecdfs = function(f, data, horizontal, las, xlab, ylim, col, cex.axis, cex.names, cex.lab, ylab, na.action) {
+    #list2env(list(...), environment())
+    all_outcomes = data
+    interventions = all_outcomes$intervention
+    levels_ = levels(interventions)
+    outcomes = all_outcomes$outcome
+    n = length(levels_)
+    xlim = c(min(outcomes), max(outcomes))
+    for(i in 1:n) {
+        this_intervention = levels_[i]
+        these_outcomes = outcomes[interventions == this_intervention]
+        plot(ecdf(these_outcomes), xlab = xlab, xlim = xlim, col = col[i], cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, main = '')
+        if(i != n) {
+            par(new = TRUE)
+        }
+    }
+}
 
 scatter_plot = function(filename,
                        outcome_fn_x,
@@ -783,7 +805,9 @@ sys_time_start = Sys.time()
 #sys_time_middle = Sys.time()
 #print(sys_time_middle - sys_time_start)
 end_boxplot('diffable-Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = unique_id, mask_fn = production_shifts_mask_fn, function_ = vioplot)
+end_boxplot('Average-Unavailable-production-ecdfs', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = unique_id, mask_fn = production_shifts_mask_fn, function_ = ecdfs)
 end_boxplot('pairwise-differences-Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = unique_id, mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE)
+end_boxplot('pairwise-differences-Average-Unavailable-production-ecdfs', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = unique_id, mask_fn = production_shifts_mask_fn, function_ = ecdfs, pairwise_differences = TRUE)
 print(Sys.time() - sys_time_start)
 
 #end_boxplot('Total-Infections', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title)
