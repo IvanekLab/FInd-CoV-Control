@@ -16,7 +16,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-limited_runs_index = c(1,2,4,9,13)
+#limited_runs_index = c(1,2,4,9,13)
 output_per_shift = output_per_week / (5 * (1 + (supervisors > 1 && tolower(farm_or_facility) == 'facility'))) #N * 60.1 * 4 #wrong, but it's okay
 #hourly_wage = 13.89
 #size = 1000
@@ -375,7 +375,8 @@ generate_intervention_expenses_function = function() {
     function(data) {
         i <<- i + 1
         #print(i)
-        i_ = limited_runs_index[ceiling(i / double_wrap_num_sims)]
+        #i_ = limited_runs_index[ceiling(i / double_wrap_num_sims)]
+        i_ = ceiling(i / double_wrap_num_sims)
         #print(i)
         #print(limited_runs_index)
         #cat(i, ':', i_, '\n')

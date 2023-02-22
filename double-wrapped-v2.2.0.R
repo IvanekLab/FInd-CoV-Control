@@ -141,17 +141,17 @@ double_wrapped_fn = function(kConstants, protection_functions) {
         registerDoParallel(5) # For my home computer
     } #if not, %dopar% is equivalent to %do% (with a warning)
 
-    limited_runs_index = c(1,2,4,9,13)
-    k_max = 5
-    row.names = row.names[limited_runs_index]
-    colors = colors[limited_runs_index]
-    ltys = ltys[limited_runs_index]
-    parameter_sets = parameter_sets[limited_runs_index,]
+    #limited_runs_index = c(1,2,4,9,13)
+    #k_max = 5
+    #row.names = row.names[limited_runs_index]
+    #colors = colors[limited_runs_index]
+    #ltys = ltys[limited_runs_index]
+    #parameter_sets = parameter_sets[limited_runs_index,]
     #NB: cost plots will be off
 
-    #full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
-    #                                .verbose = TRUE) %dopar% {
-    for(i in 1:1) {#k_max) { # Can be substituted for the above for better
+    full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
+                                    .verbose = TRUE) %dopar% {
+    #for(i in 1:1) {#k_max) { # Can be substituted for the above for better
                               # crash messages
         parameter_set = parameter_sets[i,]
         double_wrap_reduction = parameter_set$double_wrap_reduction
@@ -165,7 +165,8 @@ double_wrapped_fn = function(kConstants, protection_functions) {
         # below returns full_output_save_name
         # use of i is a temporary kludge to address the lack of encoding of
         # boosting rate in filenames (TBD: Change this)
-        full_output_save_name = wrapper_fn(limited_runs_index[i], kConstants)
+        #full_output_save_name = wrapper_fn(limited_runs_index[i], kConstants)
+        full_output_save_name = wrapper_fn(i, kConstants)
                                           
         full_output_save_name
     }

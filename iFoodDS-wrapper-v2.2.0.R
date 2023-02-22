@@ -295,7 +295,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.2.0'
-double_wrap_num_sims = 100#0
+double_wrap_num_sims = 1000
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -316,7 +316,7 @@ common_parameters = list(
     working_directory = '.',
     folder_name = 'sat2-with-iii',   # relative to working directory
     analyze_only = 'FALSE',
-    PARALLEL = FALSE, #TRUE,
+    PARALLEL = TRUE,
     #fraction_recovered = 0.69,
     #fraction_fully_vaccinated = 0.71,
     #ffv_last_five_months = 0.09,
