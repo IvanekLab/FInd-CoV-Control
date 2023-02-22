@@ -295,7 +295,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.2.0'
-double_wrap_num_sims = 1000
+double_wrap_num_sims = 100#0
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -314,9 +314,9 @@ common_parameters = list(
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'scenario-analysis-take-2',   # relative to working directory
-    analyze_only = TRUE, #'FALSE',
-    PARALLEL = TRUE,
+    folder_name = 'sat2-with-iii',   # relative to working directory
+    analyze_only = 'FALSE',
+    PARALLEL = FALSE, #TRUE,
     #fraction_recovered = 0.69,
     #fraction_fully_vaccinated = 0.71,
     #ffv_last_five_months = 0.09,
@@ -359,25 +359,7 @@ additional_farm_parameters = list(
 all_params = c(
     common_parameters, additional_farm_parameters,
     list(
-        unique_id = 'farm-shared-random-start-start-of-epidemic',
-        supervisors = '3',
-        kConstants = kConstants,
-        fraction_recovered = 0, #0.69,
-        fraction_fully_vaccinated = 0, #0.71,
-        ffv_last_five_months = 0, #0.09,
-        fraction_boosted_ever = 0, #0.45,
-        fraction_boosted_last_five_months = 0, #0.45,
-        employee_housing = 'Shared', 
-        social_distancing_shared_housing = 'Intermediate',
-        community_transmission = NULL
-    )
-)
-do.call(full_run, all_params)
-
-all_params = c(
-    common_parameters, additional_farm_parameters,
-    list(
-        unique_id = 'farm-shared-random-start',
+        unique_id = 'farm-shared',
         supervisors = '3',
         kConstants = kConstants,
         fraction_recovered = 0.69,
@@ -388,6 +370,24 @@ all_params = c(
         employee_housing = 'Shared', 
         social_distancing_shared_housing = 'Intermediate',
         community_transmission = NULL
+    )
+)
+do.call(full_run, all_params)
+
+all_params = c(
+    common_parameters, additional_farm_parameters,
+    list(
+        unique_id = 'farm-individual',
+        supervisors = '3',
+        kConstants = kConstants,
+        fraction_recovered = 0.69,
+        fraction_fully_vaccinated = 0.71,
+        ffv_last_five_months = 0.09,
+        fraction_boosted_ever = 0.45,
+        fraction_boosted_last_five_months = 0.45,
+        employee_housing = 'Individual', 
+        social_distancing_shared_housing = NULL,
+        community_transmission = 'Intermediate'
     )
 )
 do.call(full_run, all_params)
@@ -411,6 +411,7 @@ all_params$employee_housing = 'shared'
 all_params$social_distancing_shared_housing = 'intermediate'
 all_params$community_transmission = NULL
 do.call(full_run, all_params)"
+
 
 "#Additional scenarios for Second pass: Start of epidemic vs. 'present', across shared vs. individual
 #   NB: Restored some defaults above, while removing others
@@ -448,9 +449,9 @@ all_params = c(
         community_transmission = 'Intermediate'
     )
 )
-do.call(full_run, all_params)
+do.call(full_run, all_params)"
 
-#Additional scenarios for Third pass: Shared, across all four of recovered x vaccinated
+"#Additional scenarios for Third pass: Shared, across all four of recovered x vaccinated
 #   Farm, shared, no-vax
 all_params = c(
     common_parameters, additional_farm_parameters,
@@ -522,7 +523,7 @@ all_params = c(
         community_transmission = 'Intermediate'
     )
 )
-do.call(full_run, all_params)"
+do.call(full_run, all_params)
 
 #Additional scenarios for Fifth pass: Larger, farm, both current and start of epidemic
 all_params = c(
@@ -559,7 +560,7 @@ all_params = c(
         community_transmission = NULL
     )
 )
-do.call(full_run, all_params)
+do.call(full_run, all_params)"
 
 run_67 = function(common_parameters, additional_facility_parameters,
                   additional_farm_parameters, kConstants, farm_or_facility,

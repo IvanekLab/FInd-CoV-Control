@@ -430,8 +430,9 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                 boosting_rate_list,
                 protection_functions,
                 kConstants) {
-
+#print('wanker')
     N <-nrow(agents)
+#print('ugh')
 
     Out1 = make_Out1(steps)
     
@@ -441,7 +442,6 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     #
     # This approach may or may not be replaced with use of "with" at some point
     # in the future.
-
     IA_FNR = get('asymptomatic_FNR', testing_parameters)
     IP_FNR = get('presymptomatic_FNR', testing_parameters)
     IM_FNR = get('mild_FNR',testing_parameters)
@@ -464,6 +464,15 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     #Creating initial conditions
     end_time = 0 # End of the last shift before simulation starts
     fractional_test_carried = 0
+#print('lol')
+    initial_infecteds = (agents$infection_status != 'NI')
+    ii_remaining = sum(initial_infecteds)
+    #print(initial_infecteds[26])
+    #print(ii_remaining)
+    #browser()
+    #stop('check this')
+#print('lmao')
+    #iii_total = 0
 
     # Move people through time
     for(k in 1:steps) {
@@ -559,6 +568,19 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         agents$infection_status[NI_to_E] = 'E'
         agents$time_E[NI_to_E] = potential_times_E[NI_to_E] 
 
+        if(ii_remaining > 0) {
+            foi_contributions_ii = contacts * (infectiousness * initial_infecteds)
+            force_of_infection_ii = colSums(foi_contributions_ii)
+            p_iii_given_infection = force_of_infection_ii / force_of_infection
+            iii_given_infection = sbern(N, p_iii_given_infection)
+            iii = sum(NI_to_E & iii_given_infection)
+            if(iii > sum(NI_to_E)) {
+                browser()
+            }
+        } else {
+            iii = 0
+        }
+
 
         # Ideally, we probably want to incorporate transitions out of
         # infectiousness (or into a different level of infectiousness) into
@@ -568,6 +590,11 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                                     isolated_0, immunity_0)
         agents = pil[['agents']]
         IP_to_IM = pil[['IP_to_IM']]
+        initial_infecteds = initial_infecteds & (agents$infection_status != 'NI')
+        ii_remaining = sum(initial_infecteds)
+        #print(initial_infecteds[26])
+        #print(ii_remaining)
+        #browser()
 
 
         #TBD (eventually): We still need to recalculate durations for repeats of
@@ -575,10 +602,10 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
         Out1 = update_Out1(Out1, k, agents, infection_status_0, isolated_0,
                            agent_presence, quantitative_presence,
-                           NI_to_E_community, NI_to_E, doses, tests_performed, IP_to_IM)
+                           NI_to_E_community, NI_to_E, doses, tests_performed, IP_to_IM, iii, ii_remaining)
     
     }
-
+    #browser()
     #"Out1" records the sum of individuals in each state at time k
     #(i.e., during time from time=0 to time=nTime1)
     #this allows ploting trajectories for each state in one simulation.
@@ -629,14 +656,16 @@ make_Out1 = function(steps) {
         new_community_infections = rep(0, steps),
         new_symptomatic_infections = rep(0, steps),
         doses = rep(0, steps),
-        tests = rep(0, steps)
+        tests = rep(0, steps),
+        iii = rep(0, steps),
+        ii_remaining = rep(0, steps)
     )
 }
 
 update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
                        agent_presence, quantitative_presence,
                        NI_to_E_community, NI_to_E, doses, tests_performed,
-                       IP_to_IM) {
+                       IP_to_IM, iii, ii_remaining) {
     #NB: TRUE == 1 for the purpose of summation
     infection_status_1 = agents$infection_status
     immune_status_1 = agents$immune_status
@@ -696,6 +725,8 @@ update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
         Out1$new_symptomatic_infections[k] = sum(IP_to_IM) #pause
         Out1$doses[k] = doses
         Out1$tests[k] = tests_performed
+        Out1$iii[k] = iii
+        Out1$ii_remaining[k] = ii_remaining
 
         Out1
 }
