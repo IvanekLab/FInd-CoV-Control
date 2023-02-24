@@ -57,18 +57,21 @@ for(i in 1:12) {
     #plot(d1, x, main = row.names[i], xlim = c(0, 71), ylim = c(0, 73), lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'y_{j0m}', ylab = 'y_{jkm}')
     #points(c(0, 73), c(0, 73), type = 'l', col = 'blue', lwd = 2)
     #points(c(0, 73), c(0, 0), type = 'l', col = 'green', lwd = 2)
-    plot(d1iii, (d1 + 1/20 - x) / (d1 + 1/20), main = row.names[i], xlim = c(0, 19), ylim = c(-1/3, 1),
+    y = (d1 - x) / d1 #NaN if d1 == 0, which is fine
+
+    plot(d1iii, y, main = row.names[i], xlim = c(0, 19), ylim = c(-1/3, 1),
          lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'iii_{j0m}', ylab = 'y_{jkm} - y_{j0m}')
     points(c(0, 19), c(0, 0), type = 'l', col = 'blue', lwd = 2)
     #points(d1iii, -d1, type = 'l', col = 'green', lwd = 2)
     points(c(0, 19), c(1, 1), type = 'l', col = 'green', lwd = 2)
+    abline(v = 1)
 
-    plot(xiii, (d1 + 1/20 - x) / (d1 + 1/20), main = row.names[i], xlim = c(0, 19), ylim = c(-1/3, 1),
+    plot(xiii, y, main = row.names[i], xlim = c(0, 19), ylim = c(-1/3, 1),
          lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'iii_{jkm}', ylab = 'y_{jkm} - y_{j0m}')
     points(c(0, 19), c(0, 0), type = 'l', col = 'blue', lwd = 2)
     points(c(0, 19), c(1, 1), type = 'l', col = 'green', lwd = 2)
 
-    plot(xiii - d1iii, (d1 + 1/20 - x) / (d1 + 1/20), xlim = c(-18, 5), ylim = c(-1/3, 1),
+    plot(xiii - d1iii, y, xlim = c(-18, 5), ylim = c(-1/3, 1),
          lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'iii_{jkm} - iii_{j0m}', ylab = 'y_{jkm} - y_{j0m}')
     points(c(-18, 5), c(0, 0), type = 'l', col = 'blue', lwd = 2)
     points(c(-18, 5), c(1, 1), type = 'l', col = 'green', lwd = 2)
