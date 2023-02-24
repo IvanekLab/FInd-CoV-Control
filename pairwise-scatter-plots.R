@@ -46,7 +46,7 @@ row.names<-c(
         'Vax + Boosting, p = 0.02/day'
     )[-1]
 
-png('pairwise-scatterplots-with-iii-vs-3x-iii.png', height = 3 * 1000, width = 12 * 1000)
+png('pairwise-scatterplots-with-iii-vs-3x-iii-relative.png', height = 3 * 1000, width = 12 * 1000)
 l = 0:11 * 3 + 1
 layout(matrix(c(l, l + 1, l + 2), byrow = T, ncol = 12))
 #for(x in d__) {
@@ -57,20 +57,21 @@ for(i in 1:12) {
     #plot(d1, x, main = row.names[i], xlim = c(0, 71), ylim = c(0, 73), lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'y_{j0m}', ylab = 'y_{jkm}')
     #points(c(0, 73), c(0, 73), type = 'l', col = 'blue', lwd = 2)
     #points(c(0, 73), c(0, 0), type = 'l', col = 'green', lwd = 2)
-    plot(d1iii, x - d1, main = row.names[i], xlim = c(0, 19), ylim = c(-67, 18),
+    plot(d1iii, (d1 + 1/20 - x) / (d1 + 1/20), main = row.names[i], xlim = c(0, 19), ylim = c(-1/3, 1),
          lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'iii_{j0m}', ylab = 'y_{jkm} - y_{j0m}')
     points(c(0, 19), c(0, 0), type = 'l', col = 'blue', lwd = 2)
-    points(d1iii, -d1, type = 'l', col = 'green', lwd = 2)
+    #points(d1iii, -d1, type = 'l', col = 'green', lwd = 2)
+    points(c(0, 19), c(1, 1), type = 'l', col = 'green', lwd = 2)
 
-    plot(xiii, x - d1, main = row.names[i], xlim = c(0, 19), ylim = c(-67, 18),
+    plot(xiii, (d1 + 1/20 - x) / (d1 + 1/20), main = row.names[i], xlim = c(0, 19), ylim = c(-1/3, 1),
          lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'iii_{jkm}', ylab = 'y_{jkm} - y_{j0m}')
-    points(c(0, 71), c(0, 0), type = 'l', col = 'blue', lwd = 2)
-    points(c(0, 71), c(0, -71), type = 'l', col = 'green', lwd = 2)
+    points(c(0, 19), c(0, 0), type = 'l', col = 'blue', lwd = 2)
+    points(c(0, 19), c(1, 1), type = 'l', col = 'green', lwd = 2)
 
-    plot(xiii - d1iii, x - d1, xlim = c(-18, 5), ylim = c(-67, 18),
+    plot(xiii - d1iii, (d1 + 1/20 - x) / (d1 + 1/20), xlim = c(-18, 5), ylim = c(-1/3, 1),
          lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'iii_{jkm} - iii_{j0m}', ylab = 'y_{jkm} - y_{j0m}')
-    points(c(0, 71), c(0, 0), type = 'l', col = 'blue', lwd = 2)
-    points(c(0, 71), c(0, -71), type = 'l', col = 'green', lwd = 2)
+    points(c(-18, 5), c(0, 0), type = 'l', col = 'blue', lwd = 2)
+    points(c(-18, 5), c(1, 1), type = 'l', col = 'green', lwd = 2)
     
 }
 dev.off()
