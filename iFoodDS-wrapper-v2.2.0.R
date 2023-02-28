@@ -327,13 +327,13 @@ common_parameters = list(
 
 additional_facility_parameters = list(
     farm_or_facility = 'facility',
-    #supervisors = 1, #'2',          # FM: shifts
-    #n_shift_floaters = '20',     # FM only (for farm model, will require NULL/NA)
+    supervisors = '2',          # FM: shifts
+    n_shift_floaters = '10',     # FM only (for farm model, will require NULL/NA)
     n_cleaners = '10',          # FM only (for farm model, will require NULL/NA)
-    #n_all_floaters = 12, #'11',      # FM only (for farm model, will require NULL/NA)
-    employee_housing = 'Private', 
-    social_distancing_shared_housing = NULL,
-    community_transmission = 'Intermediate',
+    n_all_floaters = '11',      # FM only (for farm model, will require NULL/NA)
+    #employee_housing = 'Private', 
+    #social_distancing_shared_housing = NULL,
+    #community_transmission = 'Intermediate',
     #unique_id = 'facility-pass-1',
     output_per_week = 784346.67, #1680000 , #N * 60.1 * 4 #wrong, but it's okay
     hourly_wage = 13.89,
@@ -343,7 +343,7 @@ additional_facility_parameters = list(
 
 additional_farm_parameters = list(
     farm_or_facility = 'farm',
-    #supervisors = '3',          # FM: shifts
+    supervisors = '3',          # FM: shifts
     n_shift_floaters ='0',      # FM only (for farm model, will require NULL/NA)
     n_cleaners = '0',           # FM only (for farm model, will require NULL/NA)
     n_all_floaters = '0',       # FM only (for farm model, will require NULL/NA)
@@ -420,10 +420,8 @@ for(i in 1:8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 1
     }
     if(setting == 'farm') {
         setting_parameters = additional_farm_parameters
-        supervisors = 3
     } else {
         setting_parameters = additional_facility_parameters
-        supervisors = 2
     }
     if(vaccinated) {
         fraction_fully_vaccinated = 0.71
@@ -448,7 +446,6 @@ for(i in 1:8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 1
         list(
             unique_id = paste0(setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
             kConstants = kConstants,
-            supervisors = supervisors,
             fraction_recovered = fraction_recovered,
             fraction_fully_vaccinated = fraction_fully_vaccinated,
             ffv_last_five_months = ffv_last_five_months,
