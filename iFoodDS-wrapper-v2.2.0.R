@@ -397,7 +397,7 @@ for(housing in c('shared', 'individual')) {
     for(setting in c('farm', 'facility')) {
         for(vaccinated in c(FALSE, TRUE)) {
             for(recovered in c(FALSE, TRUE)) {
-                if(df = NULL) {
+                if(is.null(df)) {
                     df = data.frame(housing = housing, setting = setting, vaccinated = vaccinated, recovered = recovered)
                 } else {
                     df = rbind(df, data.frame(housing = housing, setting = setting, vaccinated = vaccinated, recovered = recovered))
@@ -407,7 +407,7 @@ for(housing in c('shared', 'individual')) {
     }
 }
 
-for(i in 1:16) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15, 6, 14, 6, 13) on the server
+for(i in 1:8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15, 6, 14, 6, 13) on the server
     housing = df[i, 'housing']
     setting = df[i, 'setting']
     vaccinated = df[i, 'vaccinated']
@@ -419,20 +419,22 @@ for(i in 1:16) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 
         community_transmission = 'Intermediate'
     }
     if(setting == 'farm') {
-        setting_parameters = farm_parameters
+        setting_parameters = additional_farm_parameters
+        supervisors = 3
     } else {
-        setting_parameters = facility_parameters
+        setting_parameters = additional_facility_parameters
+        supervisors = 2
     }
     if(vaccinated) {
-        fraction_fully_vaccinated = 0.71,
-        ffv_last_five_months = 0.09,
-        fraction_boosted_ever = 0.45,
-        fraction_boosted_last_five_months = 0.45,
+        fraction_fully_vaccinated = 0.71
+        ffv_last_five_months = 0.09
+        fraction_boosted_ever = 0.45
+        fraction_boosted_last_five_months = 0.45
     } else {
-        fraction_fully_vaccinated = 0, #0.71,
-        ffv_last_five_months = 0, #0.09,
-        fraction_boosted_ever = 0, #0.45,
-        fraction_boosted_last_five_months = 0, #0.45,
+        fraction_fully_vaccinated = 0 #0.71,
+        ffv_last_five_months = 0 #0.09,
+        fraction_boosted_ever = 0 #0.45,
+        fraction_boosted_last_five_months = 0 #0.45,
     }
     if(recovered) {
         fraction_recovered = 0.69
@@ -442,16 +444,17 @@ for(i in 1:16) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 
 
     all_params = c(
         common_parameters,
-        if,
+        setting_parameters,
         list(
             unique_id = paste0(setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
             kConstants = kConstants,
+            supervisors = supervisors,
             fraction_recovered = fraction_recovered,
             fraction_fully_vaccinated = fraction_fully_vaccinated,
             ffv_last_five_months = ffv_last_five_months,
             fraction_boosted_ever = fraction_boosted_ever,
             fraction_boosted_last_five_months = fraction_boosted_last_five_months,
-            employee_housing = employee_housing, 
+            employee_housing = housing, 
             social_distancing_shared_housing = social_distancing_shared_housing,
             community_transmission = community_transmission
         )
