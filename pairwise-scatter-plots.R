@@ -1,4 +1,4 @@
-d1 = apply(readRDS('sat2-with-iii/farm-sharedbaseline_community-0,work_R0-6,dormitory_R0-2,E0-1,initial_recovered-71,initial_V2-73,n_sims-1000index_i-1_full-output.rds')[,'new_symptomatic_infections',], 2, sum)
+d1 = apply(readRDS('sat2-with-iii/farm-sharedbaseline_community-0,work_R0-6,dormitory_R0-2,E0-1,initial_recovered-71,initial_V2-73,n_sims-1000index_i-1_full-output.rds')[,'new_infections',], 2, sum)
 
 d1iii = apply(readRDS('sat2-with-iii/farm-sharedbaseline_community-0,work_R0-6,dormitory_R0-2,E0-1,initial_recovered-71,initial_V2-73,n_sims-1000index_i-1_full-output.rds')[,'iii',], 2, sum)
 
@@ -19,7 +19,7 @@ filenames = c(
 )
 
 d = lapply(filenames,  function(s) readRDS(s))
-d_ = lapply(d, function(x) x[,'new_symptomatic_infections',])
+d_ = lapply(d, function(x) x[,'new_infections',])
 d__ = lapply(d_, function(x) apply(x, 2, sum))
 
 d_iii = lapply(d, function(x) x[,'iii',])
@@ -46,7 +46,7 @@ row.names<-c(
         'Vax + Boosting, p = 0.02/day'
     )[-1]
 
-png('pairwise-scatterplots-with-iii-vs-3x-iii-relative.png', height = 3 * 1000, width = 12 * 1000)
+png('pairwise-scatterplots-with-iii-vs-3x-iii-relative--all-infections.png', height = 3 * 1000, width = 12 * 1000)
 l = 0:11 * 3 + 1
 layout(matrix(c(l, l + 1, l + 2), byrow = T, ncol = 12))
 #for(x in d__) {
@@ -59,19 +59,19 @@ for(i in 1:12) {
     #points(c(0, 73), c(0, 0), type = 'l', col = 'green', lwd = 2)
     y = (d1 - x) / d1 #NaN if d1 == 0, which is fine
 
-    plot(d1iii, y, main = row.names[i], xlim = c(0, 19), ylim = c(-1/3, 1),
-         lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'iii_{j0m}', ylab = 'y_{jkm} - y_{j0m}')
+    plot(d1iii, y, main = row.names[i], xlim = c(0, 19), ylim = c(-0.4, 1),
+         lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'iii_{j0m}', ylab = '(y_{j0m} - y_{jkm}) / y_{j0m}')
     points(c(0, 19), c(0, 0), type = 'l', col = 'blue', lwd = 2)
     #points(d1iii, -d1, type = 'l', col = 'green', lwd = 2)
     points(c(0, 19), c(1, 1), type = 'l', col = 'green', lwd = 2)
     abline(v = 1)
 
-    plot(xiii, y, main = row.names[i], xlim = c(0, 19), ylim = c(-1/3, 1),
-         lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'iii_{jkm}', ylab = 'y_{jkm} - y_{j0m}')
+    plot(xiii, y, main = row.names[i], xlim = c(0, 19), ylim = c(-0.4, 1),
+         lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'iii_{jkm}', ylab = '(y_{j0m} - y_{jkm}) / y_{j0m}')
     points(c(0, 19), c(0, 0), type = 'l', col = 'blue', lwd = 2)
     points(c(0, 19), c(1, 1), type = 'l', col = 'green', lwd = 2)
 
-    plot(xiii - d1iii, y, xlim = c(-18, 5), ylim = c(-1/3, 1),
+    plot(xiii - d1iii, y, xlim = c(-18, 5), ylim = c(-0.4, 1),
          lwd = 2, cex.axis = 4, cex.names=4, cex.lab=4, cex.main=4, xlab = 'iii_{jkm} - iii_{j0m}', ylab = 'y_{jkm} - y_{j0m}')
     points(c(-18, 5), c(0, 0), type = 'l', col = 'blue', lwd = 2)
     points(c(-18, 5), c(1, 1), type = 'l', col = 'green', lwd = 2)
