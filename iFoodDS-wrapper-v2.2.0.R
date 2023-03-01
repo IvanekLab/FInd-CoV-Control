@@ -396,7 +396,7 @@ df = NULL
 for(housing in c('shared', 'individual')) {
     for(setting in c('farm', 'facility')) {
         for(vaccinated in c(FALSE, TRUE)) {
-            for(recovered in c(FALSE, TRUE)) {
+            for(recovered in FALSE) { #c(FALSE, TRUE)) {
                 if(is.null(df)) {
                     df = data.frame(housing = housing, setting = setting, vaccinated = vaccinated, recovered = recovered)
                 } else {
@@ -407,10 +407,11 @@ for(housing in c('shared', 'individual')) {
     }
 }
 
-for(i in 1:8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15, 6, 14, 6, 13) on the server
+for(i in 1:4) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15, 6, 14, 6, 13) on the server
     housing = df[i, 'housing']
     setting = df[i, 'setting']
     vaccinated = df[i, 'vaccinated']
+    recovered = df[i, 'recovered']
     if(housing == 'shared') {
         social_distancing_shared_housing = 'Intermediate'
         community_transmission = NULL
