@@ -315,7 +315,7 @@ common_parameters = list(
     n_mild = '0',
     working_directory = '.',
     folder_name = 'sat2wi-clean',   # relative to working directory
-    analyze_only = 'FALSE',
+    analyze_only = TRUE, #'FALSE',
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
     #fraction_fully_vaccinated = 0.71,
@@ -396,7 +396,7 @@ df = NULL
 for(housing in c('shared', 'individual')) {
     for(setting in c('farm', 'facility')) {
         for(vaccinated in c(FALSE, TRUE)) {
-            for(recovered in FALSE) { #c(FALSE, TRUE)) {
+            for(recovered in c(FALSE, TRUE)) {
                 if(is.null(df)) {
                     df = data.frame(housing = housing, setting = setting, vaccinated = vaccinated, recovered = recovered)
                 } else {
@@ -407,7 +407,7 @@ for(housing in c('shared', 'individual')) {
     }
 }
 
-for(i in 1:4) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15, 6, 14, 6, 13) on the server
+for(i in 1:16) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15, 6, 14, 6, 13) on the server
     housing = df[i, 'housing']
     setting = df[i, 'setting']
     vaccinated = df[i, 'vaccinated']
