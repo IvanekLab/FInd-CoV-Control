@@ -336,6 +336,300 @@ plot(tree)
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
+####
+# Now, let's try eliminating bin sizes, and confirm this gives the same result
+####
+png('any-size-symptomatic-tree.png', height = 900, width = 1600)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df, control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('any-size-unavailable-tree.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df, control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('any-size-total-cost-tree-fixed-p.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df, control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('any-size-symptomatic-tree--facility.png', height = 900, width = 1600)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('any-size-unavailable-tree--facility.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('any-size-total-cost-tree--facility.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('any-size-symptomatic-tree--farm.png', height = 900, width = 1600)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('any-size-unavailable-tree--farm.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('any-size-total-cost-tree--farm.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+###
+#Okay. Time to start trying smaller cp values. Default is 0.01, and current
+#situation is:
+#Symptomatic: transposition (under virus_test in (0, 0.05) & recovered = TRUE)
+#of housing=shared and r0_reduction=0.8 means that we have:
+#   Overall:    Housing == shared;                             <= Need to split
+#               housing == individual & r0_reduction == 0.8
+#               housing == individual & r0_reduction != 0.8
+#   Facility:   r0_reduction = 0.8                             <= Need to split
+#               housing == shared & r0_reduction != 0.8
+#               housing == individual & r0_reduction != 0.8
+#   Farm:       [as overall]
+###
+
+png('cp_0.001-symptomatic-tree.png', height = 900, width = 1600)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df, control=rpart.control(minsplit=1, minbucket=1, cp = 0.001))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('cp_0.001-symptomatic-tree--facility.png', height = 900, width = 1600)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 0.001))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('cp_0.001-symptomatic-tree--farm.png', height = 900, width = 1600)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1, cp = 0.001))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+# Overall and farm are now splitting both; farm still not splitting
+# r0_reduction. Other splits look good, I think?
+
+png('cp_0.0001-symptomatic-tree--facility.png', height = 900, width = 1600)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 0.0001))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+#no
+
+png('cp_1e-5-symptomatic-tree--facility.png', height = 1800, width = 3200)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 1e-5))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+#now splitting, but only if vaccinated is FALSE . . .
+#and there's a lot of crap now. Tentatively figure that this doesn't work. What
+#about unavailable and total_cost
+
+#Unavailable is clean anyway
+
+#Total costs:
+#   Virus test == 1 always unsplit
+#   0 and 0.05 (together) do not split further in overall and facility, but
+#   split by r0_reduction == 0? in farm
+#   Virus test == 0.3 splits by setting == farm and then (if _facility_, only) by
+#   recovered == TRUE in overall.
+#   In farm, it doesn't split at all (consistent with overall)
+#   In facility, it splits by recovered == TRUE _and then_ by (if recovered ==
+#   _FALSE_ only) by vaccinated
+#
+#   So the additional splits we need are:
+#   0 and 0.05 by r0_reduction == 0? (needed in facility)
+#   0.3 by recovered (and 0.3 & recovered == FALSE by vaccinated) (in farm)
+#   So test this:
+
+png('cp_1e-3-total-cost-tree', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df, control=rpart.control(minsplit=1, minbucket=1, cp = 1e-3))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+
+png('cp_1e-3-total-cost-tree--farm.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1, cp = 1e-3))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+png('cp_1e-3-total-cost-tree--facility.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 1e-3))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+#This is almost there. The needed splits from above are both there, but now
+#facility is splitting (virus test == 0.3 & recovered == FALSE & vaccinated ==
+#FALSE) by housing == individual, and farm is not.
+#(Also, both farm and facility are splitting (0 or 0.05 and r0_reduction == 0)
+#by virus test == 0 now. Which is fine.)
+#Let's start by trying to _reduce_ sensitivity:
+
+png('cp_5e-3-total-cost-tree--farm.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1, cp = 5e-3))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+png('cp_5e-3-total-cost-tree--facility.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 5e-3))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+#facility is splitting by r0_reduction now (and neither is splitting again by
+#virus test), but farm is not splitting 0.3 at all. So increasing the
+#sensitivity again
+
+png('cp_3e-3-total-cost-tree--farm.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1, cp = 3e-3))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+png('cp_3e-3-total-cost-tree--facility.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 3e-3))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+#farm is still not splitting 0.3,and facility is now splitting by (0 or 0.05 and
+#r0_reduction = 0) by virus test == 0 and farm is not (yet), but facility is not
+#yet splitting by housing. So increase sensitivity again.
+
+png('cp_2e-3-total-cost-tree--farm.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1, cp = 2e-3))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+png('cp_2e-3-total-cost-tree--facility.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 2e-3))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+#farm and facility are now both splitting by virus test. 
+#farm is now splitting by recovered, but not yet by vaccinated (if recovered is
+#false)
+#facility still not (yet) splitting by housing
+#so reduce again
+
+png('cp_0.0015-total-cost-tree--farm.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1, cp = 0.0015))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+png('cp_0.0015-total-cost-tree--facility.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 0.0015))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+#bingo!
+#and now the "overall" one
+
+
+png('cp_0.0015-total-cost-tree.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df, control=rpart.control(minsplit=1, minbucket=1, cp = 0.0015))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+#Looks decent, although "recovered" and "vaccinated" splits only occur within
+#the facility branch (given that even at 1e-3, only the "recovered" split occurs
+#in the farm branch, this is not too surprising.
+#Now what about the other outcomes, starting with symptomatic
+
+png('cp_0.0015-symptomatic-tree.png', height = 900, width = 1600)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df, control=rpart.control(minsplit=1, minbucket=1, cp = 0.0015))
+plot(tree)
+text(tree, pretty = 1, cex = 1)
+dev.off()
+
+png('cp_0.0015-symptomatic-tree--facility.png', height = 900, width = 1600)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 0.0015))
+plot(tree)
+text(tree, pretty = 1, cex = 1)
+dev.off()
+
+png('cp_0.0015-symptomatic-tree--farm.png', height = 900, width = 1600)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1, cp = 0.0015))
+plot(tree)
+text(tree, pretty = 1, cex = 1)
+dev.off()
+
+#facility still isn't splitting by r0_reduction = 0.8
+#but farm now _is_ splitting housing = shared!
+#and both are splitting (housing == shared & r0_reduction != 0.8) by vaccinated
+#and the rest agrees. So this is a modest improvement.
+
+#now what about unavailable? does it become broken?
+
+png('cp_0.0015-unavailable-tree.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df, control=rpart.control(minsplit=1, minbucket=1, cp = 0.0015))
+plot(tree)
+text(tree, pretty = 1, cex = 1)
+dev.off()
+
+png('cp_0.0015-unavailable-tree--facility.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 0.0015))
+plot(tree)
+text(tree, pretty = 1, cex = 1)
+dev.off()
+
+png('cp_0.0015-unavailable-tree--farm.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1, cp = 0.0015))
+plot(tree)
+text(tree, pretty = 1, cex = 1)
+dev.off()
+
+#looks good _except_ that virus_testing in (0, 1) -> temperature_screening ==
+#TRUE splits on recovered for farm (and overall) and housing for facility.
+#split on recovered for farm (node number 5) appears to have an "improve" of 0.07
+#but it's labeled as having a "complexity parameter" of 0.002065031 (which
+#still, if that's the necessary threshold, suggests that reducing sensitivity is
+#not the answer here. So can I figure out the complexity parameter for splits of
+#nodes 10 and 11 (and what predictor they would split on)
+#it doesn't give me information here. But what if do the infinite thing:
+
+tree_ = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'farm',], control=rpart.control(minsplit=1, minbucket=1, cp = 0))
+
+#10 (recovered == TRUE) splits on housing at 0.001356923 (promising)
+#11 (recovered == FALSE) splits on housing at 0.0006048121 (not so much)
+
+tree__ = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 0))
+
+#10 (housing == shared) splits on recovered at 0.001116043 (maybe ...)
+#11 (housing == individual) splits on recovered at 0.0005926515 (again, not so
+#much.)
+
+#executive decision: Leaving things here for now.
 "png('symptomatic-tree-balanced-infty.png', height = 900, width = 1600)
 tree = rpart(symptomatic_infections ~ housing + vaccinated + recovered + virus_test + r0_reduction, data = df, control=rpart.control(minsplit=1, minbucket=1, cp=0)) #tried 0.001, 0.00001
 plot(tree)
