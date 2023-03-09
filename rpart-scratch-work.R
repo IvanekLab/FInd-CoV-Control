@@ -262,7 +262,7 @@ for(housing in c('shared', 'individual')) {
                 
 #tree = rpart(symptomatic_infections ~ df1$settings + df1$housing + df1$boosting + df1$temperature_screening + df1$vax + df1$virus_test + df1$r0_reduction)
 
-                    df__ = data.frame(housing = housing, setting = setting, vaccinated = vaccinated, recovered = recovered, symptomatic_infections = symptomatic_infections, boosting = boosting, temperature_screening = temperature_screening, vax = vax, virus_test = virus_test, r0_reduction = r0_reduction, worker_shifts_unavailable = worker_shifts_unavailable, total_cost = total_cost)
+                    df__ = data.frame(housing = housing, setting = setting, vaccinated = vaccinated, recovered = recovered, symptomatic_infections = symptomatic_infections, boosting = boosting, temperature_screening = temperature_screening, vax = vax, virus_test = virus_test, r0_reduction = r0_reduction, worker_shifts_unavailable = worker_shifts_unavailable, total_cost = total_cost, run_number = 1:1000)
                     if(is.null(df)) {
                         df = df__
                     } else {
@@ -281,6 +281,7 @@ df$virus_test = factor(df$virus_test)
 df$r0_reduction = factor(df$r0_reduction)
 df$recovered = factor(df$recovered)
 df$vaccinated = factor(df$vaccinated)
+df$run_number = factor(df$run_number)
 
 png('symptomatic-tree.png', height = 900, width = 1600)
 tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df)
@@ -630,16 +631,286 @@ tree__ = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + reco
 #much.)
 
 #executive decision: Leaving things here for now.
+
+#partial resumption: What happens (a) if I cross-validate more, but without any
+#cp, (b) if I do Poisson regression (without any cp)
+png('2023-03-07/unavailable.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('2023-03-07/unavailable-maximal.png', height = 4500, width = 8000)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 0))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+png('2023-03-07/unavailable-poisson.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1), method = 'poisson')
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('2023-03-07/unavailable-poisson-maximal.png', height = 4500, width = 8000)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 0), method = 'poisson')
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+#Maximals are awful, even for Poisson. But could we make a consensus tree? And
+#would that make sense?
+
+#and what about using run numbers?
+png('2023-03-07/unavailable-with-run-numbers.png', height = 4500, width = 8000)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction + run_number, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+#bit of a clusterfuck, naturally, but . . .
+
+#  1) root 104000 773055600.0  72.88082
+#    2) virus_test=0,1 88000 175151500.0  50.54544
+#      4) temperature_screening=FALSE 80000 125756500.0  44.84490
+#        8) virus_test=0 72000  66884820.0  39.92323 *
+#        9) virus_test=1 8000  41431180.0  89.13996
+#         18) housing=shared 4000   1378991.0  24.61350 *
+#         19) housing=individual 4000   6742876.0 153.66640 *
+#      5) temperature_screening=TRUE 8000  20798450.0 107.55080 *
+#    3) virus_test=0.05,0.3 16000 312551100.0 195.72540
+#      6) housing=shared 8000 189651300.0 145.68890
+#       12) run_number= ...  75063450.0 103.08220 *
+#       13) run_number= ... 97122300.0 196.92950
+#         26) recovered=TRUE 1816  31260420.0 145.88290 *
+#         27) recovered=FALSE 1816  56397770.0 247.97610
+#           54) virus_test=0.05 908   3881447.0 180.58740 *
+#           55) virus_test=0.3 908  44269420.0 315.36490
+#            110) run_number= ...  30619720.0 230.22010
+#              220) vaccinated=TRUE 290  11178910.0 162.23560
+#                440) run_number= ...    252033.9  24.43262 *
+#                441) run_number= ...    776712.7 416.22550 *
+#              221) vaccinated=FALSE 290  16760120.0 298.20460
+#                442) run_number= ...    179960.0  25.05149 *
+#                443) run_number= ... 643437.7 499.38920 *
+#            111) run_number= ... 2009607.0 465.92580 *
+#      7) housing=individual 8000  82841370.0 245.76190
+
+#Essentially, this is similar to the original tree
+#Without run numbers, we have
+
+#node), split, n, deviance, yval
+#      * denotes terminal node
+
+# 1) root 104000 773055600  72.88082  
+#   2) virus_test=0,1 88000 175151500  50.54544  
+#     4) temperature_screening=FALSE 80000 125756500  44.84490  
+#       8) virus_test=0 72000  66884820  39.92323 *
+#       9) virus_test=1 8000  41431180  89.13996  
+#        18) housing=shared 4000   1378991  24.61350 *
+#        19) housing=individual 4000   6742876 153.66640 *
+#     5) temperature_screening=TRUE 8000  20798450 107.55080 *
+#   3) virus_test=0.05,0.3 16000 312551100 195.72540  
+#     6) housing=shared 8000 189651300 145.68890  
+#      12) recovered=TRUE 4000  57806620 108.89380 *
+#      13) recovered=FALSE 4000 121013700 182.48390 *
+#     7) housing=individual 8000  82841370 245.76190  
+#      14) virus_test=0.05 4000   6385420 178.08720 *
+#      15) virus_test=0.3 4000  39817110 313.43650  
+#        30) recovered=TRUE 2000  12827150 260.45330 *
+#        31) recovered=FALSE 2000  15761100 366.41970 *
+
+#Potentially interesting results (with run_number vs. without):
+#   (1) node 7 doesn't split in the 
+#   (2) node 6's split on recovered is _below_ the split on run_number
+
+#What if we use differences vs. baseline (Poisson probably does not make any sense here)
+#We will also try using run_number - this should appear very far down the tree
+#if at all (since its effects on baseline will be absorbed into our diffing).
+
+diff_df = NULL
+for(housing in c('shared', 'individual')) {
+    for(setting in c('farm', 'facility')) {
+        for(vaccinated in c(FALSE, TRUE)) {
+            for(recovered in c(FALSE, TRUE)) {
+                cat('\n', housing, setting, vaccinated, recovered, '\n\n')
+                intervention_expenses_function = generate_intervention_expenses_function()
+                if(setting == 'farm') {
+                    output_per_shift = 247612.00 / 5
+                    hourly_wage = 13.89
+                    size = NA
+                } else {
+                    output_per_shift = 784346.67 / 10
+                    hourly_wage = 13.89
+                    size = 1000
+                }
+                farm_or_facility = setting
+                g = function(data) {
+                    ad_hoc_production_mask = rep(c(TRUE, TRUE, FALSE), days)
+                    fd = shiftwise_production_loss(data[ad_hoc_production_mask,,, drop = FALSE])
+                    fd = ifelse(is.na(fd), 0, fd)
+                    r = intervention_expenses_function(data)
+                    r[ad_hoc_production_mask] = r[ad_hoc_production_mask] + fd
+                    r
+                }
+
+                for(i in 1:13) {
+                    filename = get_filename(housing, setting, vaccinated, recovered, i)
+                    df_ = readRDS(filename)
+                    symptomatic_infections = apply(df_[,'new_symptomatic_infections',],2, sum)
+                    worker_shifts_unavailable = apply(df_[,'qn_absent',],2, sum)
+                    total_cost = apply(g(df_), 2, sum)
+                    #browser()
+
+                    boosting = ifelse(i %in% c(11, 13),
+                        0.02,
+                        ifelse(i == 12,
+                            0.04,
+                            0
+                        )
+                    )
+                    temperature_screening = ifelse(i == 2, TRUE, FALSE)
+                    vax = ifelse(i %in% c(6, 13),
+                        0.02,
+                        ifelse(i == 7,
+                            0.04,
+                            0
+                        )
+                    )
+                    virus_test = virus_tests[i]
+                    r0_reduction = r0_reductions[i]
+                
+#tree = rpart(symptomatic_infections ~ df1$settings + df1$housing + df1$boosting + df1$temperature_screening + df1$vax + df1$virus_test + df1$r0_reduction)
+                    if(i == 1) {
+                        symptomatic_infections_1 = symptomatic_infections
+                        worker_shifts_unavailable_1 = worker_shifts_unavailable
+                        total_cost_1 = total_cost
+                    } else {
+                        df__ = data.frame(housing = housing, setting = setting, vaccinated = vaccinated, recovered = recovered, symptomatic_infections = symptomatic_infections - symptomatic_infections_1, boosting = boosting, temperature_screening = temperature_screening, vax = vax, virus_test = virus_test, r0_reduction = r0_reduction, worker_shifts_unavailable = worker_shifts_unavailable - worker_shifts_unavailable_1, total_cost = total_cost - total_cost_1, run_number = 1:1000)
+                        if(is.null(diff_df)) {
+                            diff_df = df__
+                        } else {
+                            diff_df = rbind(diff_df, df__)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+diff_df$boosting = factor(diff_df$boosting)
+diff_df$temperature_screening = factor(diff_df$temperature_screening)
+diff_df$vax = factor(diff_df$vax)
+diff_df$virus_test = factor(diff_df$virus_test)
+diff_df$r0_reduction = factor(diff_df$r0_reduction)
+diff_df$recovered = factor(diff_df$recovered)
+diff_df$vaccinated = factor(diff_df$vaccinated)
+diff_df$run_number = factor(diff_df$run_number)
+
+
+png('2023-03-07/unavailable-differences.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = diff_df[diff_df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+
+png('2023-03-07/unavailable-differences-with-run-numbers.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction + run ~ number, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+#per discussion with renata, let's try a maximal tree, followed by handing
+#pruning.
+#say, symptomatic, at a minimum difference of 10 (anywhere), 5 if smaller is <
+#20, 1 if smaller is < 5
+
+png('2023-03-07/symptomatic-maximal.png', height = 4500, width = 8000)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
+plot(tree)
+text(tree, pretty = 1)
+dev.off()
+
+#Okay, so with a strict requirement of a difference of 10, we get the following:
+to_prune = function(frame, i, difference = 10) {
+    j = which(row.names(frame) == i)
+    #cat(i, ':', j)
+    if(frame[j,1] == '<leaf>') {
+        i
+    } else {
+        left = to_prune(frame, 2 * i, difference)
+        right = to_prune(frame, 2 * i + 1, difference)
+        if(length(left) * length(right) == 1) {
+            if(abs(frame[which(row.names(frame) == 2 * i), 5] - frame[which(row.names(frame) == 2 * i + 1), 5]) >= difference) {
+                c(left, right)
+            } else {
+                i
+            }
+        } else {
+            c(left, right)
+        }
+    }
+}
+
+png('2023-03-07/symptomatic-hand-pruned.png', height = 900, width = 1600)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
+#snipped_tree = snip.rpart(tree, toss = c(8,9,20,42,43,22,46,47,12,13,28,29,60,61,31))
+snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1))
+plot(snipped_tree)
+text(snipped_tree, pretty = 1, cex = 1.5)
+dev.off()
+
+#Looks pretty good. 10 is probably too low for unavailable, but hey, let's tree
+#it.
+
+png('2023-03-07/unavailable-hand-pruned-10.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
+#snipped_tree = snip.rpart(tree, toss = c(8,9,20,42,43,22,46,47,12,13,28,29,60,61,31))
+snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1))
+plot(snipped_tree)#, uniform = TRUE)
+text(snipped_tree, pretty = 1, cex = 0.8)
+dev.off()
+
+#maybe try 50?
+png('2023-03-07/unavailable-hand-pruned-50.png', height = 900, width = 1600)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
+#snipped_tree = snip.rpart(tree, toss = c(8,9,20,42,43,22,46,47,12,13,28,29,60,61,31))
+snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 50))
+plot(snipped_tree)
+text(snipped_tree, pretty = 1, cex = 1.5)
+dev.off()
+
+#Similar heuristics might suggest 10,000, but let's try 1,000 first
+
+png('2023-03-07/total-cost-hand-pruned-1k.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
+#snipped_tree = snip.rpart(tree, toss = c(8,9,20,42,43,22,46,47,12,13,28,29,60,61,31))
+snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 1000))
+plot(snipped_tree)
+text(snipped_tree, pretty = 1, cex = 1)
+dev.off()
+
+png('2023-03-07/total-cost-hand-pruned-10k.png', height = 900, width = 1600)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
+#snipped_tree = snip.rpart(tree, toss = c(8,9,20,42,43,22,46,47,12,13,28,29,60,61,31))
+snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 10000))
+plot(snipped_tree)
+text(snipped_tree, pretty = 1, cex = 1)
+dev.off()
+
+#stopping here for now; next task is to split total_cost into intervention
+#expenses and production loss
+
+#something else to do at some point: incorporate start day
+#another: More cross-validation
+
+
 "png('symptomatic-tree-balanced-infty.png', height = 900, width = 1600)
 tree = rpart(symptomatic_infections ~ housing + vaccinated + recovered + virus_test + r0_reduction, data = df, control=rpart.control(minsplit=1, minbucket=1, cp=0)) #tried 0.001, 0.00001
 plot(tree)
 text(tree, pretty = 1, cex = 0.5)
-dev.off()
-
-png('symptomatic-tree-maximal.png', height = 4500, width = 8000)
-tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df, control=rpart.control(minsplit=1, minbucket=1, cp=0))
-plot(tree)
-text(tree, pretty = 1)
 dev.off()
 
 
