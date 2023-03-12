@@ -215,6 +215,7 @@ for(housing in c('shared', 'individual')) {
             for(recovered in c(FALSE, TRUE)) {
                 cat('\n', housing, setting, vaccinated, recovered, '\n\n')
                 intervention_expenses_function = generate_intervention_expenses_function()
+                intervention_expenses_function_2 = generate_intervention_expenses_function()
                 if(setting == 'farm') {
                     output_per_shift = 247612.00 / 5
                     hourly_wage = 13.89
@@ -240,7 +241,15 @@ for(housing in c('shared', 'individual')) {
                     symptomatic_infections = apply(df_[,'new_symptomatic_infections',],2, sum)
                     worker_shifts_unavailable = apply(df_[,'qn_absent',],2, sum)
                     total_cost = apply(g(df_), 2, sum)
-                    #browser()
+                    intervention_expenses = apply(intervention_expenses_function_2(df_), 2, sum)
+                    ad_hoc_production_mask = rep(c(TRUE, TRUE, FALSE), days)
+                    #production_loss = apply(shiftwise_production_loss(df_[ad_hoc_production_mask,,, drop = FALSE]), 2, sum)
+                    fd = shiftwise_production_loss(df_[ad_hoc_production_mask,,, drop = FALSE])
+                    fd = ifelse(is.na(fd), 0, fd)
+                    production_loss = apply(fd, 2, sum)
+                    #if(i == 4) {
+                    #    browser()
+                    #}
 
                     boosting = ifelse(i %in% c(11, 13),
                         0.02,
@@ -262,7 +271,7 @@ for(housing in c('shared', 'individual')) {
                 
 #tree = rpart(symptomatic_infections ~ df1$settings + df1$housing + df1$boosting + df1$temperature_screening + df1$vax + df1$virus_test + df1$r0_reduction)
 
-                    df__ = data.frame(housing = housing, setting = setting, vaccinated = vaccinated, recovered = recovered, symptomatic_infections = symptomatic_infections, boosting = boosting, temperature_screening = temperature_screening, vax = vax, virus_test = virus_test, r0_reduction = r0_reduction, worker_shifts_unavailable = worker_shifts_unavailable, total_cost = total_cost, run_number = 1:1000)
+                    df__ = data.frame(housing = housing, setting = setting, vaccinated = vaccinated, recovered = recovered, symptomatic_infections = symptomatic_infections, boosting = boosting, temperature_screening = temperature_screening, vax = vax, virus_test = virus_test, r0_reduction = r0_reduction, worker_shifts_unavailable = worker_shifts_unavailable, total_cost = total_cost, intervention_expenses = intervention_expenses, production_loss = production_loss, run_number = 1:1000)
                     if(is.null(df)) {
                         df = df__
                     } else {
@@ -282,6 +291,8 @@ df$r0_reduction = factor(df$r0_reduction)
 df$recovered = factor(df$recovered)
 df$vaccinated = factor(df$vaccinated)
 df$run_number = factor(df$run_number)
+
+stop('Switching to manual running now.')
 
 png('symptomatic-tree.png', height = 900, width = 1600)
 tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df)
@@ -902,6 +913,48 @@ dev.off()
 
 #stopping here for now; next task is to split total_cost into intervention
 #expenses and production loss
+
+png('2023-03-07/production-loss.png', height = 900, width = 1600)
+tree = rpart(production_loss ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('2023-03-07/production-loss-hand-pruned-30k.png', height = 900, width = 1600)
+tree = rpart(production_loss ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
+snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 30000))
+plot(snipped_tree)
+text(snipped_tree, pretty = 1, cex = 2)
+dev.off()
+
+png('2023-03-07/production-loss-hand-pruned-10k.png', height = 900, width = 1600)
+tree = rpart(production_loss ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
+snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 10000))
+plot(snipped_tree)
+text(snipped_tree, pretty = 1, cex = 2)
+dev.off()
+
+png('2023-03-07/intervention-expenses.png', height = 900, width = 1600)
+tree = rpart(intervention_expenses ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1))
+plot(tree)
+text(tree, pretty = 1, cex = 2)
+dev.off()
+
+png('2023-03-07/intervention-expenses-hand-pruned-5k.png', height = 900, width = 1600)
+tree = rpart(intervention_expenses ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
+snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 5000))
+plot(snipped_tree)
+text(snipped_tree, pretty = 1, cex = 2)
+dev.off()
+
+#no change. cut it further?
+
+png('2023-03-07/intervention-expenses-hand-pruned-1k.png', height = 900, width = 1600)
+tree = rpart(intervention_expenses ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
+snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 1000))
+plot(snipped_tree)
+text(snipped_tree, pretty = 1, cex = 2)
+dev.off()
 
 #something else to do at some point: incorporate start day
 #another: More cross-validation
