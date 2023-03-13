@@ -262,14 +262,14 @@ df$run_number = factor(df$run_number)
 #partial resumption: What happens (a) if I cross-validate more, but without any
 #cp, (b) if I do Poisson regression (without any cp)
 png('2023-03-12/unavailable.png', height = 900, width = 1600)
-tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], main = 'Unavailable (default)')
-plot(tree)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
+plot(tree, main = 'Unavailable (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
 png('2023-03-12/unavailable-maximal.png', height = 4500, width = 8000)
-tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 0), main = 'Unavailable (maximal)')
-plot(tree)
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp = 0))
+plot(tree, main = 'Unavailable (maximal)')
 text(tree, pretty = 1)
 dev.off()
 
@@ -280,26 +280,26 @@ dev.off()
 #20, 1 if smaller is < 5
 
 png('2023-03-12/symptomatic.png', height = 900, width = 1600)
-tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], main = 'Symptomatic Infections (default)')
-plot(tree)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
+plot(tree, main = 'Symptomatic Infections (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
 png('2023-03-12/symptomatic-maximal.png', height = 4500, width = 8000)
-tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0), main = 'Symptomatic Infections (maximal)')
-plot(tree)
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
+plot(tree, main = 'Symptomatic Infections (maximal)')
 text(tree, pretty = 1)
 dev.off()
 
 png('2023-03-12/total-cost.png', height = 900, width = 1600)
-tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], main = 'Total Cost (default)')
-plot(tree)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
+plot(tree, main = 'Total Cost (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
 png('2023-03-12/total-cost-maximal.png', height = 900, width = 1600)
-tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control= rpart.control(minsplit=1, minbucket=1, cp = 0), main = 'Total Cost (maximal)')
-plot(tree)
+tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control= rpart.control(minsplit=1, minbucket=1, cp = 0))
+plot(tree, main = 'Total Cost (maximal)')
 text(tree, pretty = 1)
 dev.off()
 
@@ -326,9 +326,9 @@ to_prune = function(frame, i, difference = 10) {
 }
 
 png('2023-03-12/symptomatic-pruned-10.png', height = 900, width = 1600)
-tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0), main = 'Symptomatic Infections (pruned by difference >= 10)')
+tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
 snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1))
-plot(snipped_tree)
+plot(snipped_tree, main = 'Symptomatic Infections (pruned by difference >= 10 infections)')
 text(snipped_tree, pretty = 1, cex = 1.5)
 dev.off()
 
@@ -337,19 +337,19 @@ dev.off()
 
 #maybe try 50?
 png('2023-03-12/unavailable-pruned-50.png', height = 900, width = 1600)
-tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0), main = 'Unavailable (pruned by difference >= 50)')
+tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
 snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 50))
-plot(snipped_tree)
+plot(snipped_tree, main = 'Unavailable (pruned by difference >= 50 worker-shifts missed)')
 text(snipped_tree, pretty = 1, cex = 1.5)
 dev.off()
 
 #Similar heuristics might suggest 10,000, but let's try 1,000 first
 
-png('2023-03-12/total-cost-hand-pruned-10k.png', height = 900, width = 1600)
+png('2023-03-12/total-cost-pruned-10k.png', height = 900, width = 1600)
 tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
 #snipped_tree = snip.rpart(tree, toss = c(8,9,20,42,43,22,46,47,12,13,28,29,60,61,31))
 snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 10000))
-plot(snipped_tree)
+plot(snipped_tree, main = 'Total Cost (pruned by difference >= $10,000)')
 text(snipped_tree, pretty = 1, cex = 1)
 dev.off()
 
@@ -358,48 +358,48 @@ dev.off()
 
 png('2023-03-12/production-loss.png', height = 900, width = 1600)
 tree = rpart(production_loss ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
-plot(tree)
+plot(tree, main = 'Production Loss (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
 png('2023-03-12/production-loss-maximal.png', height = 900, width = 1600)
 tree = rpart(production_loss ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
-plot(tree)
+plot(tree, main = 'Production Loss (maximal)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-png('2023-03-12/production-loss-hand-pruned-10k.png', height = 900, width = 1600)
+png('2023-03-12/production-loss-pruned-10k.png', height = 900, width = 1600)
 tree = rpart(production_loss ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
 snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 10000))
-plot(snipped_tree)
+plot(snipped_tree, main = 'Production Loss (pruned by difference >= $10,000)')
 text(snipped_tree, pretty = 1, cex = 2)
 dev.off()
 
 png('2023-03-12/intervention-expenses.png', height = 900, width = 1600)
 tree = rpart(intervention_expenses ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
-plot(tree)
+plot(tree, main = 'Intervention Expenses (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
 png('2023-03-12/intervention-expenses-maximal.png', height = 900, width = 1600)
 tree = rpart(intervention_expenses ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
-plot(tree)
+plot(tree, main = 'Intervention Expenses (maximal)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-png('2023-03-12/intervention-expenses-hand-pruned-5k.png', height = 900, width = 1600)
+png('2023-03-12/intervention-expenses-pruned-5k.png', height = 900, width = 1600)
 tree = rpart(intervention_expenses ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
 snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 5000))
-plot(snipped_tree)
+plot(snipped_tree, main = 'Intervention Expenses (pruned by difference >= $5,000)')
 text(snipped_tree, pretty = 1, cex = 2)
 dev.off()
 
 #no change. cut it further?
 
-png('2023-03-12/intervention-expenses-hand-pruned-1k.png', height = 900, width = 1600)
+png('2023-03-12/intervention-expenses-pruned-1k.png', height = 900, width = 1600)
 tree = rpart(intervention_expenses ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control=rpart.control(minsplit=1, minbucket=1, cp=0))
 snipped_tree = snip.rpart(tree, toss = to_prune(tree$frame, 1, difference = 1000))
-plot(snipped_tree)
+plot(snipped_tree, main = 'Intervention Expenses (pruned by difference >= $1,000)')
 text(snipped_tree, pretty = 1, cex = 2)
 dev.off()
 
