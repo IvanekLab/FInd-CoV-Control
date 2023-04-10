@@ -478,10 +478,16 @@ end_boxplot = function(
             } else if(i == 2) {
                 all_outcomes = data.frame(intervention = row.names[i], outcome = final - final_1)
                 print(max(final - final_1))
+                if(any(final - final_1 > 0)) {
+                    cat('\t', (final - final_1)[final - final_1 > 0], '\n\t', which(final - final_1 > 0), '\n')
+                }
                 #browser()
             } else {
                 all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final - final_1))
                 print(max(final - final_1))
+                if(any(final - final_1 > 0)) {
+                    cat('\t', (final - final_1)[final - final_1 > 0], '\n\t', which(final - final_1 > 0), '\n')
+                }
                 #if(i == 5) {
                 #    browser()
                 #}
@@ -790,12 +796,13 @@ if(farm_or_facility == 'facility') {
 }
 
 low_mode_mask = readRDS('baseline_lt_5_symptomatic_infections.RDS')
-print('Low mode, absolute:')
-end_boxplot('low-mode-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, run_mask = low_mode_mask)
-print('Low mode, absolute:')
-end_boxplot('high-mode-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, run_mask = !low_mode_mask)
+#print('Low mode, absolute:')
+#end_boxplot('low-mode-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, run_mask = low_mode_mask)
+#print('Low mode, absolute:')
+#end_boxplot('high-mode-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, run_mask = !low_mode_mask)
 print('Low mode, pairwise:')
 end_boxplot('low-mode-pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, pairwise_differences = TRUE, run_mask = low_mode_mask)
+stop('Just the one for now.')
 print('High mode, pairwise:')
 end_boxplot('low-mode-pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, pairwise_differences = TRUE, run_mask = !low_mode_mask)
 
