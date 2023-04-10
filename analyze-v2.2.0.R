@@ -456,6 +456,7 @@ end_boxplot = function(
         #print(dim(full_output))
         #print(1:(dim(full_output)[3]))
         final = sapply(1:(dim(full_output)[3]), obtain_value)
+        #browser()
         intervention_middle = Sys.time()
         #print(intervention_middle - intervention_start)
         #cat('\t')
@@ -527,6 +528,7 @@ end_boxplot = function(
     points(means, 1:length(full_output_filenames), cex =2, pch = 8)
     abline(v = 0)
     dev.off()
+    browser()
 }
 
 #parameters to match pattern in end_boxplot
@@ -747,6 +749,7 @@ oneplot('v4-Infected', infected, mean, c(0,0), paste('People Infectious (out of 
 #print('Symptomatic:')
 oneplot('v4-Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically Infected (out of ', N, ' total)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all)
 
+
 production_shifts_mask_fn = function(start_days) {
     sapply(1:double_wrap_num_sims, function(x) production_shifts(start_days[x]))
 }
@@ -780,6 +783,9 @@ if(farm_or_facility == 'facility') {
     #print('One, farm.')
     n_shifts = 1
 }
+
+end_boxplot('v4b-pairwise-differences-Total-Symptomatic-Infections-ecdfs', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = ecdfs, pairwise_differences = TRUE)
+stop('Let\'s not remake everything unnecessarily')
 
 #stop('Got enough for the moment.')
 #TBD: Make more general (encompassing farm, one-shift facility)
@@ -819,7 +825,6 @@ end_boxplot('v4b-pairwise-differences-Total-Infections-violin', new_infections, 
 #end_boxplot('Total-Symptomatic-Infections', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = main_title)
 end_boxplot('v4b-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot)
 end_boxplot('v4b-pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, pairwise_differences = TRUE)
-
 #browser()
 #end_boxplot('Fraction-Short-production', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts)
 end_boxplot('v4b-Fraction-Short-production-violin', shiftwise_short, xlab = 'Percentage of Production Shifts Short (> 15% of workers absent)', average = TRUE, xlim = c(0,1), percent = TRUE, main_title = main_title, mask = production_shifts_mask_fn, function_ = vioplot)
