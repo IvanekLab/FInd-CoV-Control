@@ -407,7 +407,8 @@ end_boxplot = function(
                        function_ = boxplot,
                        #step_combiner = function(x) x,
                        ys_combiner = function(x) x,
-                       pairwise_differences = FALSE #implicitly vs. i = 1 for now; can elaborate later
+                       pairwise_differences = FALSE, #implicitly vs. i = 1 for now; can elaborate later
+                       run_mask = TRUE
                        ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
 
@@ -421,6 +422,7 @@ end_boxplot = function(
         #cat(i, '\t')
         intervention_start = Sys.time()
         full_output = readRDS(full_output_filenames[i])
+        full_output = full_output[,,run_mask]
         
         #if(!is.na(mask)[1]) {
         #    full_output = full_output[mask,,]
@@ -528,7 +530,7 @@ end_boxplot = function(
     points(means, 1:length(full_output_filenames), cex =2, pch = 8)
     abline(v = 0)
     dev.off()
-    browser()
+    #browser()
 }
 
 #parameters to match pattern in end_boxplot
@@ -784,6 +786,12 @@ if(farm_or_facility == 'facility') {
     n_shifts = 1
 }
 
+low_mode_mask = readRDS('baseline_lt_5_symptomatic_infections.RDS')
+end_boxplot('low-mode-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, run_mask = low_mode_mask)
+end_boxplot('high-mode-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, run_mask = !low_mode_mask)
+end_boxplot('low-mode-pairwise-differences-Total-Symptomatic-Infections-ecdfs', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = ecdfs, pairwise_differences = TRUE, run_mask = low_mode_mask)
+end_boxplot('high-mode-pairwise-differences-Total-Symptomatic-Infections-ecdfs', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = ecdfs, pairwise_differences = TRUE, run_mask = !low_mode_mask)
+stop('Made one-mode plots.')
 end_boxplot('v4b-pairwise-differences-Total-Symptomatic-Infections-ecdfs', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = ecdfs, pairwise_differences = TRUE)
 stop('Let\'s not remake everything unnecessarily')
 
