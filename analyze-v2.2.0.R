@@ -408,7 +408,8 @@ end_boxplot = function(
                        #step_combiner = function(x) x,
                        ys_combiner = function(x) x,
                        pairwise_differences = FALSE, #implicitly vs. i = 1 for now; can elaborate later
-                       run_mask = TRUE
+                       run_mask = TRUE,
+                       percent_differences = FALSE
                        ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
 
@@ -476,20 +477,30 @@ end_boxplot = function(
             if(i == 1) {    
                 final_1 = final
             } else if(i == 2) {
-                all_outcomes = data.frame(intervention = row.names[i], outcome = final - final_1)
-                print(fragments[2])
-                print(max(final - final_1))
-                if(any(final - final_1 > 0)) {
-                    cat('\t', (final - final_1)[final - final_1 > 0], '\n\t', which(final - final_1 > 0), '\n')
+                if(percent_differences) {
+                    final_this = (final - final_1) / final_1
+                } else {
+                    final_this = final - final_1
                 }
+                all_outcomes = data.frame(intervention = row.names[i], outcome = final_this)
+                #print(fragments[2])
+                #print(max(final - final_1))
+                #if(any(final - final_1 > 0)) {
+                #    cat('\t', (final - final_1)[final - final_1 > 0], '\n\t', which(final - final_1 > 0), '\n')
+                #}
                 #browser()
             } else {
-                all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final - final_1))
-                print(fragments[2])
-                print(max(final - final_1))
-                if(any(final - final_1 > 0)) {
-                    cat('\t', (final - final_1)[final - final_1 > 0], '\n\t', which(final - final_1 > 0), '\n')
+                if(percent_differences) {
+                    final_this = (final - final_1) / final_1
+                } else {
+                    final_this = final - final_1
                 }
+                all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final_this))
+                #print(fragments[2])
+                #print(max(final - final_1))
+                #if(any(final - final_1 > 0)) {
+                #    cat('\t', (final - final_1)[final - final_1 > 0], '\n\t', which(final - final_1 > 0), '\n')
+                #}
                 #if(i == 5) {
                 #    browser()
                 #}
@@ -802,15 +813,18 @@ if(farm_or_facility == 'facility') {
 }
 
 low_mode_mask = readRDS('baseline_lt_5_symptomatic_infections.RDS')
+print('High mode, pairwise:')
+end_boxplot('high-mode-pairwise-percent-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, pairwise_differences = TRUE, run_mask = !low_mode_mask, percent_differences = TRUE)
+#stop('Just this')
 #print('Low mode, absolute:')
 #end_boxplot('low-mode-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, run_mask = low_mode_mask)
 print('High mode, absolute:')
 end_boxplot('high-mode-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, run_mask = !low_mode_mask)
 print('Low mode, pairwise:')
 end_boxplot('low-mode-pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, pairwise_differences = TRUE, run_mask = low_mode_mask)
-stop('Just the two for now.')
+#stop('Just the two for now.')
 print('High mode, pairwise:')
-end_boxplot('low-mode-pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, pairwise_differences = TRUE, run_mask = !low_mode_mask)
+end_boxplot('high-mode-pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = vioplot, pairwise_differences = TRUE, run_mask = !low_mode_mask)
 
 stop('Skipping ecdfs now, redundant.')
 end_boxplot('low-mode-pairwise-differences-Total-Symptomatic-Infections-ecdfs', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = unique_id, function_ = ecdfs, pairwise_differences = TRUE, run_mask = low_mode_mask)
