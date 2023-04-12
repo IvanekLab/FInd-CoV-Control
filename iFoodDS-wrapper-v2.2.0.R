@@ -445,7 +445,7 @@ for(i in 8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15,
         common_parameters,
         setting_parameters,
         list(
-            unique_id = paste0(-1485701517, '-', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
+            unique_id = paste0(-528236667, '-', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
             kConstants = kConstants,
             fraction_recovered = fraction_recovered,
             fraction_fully_vaccinated = fraction_fully_vaccinated,
