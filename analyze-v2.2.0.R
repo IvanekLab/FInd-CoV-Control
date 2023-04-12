@@ -812,7 +812,7 @@ if(farm_or_facility == 'facility') {
     n_shifts = 1
 }
 
-low_mode_mask = readRDS('baseline_lt_5_symptomatic_infections.RDS')
+low_mode_mask = readRDS('-1485701517-baseline_lt_5_symptomatic_infections.RDS')
 print('High mode, pairwise, percent:')
 end_boxplot('high-mode-pairwise-percent-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(F) P. Fractional Change, High Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !low_mode_mask, percent_differences = TRUE)
 #stop('Just this')
@@ -885,10 +885,10 @@ end_boxplot('pairwise-differences-Total-Symptomatic-Infections-violin', new_symp
 
 "oneplot('v4b-Production-Loss', shiftwise_production_loss, mean, c(0,0), 'Production Loss (Dollars ($) per production shift)', mask = production_shifts)
 end_boxplot('v4b-Total-Production-Loss', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts)"
-end_boxplot('Total-Production-Loss-violin', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask_fn = production_shifts_mask_fn, ys_combiner = production_ys_combiner, function_ = vioplot, main_title = '(A) Total Production Loss')
+end_boxplot('Total-Production-Loss-violin', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask_fn = production_shifts_mask_fn, ys_combiner = production_ys_combiner, function_ = vioplot, main_title = '(B) Total Production Loss')
 #intervention_expenses_function = generate_intervention_expenses_function()
 #end_boxplot('Total-Intervention-Expenses', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)')
-end_boxplot('Total-Intervention-Expenses-violin', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)', function_ = vioplot, main_title = '(B) Total Intervention Expenses')
+end_boxplot('Total-Intervention-Expenses-violin', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)', function_ = vioplot, main_title = '(A) Total Intervention Expenses')
 
 intervention_expenses_function = generate_intervention_expenses_function()
 #below is massively kludged, to deal with production loss fn not handling
