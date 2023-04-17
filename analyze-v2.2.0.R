@@ -811,8 +811,8 @@ if(farm_or_facility == 'facility') {
     #print('One, farm.')
     n_shifts = 1
 }
-
-low_mode_mask = readRDS('-528236667-baseline_lt_5_symptomatic_infections.RDS')
+df1 = readRDS(full_output_filenames[1])
+low_mode_mask = apply(df1[,'new_symptomatic_infections',], 2, sum) <= .15 * N #readRDS('baseline_lt_5_symptomatic_infections.RDS')
 print('High mode, pairwise, percent:')
 end_boxplot('high-mode-pairwise-percent-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(F) P. Fractional Change, High Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !low_mode_mask, percent_differences = TRUE)
 #stop('Just this')

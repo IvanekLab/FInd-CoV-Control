@@ -295,7 +295,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.2.0'
-double_wrap_num_sims = 1000
+double_wrap_num_sims = 100
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -308,14 +308,14 @@ double_wrap_num_sims = 1000
 #git diff --no-index --word-diff --ignore-all-space a.txt b.txt
 common_parameters = list(
     workers_per_crew = '10',                    # FM: workers per line
-    crews_per_supervisor = 3,                   # FM: / lines per shift
+    crews_per_supervisor = 30,                   # FM: / lines per shift
     days = '90',
     social_distancing_work = 'Intermediate',
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
     folder_name = 'sat2wi-clean',   # relative to working directory
-    analyze_only = TRUE, #'FALSE',
+    analyze_only = TRUE, #FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
     #fraction_fully_vaccinated = 0.71,
@@ -328,14 +328,14 @@ common_parameters = list(
 additional_facility_parameters = list(
     farm_or_facility = 'facility',
     supervisors = '2',          # FM: shifts
-    n_shift_floaters = '10',     # FM only (for farm model, will require NULL/NA)
-    n_cleaners = '10',          # FM only (for farm model, will require NULL/NA)
-    n_all_floaters = '11',      # FM only (for farm model, will require NULL/NA)
+    n_shift_floaters = '100',     # FM only (for farm model, will require NULL/NA)
+    n_cleaners = '100',          # FM only (for farm model, will require NULL/NA)
+    n_all_floaters = '110',      # FM only (for farm model, will require NULL/NA)
     #employee_housing = 'Private', 
     #social_distancing_shared_housing = NULL,
     #community_transmission = 'Intermediate',
     #unique_id = 'facility-pass-1',
-    output_per_week = 784346.67, #1680000 , #N * 60.1 * 4 #wrong, but it's okay
+    output_per_week = 3*784346.67, #1680000 , #N * 60.1 * 4 #wrong, but it's okay
     hourly_wage = 13.89,
     size = 1000
 
@@ -445,7 +445,7 @@ for(i in 8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15,
         common_parameters,
         setting_parameters,
         list(
-            unique_id = paste0(-528236667, '-', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
+            unique_id = paste0('large--', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
             kConstants = kConstants,
             fraction_recovered = fraction_recovered,
             fraction_fully_vaccinated = fraction_fully_vaccinated,
@@ -457,6 +457,8 @@ for(i in 8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15,
             community_transmission = community_transmission
         )
     )
+    #do.call(full_run, all_params)
+    double_wrap_num_sims = 1000
     do.call(full_run, all_params)
 }
 

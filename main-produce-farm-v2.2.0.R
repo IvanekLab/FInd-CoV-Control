@@ -293,9 +293,9 @@ step_index = (1:steps) * (1/3) #step_length
 source('safe-random-functions-v2.2.0.R')
 if(!exists('FIXED_SEED') || FIXED_SEED == TRUE) {
     #safe_set_seed(-1485701517) # a third option, for identifying outliers in the low mode
-    #safe_set_seed(-778276078) #random 32-bit signed integer generated using
+    safe_set_seed(-778276078) #random 32-bit signed integer generated using
                               #atmospheric noise for reproducible output
-    safe_set_seed(-528236667) # a different truly random number, for comparison
+    #safe_set_seed(-528236667) # a different truly random number, for comparison
     #cat('intervention:', index_i, 'seed set:', runif(1, 0, 1), '\n')
 }
 
