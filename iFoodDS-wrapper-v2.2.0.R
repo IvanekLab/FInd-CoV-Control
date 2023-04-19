@@ -307,15 +307,15 @@ double_wrap_num_sims = 100
 #then run
 #git diff --no-index --word-diff --ignore-all-space a.txt b.txt
 common_parameters = list(
-    workers_per_crew = '10',                    # FM: workers per line
-    crews_per_supervisor = 30,                   # FM: / lines per shift
+    workers_per_crew = '100',                    # FM: workers per line
+    crews_per_supervisor = 3,                   # FM: / lines per shift
     days = '90',
     social_distancing_work = 'Intermediate',
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
     folder_name = 'sat2wi-clean',   # relative to working directory
-    analyze_only = TRUE, #FALSE,
+    analyze_only = FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
     #fraction_fully_vaccinated = 0.71,
@@ -445,7 +445,7 @@ for(i in 8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15,
         common_parameters,
         setting_parameters,
         list(
-            unique_id = paste0('large--', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
+            unique_id = paste0('large--alternative--', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
             kConstants = kConstants,
             fraction_recovered = fraction_recovered,
             fraction_fully_vaccinated = fraction_fully_vaccinated,
