@@ -507,10 +507,10 @@ end_boxplot = function(
             }
         
         } else {
-            print(fragments[2])
-            print(min(final))
+            #print(fragments[2])
+            #print(min(final))
             if(any(final == 0)) {
-                cat('\t', (final)[final == 0], '\n\t', which(final == 0), '\n')
+                #cat('\t', (final)[final == 0], '\n\t', which(final == 0), '\n')
             }
             if(i == 1) {
                 all_outcomes = data.frame(intervention = row.names[i], outcome = final)
