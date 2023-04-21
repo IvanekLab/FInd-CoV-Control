@@ -315,7 +315,7 @@ common_parameters = list(
     n_mild = '0',
     working_directory = '.',
     folder_name = 'sat2wi-clean',   # relative to working directory
-    analyze_only = FALSE,
+    analyze_only = TRUE,#FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
     #fraction_fully_vaccinated = 0.71,
@@ -335,7 +335,7 @@ additional_facility_parameters = list(
     #social_distancing_shared_housing = NULL,
     #community_transmission = 'Intermediate',
     #unique_id = 'facility-pass-1',
-    output_per_week = 3*784346.67, #1680000 , #N * 60.1 * 4 #wrong, but it's okay
+    output_per_week = (1022/103) * 784346.67, #technically not exactly the right way to rescale this, but meh
     hourly_wage = 13.89,
     size = 1000
 
@@ -457,7 +457,7 @@ for(i in 8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15,
             community_transmission = community_transmission
         )
     )
-    do.call(full_run, all_params)
+    #do.call(full_run, all_params)
     double_wrap_num_sims = 1000
     do.call(full_run, all_params)
 }
