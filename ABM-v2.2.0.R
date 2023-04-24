@@ -90,7 +90,7 @@ isolation_fn = function(agents, start_time, rational_testing, testing_rate,
         x_to_Isol = testing_mask = rep(FALSE, N)
     }
     
-    list(agents = agents, tests_performed = sum(testing_mask), fractional_test_carried = fractional_test_carried)
+    list(agents = agents, tests_performed = sum(testing_mask), fractional_test_carried = fractional_test_carried, x_to_Isol = x_to_Isol)
 }
 
 # In a technical sense, the following function is totally redundant (and with
@@ -380,6 +380,8 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
         agents$duration_IM[IM_to_IS]
     agents$infection_status[IM_to_IS] = 'IS'
 
+    new_previously_unisolated_hospitalizations = IM_to_IS & !isolated_0
+
     IM_to_R =  IM_to_x & !severe
     agents$time_R[IM_to_R] = agents$time_IM[IM_to_R] +
         agents$duration_IM[IM_to_R]
@@ -418,7 +420,7 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
     agents$immune_status[x_to_R] = 'R'
     agents$infection_status[x_to_R] = 'NI'
 
-    list(agents = agents, IP_to_IM = IP_to_IM)
+    list(agents = agents, IP_to_IM = IP_to_IM, IM_to_IS, new_previously_unisolated_hospitalizations = new_previously_unisolated_hospitalizations)
 }
 
 ABM <- function(agents, contacts_list, lambda_list, schedule,
@@ -497,6 +499,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         agents = ifl[['agents']]
         tests_performed = ifl[['tests_performed']]
         fractional_test_carried = ifl[['fractional_test_carried']]
+        x_to_Isol = ifl[['x_to_Isol']]
 
         #2022-02-10: pulling out repeated calls that are intended to resolve on
         #the status of agent properties at the *start* of a step
@@ -590,6 +593,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                                     isolated_0, immunity_0)
         agents = pil[['agents']]
         IP_to_IM = pil[['IP_to_IM']]
+        IM_to_IS = pil[['IM_to_IS']]
+        new_previously_unisolated_hospitalizations = pil[['new_previously_unisolated_hospitalizations']]
         initial_infecteds = initial_infecteds & (agents$infection_status != 'NI')
         ii_remaining = sum(initial_infecteds)
         #print(initial_infecteds[26])
@@ -602,7 +607,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
         Out1 = update_Out1(Out1, k, agents, infection_status_0, isolated_0,
                            agent_presence, quantitative_presence,
-                           NI_to_E_community, NI_to_E, doses, tests_performed, IP_to_IM, iii, ii_remaining)
+                           NI_to_E_community, NI_to_E, doses, tests_performed, IP_to_IM, iii, ii_remaining,
+                           x_to_Isol, IM_to_IS, new_previously_unisolated_hospitalizations)
     
     }
     #browser()
@@ -655,6 +661,10 @@ make_Out1 = function(steps) {
         new_internal_infections = rep(0, steps),
         new_community_infections = rep(0, steps),
         new_symptomatic_infections = rep(0, steps),
+        new_isolateds = rep(0, steps),
+        all_new_hospitalizeds = rep(0, steps),
+        new_previously_unisolated_hospitalizeds = rep(0, steps),
+        new_unavailables = rep(0, steps),
         doses = rep(0, steps),
         tests = rep(0, steps),
         iii = rep(0, steps),
@@ -665,7 +675,8 @@ make_Out1 = function(steps) {
 update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
                        agent_presence, quantitative_presence,
                        NI_to_E_community, NI_to_E, doses, tests_performed,
-                       IP_to_IM, iii, ii_remaining) {
+                       IP_to_IM, iii, ii_remaining,
+                       x_to_Isol, IM_to_IS, new_previously_unisolated_hospitalizations) {
     #NB: TRUE == 1 for the purpose of summation
     infection_status_1 = agents$infection_status
     immune_status_1 = agents$immune_status
@@ -723,6 +734,10 @@ update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
         Out1$new_internal_infections[k] = sum(NI_to_E)
         Out1$new_community_infections[k] = sum(NI_to_E_community)
         Out1$new_symptomatic_infections[k] = sum(IP_to_IM) #pause
+        Out1$new_isolateds[k] = sum(x_to_Isol)
+        Out1$all_new_hospitalizeds[k] = sum(IM_to_IS)
+        Out1$new_previously_unisolated_hospitalizeds[k] = sum(new_previously_unisolated_hospitalizations)
+        Out1$new_unavailables[k] = sum(x_to_Isol | new_previously_unisolated_hospitalizations)
         Out1$doses[k] = doses
         Out1$tests[k] = tests_performed
         Out1$iii[k] = iii

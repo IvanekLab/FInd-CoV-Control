@@ -315,7 +315,7 @@ common_parameters = list(
     n_mild = '0',
     working_directory = '.',
     folder_name = 'checking-means-fix',   # relative to working directory
-    analyze_only = TRUE,#FALSE,
+    analyze_only = FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
     #fraction_fully_vaccinated = 0.71,
@@ -457,7 +457,7 @@ for(i in 8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15,
             community_transmission = community_transmission
         )
     )
-    #do.call(full_run, all_params)
+    do.call(full_run, all_params)
     double_wrap_num_sims = 1000
     do.call(full_run, all_params)
 }
