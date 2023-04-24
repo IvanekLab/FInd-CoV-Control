@@ -403,7 +403,7 @@ end_boxplot = function(
                        xlim = NULL,
                        percent = FALSE,
                        main_title = NULL,
-                       mask_fn = NULL,#function(d) NA,
+                       mask_fn = NULL,
                        function_ = boxplot,
                        #step_combiner = function(x) x,
                        ys_combiner = function(x) x,
@@ -413,21 +413,14 @@ end_boxplot = function(
                        ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
 
-    #if(!is.na(mask)[1]) {
-    #    step_index = step_index[mask]
-    #}
-
-    means = numeric(length(full_output_filenames))
-    #step_indices = list() #??
+    #means = numeric(length(full_output_filenames))
+    means = NULL
+    all_outcomes = NULL
     for (i in 1:length(full_output_filenames)) {
-        #cat(i, '\t')
         intervention_start = Sys.time()
         full_output = readRDS(full_output_filenames[i])
         full_output = full_output[,,run_mask]
         
-        #if(!is.na(mask)[1]) {
-        #    full_output = full_output[mask,,]
-        #}
         fragments = unlist(strsplit(full_output_filenames[i], '/'))
         start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
         if((i == 1) && is.null(mask_fn)) {
@@ -439,59 +432,26 @@ end_boxplot = function(
         obtain_value = function(j) { #run index; note difference from approach in combine()
                                      #TBD: create a better function name (and
                                      #better intermediate vector names
-            #sum(outcome_fn(full_output[mask[, , j, drop = FALSE]]))
             v = full_output[mask[,j], , j, drop = FALSE] # prevent reduction in dimensions, so the same outcome_fn can be used
             vv = outcome_fn(v)
             vvv = ys_combiner(vv)
             len <<- length(vvv)
-            #print(v)
-            #print(vv)
-            #print(vvv)
             sum(vvv)
         }
         
-        #outcomes = outcome_fn(full_output)
-        #outcomes = apply(outcomes, 2, cumsum)
-
-        #cat('max of outcomes is:', max(outcomes), '\n')
-
-        #final = as.vector(outcomes[dim(full_output)[1],])
-        #print(dim(full_output))
-        #print(1:(dim(full_output)[3]))
         #if(!identical(run_mask, TRUE) && !exists('trivial_mask')) {
         #    browser()
         #}
         final = sapply(1:(dim(full_output)[3]), obtain_value)
-        #browser()
-        intervention_middle = Sys.time()
-        #print(intervention_middle - intervention_start)
-        #cat('\t')
         
         if(average) {
-            #final = final / length(step_index)
             final = final / len
         }
-        #cat('max of final is:', max(final), '\n')
         
-        means[i] = mean(final, na.rm = TRUE)
-        #cat('max of means is:', max(means), '\n')
-
+        #means[i] = mean(final, na.rm = TRUE)
         if(pairwise_differences) {
             if(i == 1) {    
                 final_1 = final
-            } else if(i == 2) {
-                if(percent_differences) {
-                    final_this = (final - final_1) / final_1
-                } else {
-                    final_this = final - final_1
-                }
-                all_outcomes = data.frame(intervention = row.names[i], outcome = final_this)
-                #print(fragments[2])
-                #print(max(final - final_1))
-                #if(any(final - final_1 > 0)) {
-                #    cat('\t', (final - final_1)[final - final_1 > 0], '\n\t', which(final - final_1 > 0), '\n')
-                #}
-                #browser()
             } else {
                 if(percent_differences) {
                     final_this = (final - final_1) / final_1
@@ -499,32 +459,12 @@ end_boxplot = function(
                     final_this = final - final_1
                 }
                 all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final_this))
-                #print(fragments[2])
-                #print(max(final - final_1))
-                #if(any(final - final_1 > 0)) {
-                #    cat('\t', (final - final_1)[final - final_1 > 0], '\n\t', which(final - final_1 > 0), '\n')
-                #}
-                #if(i == 5) {
-                #    browser()
-                #}
+                means[i - 1] = mean(final_this) #do I actually need na.rm here?
             }
-        
         } else {
-            #print(fragments[2])
-            #print(min(final))
-            if(any(final == 0)) {
-                #cat('\t', (final)[final == 0], '\n\t', which(final == 0), '\n')
-            }
-            if(i == 1) {
-                all_outcomes = data.frame(intervention = row.names[i], outcome = final)
-            } else {
-                all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final))
-            }
+            all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final))
+            means[i] = mean(final) #do I actually need na.rm here?
         }
-        intervention_end = Sys.time()
-        #print(intervention_end - intervention_middle)
-        #cat('\t\t')
-        #print(intervention_end - intervention_start)
     }
 
     all_outcomes$intervention = factor(all_outcomes$intervention, levels = unique(all_outcomes$intervention), ordered = TRUE)
@@ -532,7 +472,7 @@ end_boxplot = function(
     if(pairwise_differences) {
         col = colors[-1]
         full_output_filenames = full_output_filenames[-1]
-        means = means[-1] - means[1]
+        #means = means[-1] - means[1]
     } else {
         if(identical(function_, ecdfs)) {
             col = colors
