@@ -34,7 +34,7 @@ filenames = c(
     # 'elaborated-unavailability/facility-shared-vaccinated_TRUE-recovered_TRUE_pairwise-differences-Average-Unavailable-production-violin_2.2.0.png'
 )
 
-png('large--counter-alternative--new-figure-2-2023-04-26.png', width = 3000, height = 2000)
+png('large--counter-alternative--new-figure-2-2023-04-28.png', width = 3000, height = 2000)
 l = NULL
 for(filename in filenames) {
     this_image = readPNG(filename)
@@ -53,7 +53,7 @@ dev.off()
 #stop('Got the first plot!')
 
 filenames = c(
-    'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_Unavailable-incidence_2.2.0.png',
+    # 'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_Unavailable-incidence_2.2.0.png',
     # 'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_Total-Unavailable-incidence-violin_2.2.0.png',
     # 'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_pairwise-differences-Average-Unavailable-production-violin_2.2.0.png',
 
@@ -63,14 +63,12 @@ filenames = c(
 
     'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_Unavailable-production_2.2.0.png',
     'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_Total-Unavailable-production-violin_2.2.0.png',
+    'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_Unavailable-production-Fraction-Non-Zero_2.2.0.png',
     # 'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_pairwise-differences-Average-Unavailable-production-violin_2.2.0.png',
 
-    'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_low-mode-pairwise-differences-Total-Unavailable-production-violin_2.2.0.png',
-    'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_high-mode-pairwise-differences-Total-Unavailable-production-violin_2.2.0.png',
-    'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_high-mode-pairwise-percent-differences-Total-Unavailable-production-violin_2.2.0.png',
-    NA,
-    'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_Unavailable-production-Fraction-Non-Zero_2.2.0.png',
-    NA
+    'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_zero-pairwise-differences-Total-Unavailable-production-violin_2.2.0.png',
+    'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_non-zero-pairwise-differences-Total-Unavailable-production-violin_2.2.0.png',
+    'elaborated-unavailability/large--counter-alternative--facility-shared-vaccinated_TRUE-recovered_TRUE_non-zero-pairwise-percent-differences-Total-Unavailable-production-violin_2.2.0.png'
     
 
 
@@ -81,7 +79,7 @@ filenames = c(
 
 
 
-png('large--counter-alternative--new-figure-3a-2023-04-26.png', width = 3000, height = 3000)
+png('large--counter-alternative--new-figure-3a-2023-04-28.png', width = 3000, height = 2000)
 l = NULL
 for(filename in filenames) {
     if(is.na(filename)) {
@@ -98,7 +96,7 @@ for(filename in filenames) {
         l = c(l, list(this_plot))
     }
 }
-print(plot_grid(plotlist = l, nrow = 3))
+print(plot_grid(plotlist = l, nrow = 2))
 dev.off()
 
 
