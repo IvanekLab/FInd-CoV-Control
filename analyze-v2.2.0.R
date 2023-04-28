@@ -667,41 +667,64 @@ first_x_boxplot = function(
     }
 }
 
-
+#am not adding run masks . . .yet
 end_barplot = function(
                        filename, 
                        outcome_fn, 
                        xlab, 
-                       average = FALSE, 
+                       #average = FALSE,
+                       summary_fn, # mean for old average == TRUE, sum for old average == FALSE
+                                   # TBD: does this handling really make sense?
                        xlim = NULL, 
                        percent = FALSE, 
-                       mask = NA
+                       mask_fn = NULL,
+                       ys_combiner = max
                        ) {
     if(!is.null(filename)) {
         png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
     }
     
-    if(!is.na(mask)[1]) {
-        step_index = step_index[mask]
-    }
+    #if(!is.na(mask)[1]) {
+    #    step_index = step_index[mask]
+    #}
 
     all_outcomes = numeric(length(full_output_filenames))
     names(all_outcomes) = row.names
     for (i in 1:length(full_output_filenames)) {
         full_output = readRDS(full_output_filenames[i])
+        fragments = unlist(strsplit(full_output_filenames[i], '/'))
+        start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
 
-        if(!is.na(mask)[1]) {
-            full_output = full_output[mask,,]
+        #if(!is.na(mask)[1]) {
+        #    full_output = full_output[mask,,]
+        #}
+        if((i == 1) && is.null(mask_fn)) {
+            trivial_mask = matrix(TRUE, nrow = dim(full_output)[1], ncol = dim(full_output)[3])
+            mask_fn = function(x) trivial_mask
         }
-
+        mask = mask_fn(start_days)
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
-        outcomes = outcome_fn(full_output)
-
-        if(average) {
-            fraction = mean(apply(outcomes, 2, max)) #kludge, should ideally be joined to another thing (but works adequately for now)
-        } else {
-            fraction = sum(apply(outcomes, 2, max)) #kludge, should be joined to another thing, extra kludgey with this name (but works adequately for now)
+        obtain_value = function(j) { #run index; note difference from approach in combine()
+                                     #TBD: create a better function name (and
+                                     #better intermediate vector names
+            v = full_output[mask[,j], , j, drop = FALSE] # prevent reduction in dimensions, so the same outcome_fn can be used
+            vv = outcome_fn(v)
+            vvv = ys_combiner(vv)
+            len <<- length(vvv)
+            sum(vvv)
         }
+        outcomes = sapply(1:(dim(full_output)[3]), obtain_value)
+        #browser()
+
+        #dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
+        #outcomes = outcome_fn(full_output)
+
+        #if(average) {
+        #    fraction = mean(apply(outcomes, 2, max)) #kludge, should ideally be joined to another thing (but works adequately for now)
+        #} else {
+        #    fraction = sum(apply(outcomes, 2, max)) #kludge, should be joined to another thing, extra kludgey with this name (but works adequately for now)
+        #}
+        fraction = summary_fn(outcomes)
         
         all_outcomes[i] = fraction
     }
@@ -718,6 +741,35 @@ end_barplot = function(
         dev.off()
     }
 }
+
+production_shifts_mask_fn = function(start_days) {
+    sapply(1:double_wrap_num_sims, function(x) production_shifts(start_days[x]))
+}
+
+intervention_expenses_function = generate_intervention_expenses_function()
+g = function(data) {
+    #TBD: Make this better, seriously
+    ad_hoc_production_mask = rep(c(TRUE, TRUE, FALSE), days)
+    #fd = shiftwise_production_loss(data[production_shifts,,])
+    #print('In')
+    #print(data)
+    #print(dim(data))
+    fd = shiftwise_production_loss(data[ad_hoc_production_mask,,, drop = FALSE])
+    fd = ifelse(is.na(fd), 0, fd)
+    #fd = ifelse(is.na(fd), 0, fd)
+    #cat('blorp\n')
+    r = intervention_expenses_function(data)
+    #r[production_shifts] = r[production_shifts] + fd
+    r[ad_hoc_production_mask] = r[ad_hoc_production_mask] + fd
+    #r = rbind(apply(fd,2,sum) + apply(f(data),2,sum))
+    #print(dim(r))
+    r
+}
+end_barplot(filename = 'Total-Cost-Fraction-Non-Zero', outcome_fn = g, xlab = 'Fraction of runs where total cost > $0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, ys_combiner = function(x) sum(x) > 0)
+
+
+end_barplot(filename = 'Symptomatic-Fraction-Non-Zero', outcome_fn = symptomatic, xlab = 'Fraction of runs where symptomatic infections > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, mask_fn = NULL, ys_combiner = function(x) sum(x) > 0)
+end_barplot(filename = 'Unavailable-production-Fraction-Non-Zero', outcome_fn = shiftwise_unavailable, xlab = 'Fraction of runs where worker-shifts missed > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, mask_fn = production_shifts_mask_fn, ys_combiner = function(x) sum(x) > 0)
 
 #print('Infected:')
 #oneplot('v4-Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all)
@@ -888,6 +940,10 @@ end_boxplot('Total-Production-Loss-violin', shiftwise_production_loss, xlab = 'T
 #end_boxplot('Total-Intervention-Expenses', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)')
 end_boxplot('Total-Intervention-Expenses-violin', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)', function_ = vioplot, main_title = '(A) Total Intervention Expenses')
 
+end_barplot(filename = 'Total-Production-Loss-Fraction-Non-Zero', outcome_fn = shiftwise_production_loss, xlab = 'Fraction of runs where production losses > $0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, mask_fn = production_shifts_mask_fn, ys_combiner = function(x) sum(x) > 0)
+end_barplot(filename = 'Total-Intervention-Expenses-Fraction-Non-Zero', outcome_fn = generate_intervention_expenses_function(), xlab = 'Fraction of runs where intervention expenses > $0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, mask_fn = production_shifts_mask_fn, ys_combiner = function(x) sum(x) > 0)
+
+
 intervention_expenses_function = generate_intervention_expenses_function()
 #below is massively kludged, to deal with production loss fn not handling
 #cleaning shifts, and cost needing to handle all shifts
@@ -913,7 +969,6 @@ g = function(data) {
 #end_boxplot('Total-Cost', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)')
 "intervention_expenses_function = generate_intervention_expenses_function()"
 end_boxplot('Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)', function_ = vioplot, main_title = '(C) Total Cost')
-intervention_expenses_function = generate_intervention_expenses_function()
 #end_boxplot('v4b-pairwise-differences-Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)', function_ = vioplot, main_title = unique_id, pairwise_differences = TRUE)
 
 #print('before')
