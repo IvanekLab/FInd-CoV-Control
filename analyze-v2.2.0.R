@@ -509,7 +509,7 @@ end_boxplot = function(
     if(percent) {
         if(identical(function_, vioplot)) {
             #cat('Percent vioplot: ', filename, '\n')
-            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, yaxt='n', areaEqual = areaEqual, h = h)
+            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, yaxt='n', areaEqual = areaEqual, h = min_h)
         } else {
             #cat('Percent boxplot: ', filename, '\n')
             function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, xaxt='n')
@@ -517,7 +517,7 @@ end_boxplot = function(
         axis(1, at=pretty(c(all_outcomes$outcome,xlim)), paste0(lab=pretty(c(all_outcomes$outcome,xlim)) * 100, ' %'), las=TRUE, cex.axis = 1.5, cex.lab=1.5)
     } else {
         #cat('Not percent: ', filename, '\n')
-        function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, areaEqual = areaEqual, h = h)
+        function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, areaEqual = areaEqual, h = min_h)
     }
     title(main=main_title, cex.main = 3)
     points(means, 1:length(full_output_filenames), cex =2, pch = 8)
