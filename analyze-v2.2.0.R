@@ -413,7 +413,9 @@ end_boxplot = function(
                        ys_combiner = function(x) x,
                        pairwise_differences = FALSE, #implicitly vs. i = 1 for now; can elaborate later
                        run_mask = TRUE,
-                       percent_differences = FALSE
+                       percent_differences = FALSE,
+                       areaEqual = FALSE,
+                       h = NULL
                        ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
 
@@ -491,13 +493,13 @@ end_boxplot = function(
     }
     if(percent) {
         if(identical(function_, vioplot)) {
-            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, yaxt='n')
+            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, yaxt='n', areaEqual = areaEqual, h = h)
         } else {
             function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, xaxt='n')
         }
         axis(1, at=pretty(c(all_outcomes$outcome,xlim)), paste0(lab=pretty(c(all_outcomes$outcome,xlim)) * 100, ' %'), las=TRUE, cex.axis = 1.5, cex.lab=1.5)
     } else {
-        function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass)
+        function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, areaEqual = areaEqual, h = h)
     }
     title(main=main_title, cex.main = 3)
     points(means, 1:length(full_output_filenames), cex =2, pch = 8)
@@ -769,6 +771,11 @@ g = function(data) {
 }
 end_barplot(filename = 'Total-Cost-Fraction-Non-Zero', outcome_fn = g, xlab = 'Fraction of runs where total cost > $0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, ys_combiner = function(x) sum(x) > 0)"
 
+end_boxplot('TSIv--original', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot)
+end_boxplot('TSIv--areaEqual', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot, areaEqual = TRUE)
+end_boxplot('TSIv--h12', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot, h = 12)
+end_boxplot('TSIv--areaEqual-h12', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot, areaEqual = TRUE, h = 12)
+stop('One set to compare for now')
 
 end_barplot(filename = 'Symptomatic-Fraction-Non-Zero', outcome_fn = symptomatic, xlab = 'Fraction of runs where symptomatic infections > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, main_title = '(C) Fraction of runs > 0', mask_fn = NULL, ys_combiner = function(x) sum(x) > 0)
 end_barplot(filename = 'Unavailable-production-Fraction-Non-Zero', outcome_fn = shiftwise_unavailable, xlab = 'Fraction of runs where worker-shifts missed > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, main_title = '(C) Fraction of runs > 0', mask_fn = production_shifts_mask_fn, ys_combiner = function(x) sum(x) > 0)
