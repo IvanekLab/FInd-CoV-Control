@@ -399,6 +399,7 @@ generate_intervention_expenses_function = function() {
     }
 }
 
+source('~/vioplot/R/vioplot-multi-h.R') #kludge for an experiment
 end_boxplot = function(
                        filename,
                        outcome_fn,
@@ -424,6 +425,7 @@ end_boxplot = function(
     all_outcomes = NULL
     min_h = Inf
     max_h = 0
+    hs = NULL
     for (i in 1:length(full_output_filenames)) {
         intervention_start = Sys.time()
         full_output = readRDS(full_output_filenames[i])
@@ -469,14 +471,17 @@ end_boxplot = function(
                 }
                 all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final_this))
                 this_h = sm.density(final_this, display='none')$h
+                hs = c(hs, this_h)
                 means[i - 1] = mean(final_this) #do I actually need na.rm here?
             }
         } else {
             all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final))
             if(all(final == 0)) {
                 this_h = NULL
+                hs = c(hs, 0)
             } else {
                 this_h = sm.density(final, display='none')$h
+                hs = c(hs, this_h)
             }
             means[i] = mean(final) #do I actually need na.rm here?
         }
@@ -509,7 +514,7 @@ end_boxplot = function(
     if(percent) {
         if(identical(function_, vioplot)) {
             #cat('Percent vioplot: ', filename, '\n')
-            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, yaxt='n', areaEqual = areaEqual, h = min_h)
+            function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, yaxt='n', areaEqual = areaEqual, h = hs)
         } else {
             #cat('Percent boxplot: ', filename, '\n')
             function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, xaxt='n')
@@ -517,7 +522,7 @@ end_boxplot = function(
         axis(1, at=pretty(c(all_outcomes$outcome,xlim)), paste0(lab=pretty(c(all_outcomes$outcome,xlim)) * 100, ' %'), las=TRUE, cex.axis = 1.5, cex.lab=1.5)
     } else {
         #cat('Not percent: ', filename, '\n')
-        function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, areaEqual = areaEqual, h = min_h)
+        function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, areaEqual = areaEqual, h = hs)
     }
     title(main=main_title, cex.main = 3)
     points(means, 1:length(full_output_filenames), cex =2, pch = 8)
