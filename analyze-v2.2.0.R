@@ -415,13 +415,15 @@ end_boxplot = function(
                        run_mask = TRUE,
                        percent_differences = FALSE,
                        areaEqual = FALSE,
-                       h = NULL
+                       h = 12 #NULL
                        ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
-
+    print(filename)
     #means = numeric(length(full_output_filenames))
     means = NULL
     all_outcomes = NULL
+    min_h = Inf
+    max_h = 0
     for (i in 1:length(full_output_filenames)) {
         intervention_start = Sys.time()
         full_output = readRDS(full_output_filenames[i])
@@ -456,7 +458,8 @@ end_boxplot = function(
         
         #means[i] = mean(final, na.rm = TRUE)
         if(pairwise_differences) {
-            if(i == 1) {    
+            if(i == 1) {
+                this_h = NULL
                 final_1 = final
             } else {
                 if(percent_differences) {
@@ -465,13 +468,25 @@ end_boxplot = function(
                     final_this = final - final_1
                 }
                 all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final_this))
+                this_h = sm.density(final_this, display='none')$h
                 means[i - 1] = mean(final_this) #do I actually need na.rm here?
             }
         } else {
             all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final))
+            if(all(final == 0)) {
+                this_h = NULL
+            } else {
+                this_h = sm.density(final, display='none')$h
+            }
             means[i] = mean(final) #do I actually need na.rm here?
         }
+        if(!is.null(this_h)) {
+            cat('\t', this_h, '\t', row.names[i], '\n')
+            max_h = max(max_h, this_h)
+            min_h = min(min_h, this_h)
+        }
     }
+    cat('\t\t', min_h, 'MIN', '\n\t\t', max_h, 'MAX\n')
 
     all_outcomes$intervention = factor(all_outcomes$intervention, levels = unique(all_outcomes$intervention), ordered = TRUE)
 
@@ -493,12 +508,15 @@ end_boxplot = function(
     }
     if(percent) {
         if(identical(function_, vioplot)) {
+            #cat('Percent vioplot: ', filename, '\n')
             function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, yaxt='n', areaEqual = areaEqual, h = h)
         } else {
+            #cat('Percent boxplot: ', filename, '\n')
             function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, xaxt='n')
         }
         axis(1, at=pretty(c(all_outcomes$outcome,xlim)), paste0(lab=pretty(c(all_outcomes$outcome,xlim)) * 100, ' %'), las=TRUE, cex.axis = 1.5, cex.lab=1.5)
     } else {
+        #cat('Not percent: ', filename, '\n')
         function_(outcome ~ intervention, data = all_outcomes, horizontal = TRUE, las = 1, xlab = xlab, ylim = xlim, col = col, cex.axis = 1.5, cex.names=1.5, cex.lab=1.5, ylab = '', na.action = na.pass, areaEqual = areaEqual, h = h)
     }
     title(main=main_title, cex.main = 3)
@@ -771,11 +789,11 @@ g = function(data) {
 }
 end_barplot(filename = 'Total-Cost-Fraction-Non-Zero', outcome_fn = g, xlab = 'Fraction of runs where total cost > $0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, ys_combiner = function(x) sum(x) > 0)"
 
-end_boxplot('TSIv--original', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot)
-end_boxplot('TSIv--areaEqual', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot, areaEqual = TRUE)
-end_boxplot('TSIv--h12', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot, h = 12)
-end_boxplot('TSIv--areaEqual-h12', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot, areaEqual = TRUE, h = 12)
-stop('One set to compare for now')
+#end_boxplot('TSIv--original', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot)
+#end_boxplot('TSIv--areaEqual', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot, areaEqual = TRUE)
+#end_boxplot('TSIv--h12', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot, h = 12)
+#end_boxplot('TSIv--areaEqual-h12', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot, areaEqual = TRUE, h = 12)
+#stop('One set to compare for now')
 
 end_barplot(filename = 'Symptomatic-Fraction-Non-Zero', outcome_fn = symptomatic, xlab = 'Fraction of runs where symptomatic infections > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, main_title = '(C) Fraction of runs > 0', mask_fn = NULL, ys_combiner = function(x) sum(x) > 0)
 end_barplot(filename = 'Unavailable-production-Fraction-Non-Zero', outcome_fn = shiftwise_unavailable, xlab = 'Fraction of runs where worker-shifts missed > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, main_title = '(C) Fraction of runs > 0', mask_fn = production_shifts_mask_fn, ys_combiner = function(x) sum(x) > 0)
