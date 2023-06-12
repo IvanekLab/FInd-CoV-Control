@@ -314,7 +314,7 @@ common_parameters = list(
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'vioplot-parameter-experiment',   # relative to working directory
+    folder_name = 'bobrovitz-test',   # relative to working directory
     analyze_only = TRUE, #FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
@@ -407,7 +407,7 @@ for(housing in c('shared', 'individual')) {
     }
 }
 
-for(i in 8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15, 6, 14, 6, 13) on the server
+for(i in 8) { #i.e., individual, facility, TRUE, TRUE
     housing = df[i, 'housing']
     setting = df[i, 'setting']
     vaccinated = df[i, 'vaccinated']
@@ -445,7 +445,7 @@ for(i in 8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15,
         common_parameters,
         setting_parameters,
         list(
-            unique_id = paste0('large--counter-alternative--', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
+            unique_id = paste0('lca--unmodified', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
             kConstants = kConstants,
             fraction_recovered = fraction_recovered,
             fraction_fully_vaccinated = fraction_fully_vaccinated,
@@ -458,7 +458,7 @@ for(i in 8) { #actually split this as 1:8 at home, 9-16 at work, c(8, 16, 7, 15,
         )
     )
     #do.call(full_run, all_params)
-    double_wrap_num_sims = 1000
+    double_wrap_num_sims = 100
     do.call(full_run, all_params)
 }
 
