@@ -399,7 +399,7 @@ generate_intervention_expenses_function = function() {
     }
 }
 
-source('~/vioplot/R/vioplot-multi-h.R') #kludge for an experiment
+source('vioplot-multi-h.R') #kludge for an experiment
 end_boxplot = function(
                        filename,
                        outcome_fn,
