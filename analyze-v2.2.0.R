@@ -399,7 +399,7 @@ generate_intervention_expenses_function = function() {
     }
 }
 
-source('~/vioplot/R/vioplot-multi-h.R') #kludge for an experiment
+source('vioplot-multi-h.R') #kludge for an experiment
 end_boxplot = function(
                        filename,
                        outcome_fn,
@@ -800,15 +800,15 @@ end_barplot(filename = 'Total-Cost-Fraction-Non-Zero', outcome_fn = g, xlab = 'F
 #end_boxplot('TSIv--areaEqual-h12', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot, areaEqual = TRUE, h = 12)
 #stop('One set to compare for now')
 
-end_barplot(filename = 'Symptomatic-Fraction-Non-Zero', outcome_fn = symptomatic, xlab = 'Fraction of runs where symptomatic infections > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, main_title = '(C) Fraction of runs > 0', mask_fn = NULL, ys_combiner = function(x) sum(x) > 0)
-end_barplot(filename = 'Unavailable-production-Fraction-Non-Zero', outcome_fn = shiftwise_unavailable, xlab = 'Fraction of runs where worker-shifts missed > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, main_title = '(C) Fraction of runs > 0', mask_fn = production_shifts_mask_fn, ys_combiner = function(x) sum(x) > 0)
+#end_barplot(filename = 'Symptomatic-Fraction-Non-Zero', outcome_fn = symptomatic, xlab = 'Fraction of runs where symptomatic infections > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, main_title = '(C) Fraction of runs > 0', mask_fn = NULL, ys_combiner = function(x) sum(x) > 0)
+#end_barplot(filename = 'Unavailable-production-Fraction-Non-Zero', outcome_fn = shiftwise_unavailable, xlab = 'Fraction of runs where worker-shifts missed > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, main_title = '(C) Fraction of runs > 0', mask_fn = production_shifts_mask_fn, ys_combiner = function(x) sum(x) > 0)
 
 #print('Infected:')
 #oneplot('v4-Infected', infected, mean, c(0,0), paste('People Infectious (out of ', N, ' total)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all)
 #print('Symptomatic:')
-oneplot('Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically Infected (in a population of ', N, ' employees)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all, main_title = '(B) Mean Prevalence at each time point')
+oneplot('Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically Infected (in a population of ', N, ' employees)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all, main_title = '')#'(B) Mean Prevalence at each time point')
 
-oneplot('Symptomatic-incidence', new_symptomatic_infections, mean, c(0,0), paste('Incidence of Symptomatic Infection (in a population of ', N, ' employees)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all, main_title = '(A) Mean Incidence at each time point')
+#oneplot('Symptomatic-incidence', new_symptomatic_infections, mean, c(0,0), paste('Incidence of Symptomatic Infection (in a population of ', N, ' employees)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all, main_title = '(A) Mean Incidence at each time point')
 
 #browser()
 
@@ -855,7 +855,7 @@ zero_unavailable_mask = apply(df1[,'qn_absent',], 2, sum) == 0
 #print('High mode, pairwise, percent:')
 #browser()
 #end_boxplot('high-mode-pairwise-percent-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(F) P. Fractional Change, High Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !low_mode_mask, percent_differences = TRUE)
-end_boxplot('non-zero-pairwise-percent-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(F) P. F. Change, Non-Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_symptomatic_mask, percent_differences = TRUE)
+#end_boxplot('non-zero-pairwise-percent-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(F) P. F. Change, Non-Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_symptomatic_mask, percent_differences = TRUE)
 
 #end_boxplot('non-zero-pairwise-percent-differences-Total-Symptomatic-Infections-prevalence-violin', symptomatic, xlab = paste('Total Worker-Days Symptomatically Infected (among', N, 'total workers)'), average = FALSE, ys_combiner = day_average_all, main_title = '(H) P. F. Change, Non-Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_mask, percent_differences = TRUE)
 
@@ -863,7 +863,7 @@ end_boxplot('non-zero-pairwise-percent-differences-Total-Symptomatic-Infections-
 
 #The two below are identical, but this is expected, because they are % differences
 #end_boxplot('high-mode-pairwise-percent-differences-Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = '(F) P. Fractional Change, High Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = !low_mode_mask, percent_differences = TRUE)
-end_boxplot('non-zero-pairwise-percent-differences-Total-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Worker-Shifts Missed'), average = FALSE, main_title = '(F) P. Fractional Change, High Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_unavailable_mask, percent_differences = TRUE)
+#end_boxplot('non-zero-pairwise-percent-differences-Total-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Worker-Shifts Missed'), average = FALSE, main_title = '(F) P. Fractional Change, High Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_unavailable_mask, percent_differences = TRUE)
 
 #end_boxplot('high-mode-pairwise-percent-differences-Total-Unavailable-incidence-violin', new_unavailables, xlab = paste('Total Worker Unavailabilities'), average = FALSE, main_title = '(E) P. F. Change, High Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !low_mode_mask, percent_differences = TRUE)
 #below line doesn't work because there are low-but-non-zero symptomatic infections
@@ -881,8 +881,8 @@ end_boxplot('non-zero-pairwise-percent-differences-Total-Unavailable-production-
 #print('High mode, pairwise:')
 #end_boxplot('high-mode-pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(E) P. Differences, High Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !low_mode_mask)
 
-end_boxplot('zero-pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(NA) P. Differences, Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = zero_symptomatic_mask)
-end_boxplot('non-zero-pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(E) P. Differences, Non-Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_symptomatic_mask)
+#end_boxplot('zero-pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(NA) P. Differences, Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = zero_symptomatic_mask)
+#end_boxplot('non-zero-pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(E) P. Differences, Non-Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_symptomatic_mask)
 
 #end_boxplot('zero-pairwise-differences-Total-Symptomatic-Infections-prevalence-violin', symptomatic, xlab = paste('Total Worker-Days Symptomatically Infected (among', N, 'total workers)'), average = FALSE, ys_combiner = day_average_all, main_title = '(NA) P. Differences, Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = zero_mask)
 #end_boxplot('non-zero-pairwise-differences-Total-Symptomatic-Infections-prevalence-violin', symptomatic, xlab = paste('Total Worker-Days Symptomatically Infected (among', N, 'total workers)'), average = FALSE, ys_combiner = day_average_all, main_title = '(G) P. Differences, Non-Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_mask)
@@ -895,8 +895,8 @@ end_boxplot('non-zero-pairwise-differences-Total-Symptomatic-Infections-violin',
 #end_boxplot('non-zero-pairwise-differences-Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = TRUE, main_title = '(H) P. Differences, Non-Zero Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_mask)
 #end_boxplot('mid-pairwise-differences-Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = TRUE, main_title = '(J) P. Differences, Non-Zero Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = low_mode_mask & !zero_mask)
 
-end_boxplot('zero-pairwise-differences-Total-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Worker-Shifts Missed'), average = FALSE, main_title = '(D) P. Differences, Low Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = zero_unavailable_mask)
-end_boxplot('non-zero-pairwise-differences-Total-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Worker-Shifts Missed'), average = FALSE, main_title = '(E) P. Differences, High Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_unavailable_mask)
+#end_boxplot('zero-pairwise-differences-Total-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Worker-Shifts Missed'), average = FALSE, main_title = '(D) P. Differences, Low Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = zero_unavailable_mask)
+#end_boxplot('non-zero-pairwise-differences-Total-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Worker-Shifts Missed'), average = FALSE, main_title = '(E) P. Differences, High Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_unavailable_mask)
 #end_boxplot('zero-pairwise-differences-Total-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(G) P. Differences, Zero Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = zero_mask)
 #end_boxplot('non-zero-pairwise-differences-Total-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(H) P. Differences, Non-Zero Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_mask)
 #end_boxplot('mid-pairwise-differences-Total-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(J) P. Differences, Non-Zero Baseline Runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE, run_mask = low_mode_mask & !zero_mask)
@@ -914,7 +914,7 @@ end_boxplot('non-zero-pairwise-differences-Total-Unavailable-production-violin',
 #stop('Got enough for the moment.')
 #TBD: Make more general (encompassing farm, one-shift facility)
 #print('Production:')
-oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', round(production_shift_size * n_shifts, 2), ' total)', sep = ''), mask_fn = production_shifts_mask_fn, step_combiner = production_step_combiner, ys_combiner = production_ys_combiner, main_title = '(A) Mean Prevalence at each time point')
+oneplot('Unavailable-production', shiftwise_unavailable, mean, c(0,0), paste('People Unavailable to Work their Scheduled Production Shift (out of ', round(production_shift_size * n_shifts, 2), ' total)', sep = ''), mask_fn = production_shifts_mask_fn, step_combiner = production_step_combiner, ys_combiner = production_ys_combiner, main_title = '') #'(A) Mean Prevalence at each time point')
 
 #oneplot('Unavailable-incidence', new_unavailables, mean, c(0,0), paste('Workers Newly Unavailable'), step_combiner = day_add_all, ys_combiner = day_average_all, main_title = '(A) Mean Incidence at each time point')
 
@@ -939,7 +939,7 @@ sys_time_start = Sys.time()
 #sys_time_middle = Sys.time()
 #print(sys_time_middle - sys_time_start)
 #end_boxplot('Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = '(B) Within-run average, distribution across runs', mask_fn = production_shifts_mask_fn, function_ = vioplot)
-end_boxplot('Total-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Worker-Shifts Missed'), average = FALSE, main_title = '(B) Within-run average, distribution', mask_fn = production_shifts_mask_fn, function_ = vioplot)
+end_boxplot('Total-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Total Worker-Shifts Missed'), average = FALSE, main_title = '', mask_fn = production_shifts_mask_fn, function_ = vioplot)
 #end_boxplot('Total-Unavailable-incidence-violin', new_unavailables, xlab = paste('Total Worker Unavailabilities'), average = FALSE, main_title = '(B) Cumulative Incidence, distribution', function_ = vioplot)
 #end_boxplot('v4b-Average-Unavailable-production-ecdfs', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = unique_id, mask_fn = production_shifts_mask_fn, function_ = ecdfs)
 #end_boxplot('pairwise-differences-Average-Unavailable-production-violin', shiftwise_unavailable, xlab = paste('Average Absences per Production Shift (out of ', round(production_shift_size,2), ' workers)'), average = TRUE, main_title = '(C) P. Differences, all runs', mask_fn = production_shifts_mask_fn, function_ = vioplot, pairwise_differences = TRUE)
@@ -952,8 +952,8 @@ end_boxplot('Total-Unavailable-production-violin', shiftwise_unavailable, xlab =
 #end_boxplot('Total-Infections-violin', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title, function_ = vioplot)
 #end_boxplot('v4b-pairwise-differences-Total-Infections-violin', new_infections, xlab = paste('Total Infections (among ', N, 'total workers)'), average = FALSE, main_title = main_title, function_ = vioplot, pairwise_differences = TRUE)
 
-#end_boxplot('Total-Symptomatic-Infections', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = main_title)
-end_boxplot('Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot)
+end_boxplot('Total-Symptomatic-Infections', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '')
+end_boxplot('Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '', function_ = vioplot)
 #end_boxplot('Total-Symptomatic-Infections-prevalence-violin', symptomatic, xlab = paste('Total Worker-Days Symptomatically Infected'), average = FALSE, ys_combiner = day_average_all, main_title = '(F) Cumulative Prevalence, distribution', function_ = vioplot)
 #end_boxplot('pairwise-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(C) P. Differences, all runs', function_ = vioplot, pairwise_differences = TRUE)
 #browser()
@@ -970,10 +970,10 @@ end_boxplot('Total-Symptomatic-Infections-violin', new_symptomatic_infections, x
 
 "oneplot('v4b-Production-Loss', shiftwise_production_loss, mean, c(0,0), 'Production Loss (Dollars ($) per production shift)', mask = production_shifts)
 end_boxplot('v4b-Total-Production-Loss', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask = production_shifts)"
-end_boxplot('Total-Production-Loss-violin', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask_fn = production_shifts_mask_fn, ys_combiner = production_ys_combiner, function_ = vioplot, main_title = '(B) Total Production Loss')
+#end_boxplot('Total-Production-Loss-violin', shiftwise_production_loss, xlab = 'Total Production Loss in Dollars ($)', mask_fn = production_shifts_mask_fn, ys_combiner = production_ys_combiner, function_ = vioplot, main_title = '(B) Total Production Loss')
 #intervention_expenses_function = generate_intervention_expenses_function()
 #end_boxplot('Total-Intervention-Expenses', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)')
-end_boxplot('Total-Intervention-Expenses-violin', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)', function_ = vioplot, main_title = '(A) Total Intervention Expenses')
+#end_boxplot('Total-Intervention-Expenses-violin', generate_intervention_expenses_function(), xlab = 'Total intervention expenses in Dollars ($)', function_ = vioplot, main_title = '(A) Total Intervention Expenses')
 
 #end_barplot(filename = 'Total-Production-Loss-Fraction-Non-Zero', outcome_fn = shiftwise_production_loss, xlab = 'Fraction of runs where production losses > $0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, mask_fn = production_shifts_mask_fn, ys_combiner = function(x) sum(x) > 0)
 #end_barplot(filename = 'Total-Intervention-Expenses-Fraction-Non-Zero', outcome_fn = generate_intervention_expenses_function(), xlab = 'Fraction of runs where intervention expenses > $0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, mask_fn = production_shifts_mask_fn, ys_combiner = function(x) sum(x) > 0)
@@ -1003,7 +1003,7 @@ g = function(data) {
 }
 #end_boxplot('Total-Cost', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)')
 "intervention_expenses_function = generate_intervention_expenses_function()"
-end_boxplot('Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)', function_ = vioplot, main_title = '(C) Total Cost')
+end_boxplot('Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)', function_ = vioplot, main_title = '')# '(C) Total Cost')
 #end_boxplot('v4b-pairwise-differences-Total-Cost-violin', g, xlab = 'Total Cost (Intervention Expenses + Production Losses) in Dollars ($)', function_ = vioplot, main_title = unique_id, pairwise_differences = TRUE)
 
 #print('before')
