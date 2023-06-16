@@ -315,7 +315,7 @@ common_parameters = list(
     n_mild = '0',
     working_directory = '.',
     folder_name = 'bobrovitz-test',   # relative to working directory
-    analyze_only = TRUE, #FALSE,
+    analyze_only = FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
     #fraction_fully_vaccinated = 0.71,
@@ -445,7 +445,7 @@ for(i in 8) { #i.e., individual, facility, TRUE, TRUE
         common_parameters,
         setting_parameters,
         list(
-            unique_id = paste0('lca--unmodified', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
+            unique_id = paste0('lca--refactoring-test', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
             kConstants = kConstants,
             fraction_recovered = fraction_recovered,
             fraction_fully_vaccinated = fraction_fully_vaccinated,
@@ -458,7 +458,7 @@ for(i in 8) { #i.e., individual, facility, TRUE, TRUE
         )
     )
     #do.call(full_run, all_params)
-    double_wrap_num_sims = 100
+    double_wrap_num_sims = 10#0
     do.call(full_run, all_params)
 }
 

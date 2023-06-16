@@ -159,8 +159,9 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     vaccination_mask = sbern(N, vaccination_rate)
     boosting_mask = sbern(N, boosting_rate)
     event_times = sunif(N, start_time, end_time)
-    stealable = (immune_status_0 == 'R') &
-        (event_times - agents$time_R < complete_immunity_duration_R)
+    stealable = (immune_status_0 %in% c('R', 'H_V1_R', 'H_V2_R', 'H_B_R') &
+                 event_times - agents$time_R < complete_immunity_duration_R
+    )
 
     any_vaccination = rep(FALSE, N)
 
@@ -198,109 +199,159 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         )
 
         #boosting via shots earlier than boosters (+ natural Recovery)
-        R_to_B_via_V1 = (infection_status_0 == 'NI' &
-                         immune_status_0 == 'R' &
-                         vax_status_0 == 'NV' &
-                         vaccination_mask &
-                         !isolated_0
+        R_to_H_R_V1 = (infection_status_0 == 'NI' &     #or possibly H_V1_R
+                       immune_status_0 == 'R' &
+                       vax_status_0 == 'NV' &
+                       vaccination_mask &
+                       !isolated_0
         )
         agents = update_agents(agents = agents,
-                               mask = R_to_B_via_V1,
-                               #previous_immunity = immunity_0,
+                               mask = R_to_H_R_V1,
                                time_V1 = event_times,
-                               #time_last_immunity_event = event_times,
-                               #immune_status = 'B',
                                vax_status = 'V1'
         )
         agents = update_agents(agents = agents,
-                               mask = R_to_B_via_V1 & !stealable,
+                               mask = R_to_H_R_V1 & !stealable,
                                previous_immunity = immunity_0,
-                               #time_V1 = event_times,
                                time_last_immunity_event = event_times,
-                               immune_status = 'B'#,
-                               #vax_status = 'V1'
+                               immune_status = 'H_R_V1'
+        )
+        agents = update_agents(agents = agents,
+                               mask = R_to_H_R_V1 & stealable,
+                               #previous_immunity = immunity_0,
+                               #time_last_immunity_event = event_times,
+                               immune_status = 'H_V1_R'
         )
 
-        R_to_B_via_V2 = (infection_status_0 == 'NI' &
-                         immune_status_0 == 'R' &
+        x_to_H_R_V2 = (infection_status_0 == 'NI' &     #or possibly H_V2_R
+                       (immune_status_0 %in% c('H_V1_R', 'H_R_V1')) &  #TBD: Confirm something sensible happens to H_R_V1
                          vax_status_0 == 'V1' &
                          end_time - agents$time_V1 > vaccination_interval &
                          vaccination_rate > 0 &
                          !isolated_0
         )
         agents = update_agents(agents = agents,
-                               mask = R_to_B_via_V2,
-                               #previous_immunity = immunity_0,
+                               mask = x_to_H_R_V2,
                                time_V2 = event_times,
-                               #time_last_immunity_event = event_times,
-                               #immune_status = 'B',
                                vax_status = 'V2'
         )
         agents = update_agents(agents = agents,
-                               mask = R_to_B_via_V2 & !stealable,
+                               mask = x_to_H_R_V2 & !stealable,
                                previous_immunity = immunity_0,
-                               #time_V2 = event_times,
                                time_last_immunity_event = event_times,
-                               immune_status = 'B'#,
-                               #vax_status = 'V2'
+                               immune_status = 'H_R_V2'
+        )
+        agents = update_agents(agents = agents,
+                               mask = x_to_H_R_V2 & stealable,
+                               #previous_immunity = immunity_0,
+                               #time_last_immunity_event = event_times,
+                               immune_status = 'H_V2_R'
         )
 
-        any_vaccination = any_vaccination | S_to_V1 | V1_to_V2 | R_to_B_via_V1 |
-            R_to_B_via_V2
+        any_vaccination = (any_vaccination |
+                           S_to_V1 |
+                           V1_to_V2 |
+                           R_to_H_R_V1 |
+                           x_to_H_R_V2
+        )
     }
 
-    x_to_B_on_time = (infection_status_0 == 'NI' &
-                      #any immune status
-                      vax_status_0 == 'V2' &
-                      end_time - agents$time_V2 > boosting_interval &
-                      #any vaccination rate
-                      agents$boosting_on_time &
-                      !isolated_0
+    V2_to_B_on_time = (infection_status_0 == 'NI' &
+                       immune_status_0 == 'V2' &
+                       vax_status_0 == 'V2' &
+                       end_time - agents$time_V2 > boosting_interval &
+                       #any vaccination rate
+                       agents$boosting_on_time &
+                       !isolated_0
     )
     agents = update_agents(agents = agents,
-                           mask = x_to_B_on_time,
-                           #previous_immunity = immunity_0,
+                           mask = V2_to_B_on_time,
                            time_B = event_times,
-                           #time_last_immunity_event = event_times,
-                           #immune_status = 'B',
                            vax_status = 'B'
     )
     agents = update_agents(agents = agents,
-                           mask = x_to_B_on_time & !stealable,
+                           mask = V2_to_B_on_time & !stealable,
                            previous_immunity = immunity_0,
-                           #time_B = event_times,
                            time_last_immunity_event = event_times,
-                           immune_status = 'B'#,
-                           #vax_status = 'B'
+                           immune_status = 'B'
     )
 
-    any_vaccination = any_vaccination | x_to_B_on_time
+    x_to_H_R_B_on_time = (infection_status_0 == 'NI' &
+                          immune_status_0 %in% c('H_V2_R', 'H_R_V2') &
+                          vax_status_0 == 'V2' &
+                          end_time - agents$time_V2 > boosting_interval &
+                          #any vaccination rate
+                          agents$boosting_on_time &
+                          !isolated_0
+    )
+    agents = update_agents(agents = agents,
+                           mask = x_to_H_R_B_on_time,
+                           time_B = event_times,
+                           vax_status = 'B'
+    )
+    agents = update_agents(agents = agents,
+                           mask = x_to_H_R_B_on_time & !stealable,
+                           previous_immunity = immunity_0,
+                           time_last_immunity_event = event_times,
+                           immune_status = 'H_R_B'
+    )
+    agents = update_agents(agents = agents,
+                           mask = x_to_H_R_B_on_time & stealable,
+                           #previous_immunity = immunity_0,
+                           #time_last_immunity_event = event_times,
+                           immune_status = 'H_B_R'
+    )
+
+    any_vaccination = any_vaccination | V2_to_B_on_time | x_to_H_R_B_on_time
 
     #boost
     if(sum(boosting_rate) > 0) {
         #time_V2 is only set when receiving second dose
-        #so is still valid in R or B (from R + V1 or V2)
-        x_to_B_late = ((infection_status_0 == 'NI' &
-                vax_status_0 == 'V2' & !isolated_0) &
-                (end_time - agents$time_V2 > boosting_interval + 1) & #5 months
-                boosting_mask)
+        #so is still valid in H_R_V2 or H_V2_R
+        V2_to_B_late = (infection_status_0 == 'NI' &
+                        immune_status_0 == 'V2' &
+                        vax_status_0 == 'V2' &
+                        !isolated_0 &
+                        end_time - agents$time_V2 > boosting_interval + 1 & #5 months
+                        boosting_mask
+        )
         agents = update_agents(agents = agents,
-                               mask = x_to_B_late,
-                               #previous_immunity = immunity_0,
+                               mask = V2_to_B_late,
                                time_B = event_times,
-                               #time_last_immunity_event = event_times,
-                               #immune_status = 'B',
+                               previous_immunity = immunity_0,
+                               time_last_immunity_event = event_times,
+                               immune_status = 'B',
+                               vax_status = 'B'
+        )
+        
+        x_to_H_R_B_late = (infection_status_0 == 'NI' &
+                           immune_status_0 %in% c('H_R_V2', 'H_V2_R') &
+                           vax_status_0 == 'V2' &
+                           !isolated_0 &
+                           end_time - agents$time_V2 > boosting_interval + 1 & #5 months
+                           boosting_mask
+        )
+        agents = update_agents(agents = agents,
+                               mask = x_to_H_R_B_late,
+                               time_B = event_times,
+                               previous_immunity = immunity_0,
+                               time_last_immunity_event = event_times,
                                vax_status = 'B'
         )
         agents = update_agents(agents = agents,
-                               mask = x_to_B_late & !stealable,
+                               mask = x_to_H_R_B_late & !stealable,
                                previous_immunity = immunity_0,
-                               #time_B = event_times,
                                time_last_immunity_event = event_times,
-                               immune_status = 'B'#,
-                               #vax_status = 'B'
+                               immune_status = 'H_R_B'
         )
-        any_vaccination = any_vaccination | x_to_B_late
+        agents = update_agents(agents = agents,
+                               mask = x_to_H_R_B_late & stealable,
+                               #previous_immunity = immunity_0,
+                               #time_last_immunity_event = event_times,
+                               immune_status = 'H_B_R'
+        )
+
+        any_vaccination = any_vaccination | V2_to_B_late | x_to_H_R_B_late
     }
 
 
@@ -417,7 +468,29 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
     agents$previous_immunity[x_to_R] = immunity_0[x_to_R]
     #time_R assigned in each specific case above
     agents$time_last_immunity_event[x_to_R] = agents$time_R[x_to_R]
-    agents$immune_status[x_to_R] = 'R'
+
+    #perhaps this should be done with immune_status, but this is a little cleaner
+    #alternatively, this should be made more systematic elsewhere
+    agents$immune_status[x_to_R] = ifelse(agents$vax_status[x_to_R] == 'NV',
+        'R',
+        ifelse(agents$vax_status[x_to_R] == 'V1',
+            'H_V1_R',
+            ifelse(agents$vax_status[x_to_R] == 'V2',
+                'H_V2_R',
+                ifelse(agents$vax_status[x_to_R] == 'B',
+                    'H_B_R',
+                    NA
+                )
+            )
+        )
+    )
+    if(any(is.na(agents$immune_status[x_to_R]))) {
+        print('Something went wrong with vax status during (or prior to) recovery:')
+        print(agents$vax_status)
+        print('SEP')
+        print(agents$immune_status)
+        stop('Recovery trouble')
+    }
     agents$infection_status[x_to_R] = 'NI'
 
     list(agents = agents, IP_to_IM = IP_to_IM, IM_to_IS, new_previously_unisolated_hospitalizations = new_previously_unisolated_hospitalizations)
@@ -692,28 +765,29 @@ update_Out1 = function(Out1, k, agents, infection_status_0, isolated_0,
         )
     }
 
-        Out1$S[k] <-  f('NI', 'FS') 
+        Out1$S[k] <-  f('NI', 'FS')
         Out1$E[k] <-  f('E', 'FS')
         Out1$IA[k] <- f('IA')
         Out1$IP[k] <- f('IP')
         Out1$IM[k] <- f('IM')
         Out1$IS[k] <- f('IS')
         Out1$IC[k] <- f('IC')
-        Out1$R[k] <-  f('NI', 'R')
-        Out1$RE[k] <- f('E', 'R')
+        #Summation to maintain consistent values for testing
+        Out1$R[k] <-  f('NI', 'R') + f('NI', 'H_V1_R') + f('NI', 'H_V2_R') + f('NI', 'H_B_R')
+        Out1$RE[k] <- f('E', 'R') + f('E', 'H_V1_R') + f('E', 'H_V2_R') + f('E', 'H_B_R')
         Out1$D[k] <-  f('D')
         Out1$V1[k] <-  f('NI', 'V1')
         Out1$V2[k] <-  f('NI', 'V2')
         Out1$V1E[k] <-  f('E', 'V1')
         Out1$V2E[k] <-  f('E', 'V2')
-        Out1$BE[k] <- f('E', 'B')
+        Out1$BE[k] <- f('E', 'B') + f('E', 'H_R_V1') + f('E', 'H_R_V2') + f('E', 'H_R_B')
         Out1$S_isolated[k] <-  f('NI', 'FS',  isolated_0)
         Out1$E_isolated[k] <-  f('E', 'FS',  isolated_0)
         Out1$IA_isolated[k] <- f('IA', NULL, isolated_0)
         Out1$IP_isolated[k] <- f('IP', NULL, isolated_0)
         Out1$IM_isolated[k] <- f('IM', NULL, isolated_0)
-        Out1$R_isolated[k] <-  f('NI', 'R',  isolated_0)
-        Out1$RE_isolated[k] <-  f('E', 'R',  isolated_0)
+        Out1$R_isolated[k] <-  f('NI', 'R',  isolated_0) + f('NI', 'H_V1_R',  isolated_0) + f('NI', 'H_V2_R',  isolated_0) + f('NI', 'H_B_R',  isolated_0)
+        Out1$RE_isolated[k] <-  f('E', 'R',  isolated_0) + f('E', 'H_V1_R',  isolated_0) + f('E', 'H_V2_R',  isolated_0) + f('E', 'H_B_R',  isolated_0)
         Out1$V1_isolated[k] <-  f('NI', 'V1',  isolated_0)
         Out1$V2_isolated[k] <-  f('NI', 'V2',  isolated_0)
         Out1$V1E_isolated[k] <-  f('E', 'V1',  isolated_0)

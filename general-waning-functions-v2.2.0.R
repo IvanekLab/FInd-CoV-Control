@@ -118,9 +118,9 @@ make_protection_functions = function(V1_protection, V2_protection, B_protection,
                 V1_protection(t, prev),
                 ifelse(ais == 'V2',
                     V2_protection(t, prev),
-                    ifelse(ais == 'B',
+                    ifelse(ais %in% c('B', 'H_R_V1', 'H_R_V2', 'H_R_B'),
                         B_protection(t, prev),
-                        ifelse(ais == 'R',
+                        ifelse(ais %in% c('R', 'H_V1_R', 'H_V2_R', 'H_B_R'),
                             R_protection(t, prev),
                             NA
                         )
