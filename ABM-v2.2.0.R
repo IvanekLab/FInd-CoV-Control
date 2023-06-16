@@ -505,8 +505,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
                 boosting_rate_list,
                 protection_functions,
                 kConstants) {
-    saveRDS(agents, 'agents1.rds')
-    cat(sapply(c('FS', 'V1', 'V2', 'R', 'H_V1_R', 'H_V2_R', 'H_B_R', 'B', 'H_R_V1', 'H_R_V2', 'H_R_B'), function(s) paste0(s, ':\t', sum(agents$immune_status == s), '\n')), '\n', sep = '')
+    #saveRDS(agents, 'agents1.rds')
+    #cat(sapply(c('FS', 'V1', 'V2', 'R', 'H_V1_R', 'H_V2_R', 'H_B_R', 'B', 'H_R_V1', 'H_R_V2', 'H_R_B'), function(s) paste0(s, ':\t', sum(agents$immune_status == s), '\n')), '\n', sep = '')
 #print('wanker')
     N <-nrow(agents)
 #print('ugh')
@@ -679,8 +679,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
 
         #TBD (eventually): We still need to recalculate durations for repeats of
         #the same event (now possible).
-        cat(sapply(c('FS', 'V1', 'V2', 'R', 'H_V1_R', 'H_V2_R', 'H_B_R', 'B', 'H_R_V1', 'H_R_V2', 'H_R_B'), function(s) paste0(s, ':\t', sum(agents$immune_status == s), '\n')), '\n', sep = '')
-        stop('okay for now')
+        #cat(sapply(c('FS', 'V1', 'V2', 'R', 'H_V1_R', 'H_V2_R', 'H_B_R', 'B', 'H_R_V1', 'H_R_V2', 'H_R_B'), function(s) paste0(s, ':\t', sum(agents$immune_status == s), '\n')), '\n', sep = '')
+        #stop('okay for now')
         Out1 = update_Out1(Out1, k, agents, infection_status_0, isolated_0,
                            agent_presence, quantitative_presence,
                            NI_to_E_community, NI_to_E, doses, tests_performed, IP_to_IM, iii, ii_remaining,

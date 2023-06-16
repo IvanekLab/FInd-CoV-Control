@@ -384,7 +384,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
         (agents$time_B[V2_R_B] - agents$time_R[V2_R_B])
     ) 
     #TBD-2023-06: Shouldn't we be checking for stealing here!? But for comparison, we will leave this for now
-    agents$immune_status[V2_R_B] = 'H_R_B'
+    #print(sum(V2_R_B & !index_B))
+    #agents$immune_status[V2_R_B] = 'H_R_B'
     #agents$time_last_immunity_event[V2_R_B] #is unchanged
 
     #R_V2_B changes nothing at all
@@ -395,7 +396,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
               agents$time_R < agents$time_V2 #&
               #agents$time_R < agents$time_B
     )
-    agents$immune_status[R_V2_B] = 'H_R_B'
+    #print(sum(R_V2_B & !index_B))
+    #agents$immune_status[R_V2_B] = 'H_R_B'
     #TBD-2023-06: Ideally, we might wish to check whether earlier immunity was stolen? Not high priority
 
     #Import text file of disease progression probabilities
