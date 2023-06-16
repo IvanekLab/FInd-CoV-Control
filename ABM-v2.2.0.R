@@ -358,15 +358,20 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     # This block is for debugging and should be deleted in production code, to
     # save run time.
     immunity_1 = net_symptomatic_protection(agents, start_time)
-    test_mask = immunity_1 < immunity_0
+    #test_mask = immunity_1 < immunity_0
+    test_mask = immunity_1 - immunity_0 < -0.001 #to avoid roundoff error issues
     if(any(test_mask)) {
         print(agents[test_mask,])
+        print('Now is:')
+        print(immunity_1[test_mask])
         print('Was:')
         print(infection_status_0[test_mask])
         print(immune_status_0[test_mask])
         print(vax_status_0[test_mask])
         print(isolated_0[test_mask])
         print(immunity_0[test_mask])
+        print('Difference:')
+        print((immunity_1 - immunity_0)[test_mask])
         stop('And here is the failure.')
     }
 
