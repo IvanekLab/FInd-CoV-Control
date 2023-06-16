@@ -445,7 +445,7 @@ for(i in 8) { #i.e., individual, facility, TRUE, TRUE
         common_parameters,
         setting_parameters,
         list(
-            unique_id = paste0('lca--refactoring-test', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
+            unique_id = paste0('lca--tentatively-fixed', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
             kConstants = kConstants,
             fraction_recovered = fraction_recovered,
             fraction_fully_vaccinated = fraction_fully_vaccinated,

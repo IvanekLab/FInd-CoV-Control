@@ -350,7 +350,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
 
     R_V1_V2 = (index_R &
               index_V2 &
-              (!agents$boosting_on_time) &
+              #(!agents$boosting_on_time) & #TBD-2023-06: Check this fix is actually right
+              !index_B &
               agents$time_R < agents$time_V1
     )
     agents$previous_immunity[R_V1_V2] = B_protection(21, 0)
@@ -363,7 +364,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
 
     V1_R_V2 = (index_R &
               index_V2 &
-              (!agents$boosting_on_time) &
+              #(!agents$boosting_on_time) &  #TBD-2023-06: Check this fix is actually right
+              !index_B &
               agents$time_R >= agents$time_V1 &
               agents$time_R < agents$time_V2
     )
@@ -376,7 +378,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
 
     V2_R_B = (index_R &
               index_V2 &
-              (agents$boosting_on_time) &
+              #(agents$boosting_on_time) & #TBD-2023-06: Check this fix is actually right
+              index_B &
               agents$time_R >= agents$time_V2 &
               agents$time_R < agents$time_B
     )
@@ -385,19 +388,20 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     ) 
     #TBD-2023-06: Shouldn't we be checking for stealing here!? But for comparison, we will leave this for now
     #print(sum(V2_R_B & !index_B))
-    #agents$immune_status[V2_R_B] = 'H_R_B'
+    agents$immune_status[V2_R_B] = 'H_R_B'
     #agents$time_last_immunity_event[V2_R_B] #is unchanged
 
     #R_V2_B changes nothing at all
     #Update 2023-06: Yes, it changes to a hybrid immune state
     R_V2_B = (index_R &
               index_V2 &
-              (agents$boosting_on_time) &
+              #(agents$boosting_on_time) & #TBD-2023-06: Check this fix is actually right
+              index_B &
               agents$time_R < agents$time_V2 #&
               #agents$time_R < agents$time_B
     )
     #print(sum(R_V2_B & !index_B))
-    #agents$immune_status[R_V2_B] = 'H_R_B'
+    agents$immune_status[R_V2_B] = 'H_R_B'
     #TBD-2023-06: Ideally, we might wish to check whether earlier immunity was stolen? Not high priority
 
     #Import text file of disease progression probabilities
