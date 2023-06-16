@@ -149,9 +149,9 @@ double_wrapped_fn = function(kConstants, protection_functions) {
     #parameter_sets = parameter_sets[limited_runs_index,]
     #NB: cost plots will be off
 
-    full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
-                                    .verbose = TRUE) %dopar% {
-    #for(i in 1:1) {#k_max) { # Can be substituted for the above for better
+    #full_output_filenames = foreach(i=1:k_max, .combine = c, .inorder=TRUE,
+    #                                .verbose = TRUE) %dopar% {
+    for(i in 1:1) {#k_max) { # Can be substituted for the above for better
                               # crash messages
         parameter_set = parameter_sets[i,]
         double_wrap_reduction = parameter_set$double_wrap_reduction
