@@ -134,16 +134,17 @@ make_protection_functions = function(V1_protection, V2_protection, B_protection,
     #ignoring R_protection and hardcoding the rest for now
     #leaving V1_protection, V2_protection, and B_protection alone for now
     R_nsp = make_logisitic_protection(1.70512, -0.05211/30.5, TRUE)
-    H_R_V1_nsp = make_logisitic_protection(NA, NA, FALSE) #this should be fine; let's find out!
-    H_V1_R_nsp = make_logisitic_protection(NA, NA, TRUE) #this should be fine; let's find out!
+    H_R_V1_nsp = make_logisitic_protection(3.04736420, 0.04724741/30.5, FALSE)#function(t, prev) prev #crude, but if it works . . .
+    H_V1_R_nsp = make_logisitic_protection(3.04736420, 0.04724741/30.5, TRUE)#function(t, prev) ifelse(t < 61, 1, prev)
+    #make_logisitic_protection(NA, NA, TRUE) #this should be fine; let's find out!
     H_R_V2_nsp = make_logisitic_protection(3.04736420, 0.04724741/30.5, FALSE)
     H_V2_R_nsp = make_logisitic_protection(3.04736420, 0.04724741/30.5, TRUE)
     H_R_B_nsp = make_logisitic_protection(4.0685452, -0.1756493/30.5, FALSE)
     H_B_R_nsp = make_logisitic_protection(4.0685452, -0.1756493/30.5, TRUE)
 
     R_ip = make_logisitic_protection(1.2100, -0.1937/30.5, TRUE)
-    H_R_V1_ip = make_logisitic_protection(NA, NA, FALSE) #this should be fine; let's find out!
-    H_V1_R_ip = make_logisitic_protection(NA, NA, TRUE) #this should be fine; let's find out!
+    H_R_V1_ip = make_logisitic_protection(1.176188, -0.125678/30.5, FALSE)#function(t, prev) prev #this should be fine; let's find out!
+    H_V1_R_ip = make_logisitic_protection(1.176188, -0.125678/30.5, TRUE)#make_logisitic_protection(NA, NA, TRUE) #this should be fine; let's find out!
     H_R_V2_ip = make_logisitic_protection(1.176188, -0.125678/30.5, FALSE)
     H_V2_R_ip = make_logisitic_protection(1.176188, -0.125678/30.5, TRUE)
     H_R_B_ip = make_logisitic_protection(1.7006945, -0.3068089/30.5, FALSE)

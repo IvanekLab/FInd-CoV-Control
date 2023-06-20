@@ -458,7 +458,7 @@ for(i in 8) { #i.e., individual, facility, TRUE, TRUE
         )
     )
     #do.call(full_run, all_params)
-    double_wrap_num_sims = 100
+    double_wrap_num_sims = 1000
     do.call(full_run, all_params)
 }
 
