@@ -314,7 +314,7 @@ common_parameters = list(
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'bobrovitz-test',   # relative to working directory
+    folder_name = 'bobrovitz-test--scenario',   # relative to working directory
     analyze_only = FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
@@ -407,7 +407,7 @@ for(housing in c('shared', 'individual')) {
     }
 }
 
-for(i in 8) { #i.e., individual, facility, TRUE, TRUE
+for(i in 1:16) { #i.e., individual, facility, TRUE, TRUE
     housing = df[i, 'housing']
     setting = df[i, 'setting']
     vaccinated = df[i, 'vaccinated']
@@ -458,7 +458,7 @@ for(i in 8) { #i.e., individual, facility, TRUE, TRUE
         )
     )
     #do.call(full_run, all_params)
-    double_wrap_num_sims = 1000
+    double_wrap_num_sims = 100#0
     do.call(full_run, all_params)
 }
 
