@@ -407,7 +407,7 @@ for(housing in c('shared', 'individual')) {
     }
 }
 
-for(i in 1:16) { #i.e., individual, facility, TRUE, TRUE
+for(i in 13:16) { #i.e., individual, facility, TRUE, TRUE
     housing = df[i, 'housing']
     setting = df[i, 'setting']
     vaccinated = df[i, 'vaccinated']

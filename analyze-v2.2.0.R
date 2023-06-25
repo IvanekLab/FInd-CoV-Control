@@ -419,6 +419,17 @@ end_boxplot = function(
                        h = 12 #NULL
                        ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
+    if(sum(run_mask) == 0) { #can't do anything meaningful with no runs!
+                             #but we still want to make the nature of the problem clear
+        plot.new()
+        if(is.null(main_title)) {
+            title('NO SUCH RUNS')
+        } else {
+            title(paste0(main_title, ': NO SUCH RUNS'))
+        }
+        dev.off()
+        return()
+    }
     print(filename)
     #means = numeric(length(full_output_filenames))
     means = NULL
@@ -429,7 +440,9 @@ end_boxplot = function(
     for (i in 1:length(full_output_filenames)) {
         intervention_start = Sys.time()
         full_output = readRDS(full_output_filenames[i])
-        full_output = full_output[,,run_mask]
+        full_output = full_output[,,run_mask, drop = FALSE] #added drop = FALSE in case only _1_ run is selected
+                                                            #if full_output[,,run_mask] selects multiple runs _or_ zero runs, then the dimension is preserved
+                                                            #but if full_output[,,run_mask] selects exactly 1 run, then without drop = FALSE, its dimension will be reduced
         
         fragments = unlist(strsplit(full_output_filenames[i], '/'))
         start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
@@ -437,12 +450,17 @@ end_boxplot = function(
             trivial_mask = matrix(TRUE, nrow = dim(full_output)[1], ncol = dim(full_output)[3])
             mask_fn = function(x) trivial_mask
         }
-        mask = mask_fn(start_days)
+        mask = mask_fn(start_days)[,run_mask]
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
         obtain_value = function(j) { #run index; note difference from approach in combine()
                                      #TBD: create a better function name (and
                                      #better intermediate vector names
-            v = full_output[mask[,j], , j, drop = FALSE] # prevent reduction in dimensions, so the same outcome_fn can be used
+            tryCatch({v = full_output[mask[,j], , j, drop = FALSE]}, # prevent reduction in dimensions, so the same outcome_fn can be used,
+                error = function(e) {
+                    print(e)
+                    browser()
+                }
+            )
             vv = outcome_fn(v)
             vvv = ys_combiner(vv)
             len <<- length(vvv)
