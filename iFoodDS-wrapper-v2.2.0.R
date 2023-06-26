@@ -308,13 +308,13 @@ double_wrap_num_sims = 100
 #git diff --no-index --word-diff --ignore-all-space a.txt b.txt
 common_parameters = list(
     workers_per_crew = '10',                    # FM: workers per line
-    crews_per_supervisor = 49,                   # FM: / lines per shift
+    crews_per_supervisor = 3,                   # FM: / lines per shift
     days = '90',
     social_distancing_work = 'Intermediate',
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'bobrovitz-test--scenario',   # relative to working directory
+    folder_name = 'bobrovitz-test--scenario-103',   # relative to working directory
     analyze_only = FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
@@ -330,12 +330,12 @@ additional_facility_parameters = list(
     supervisors = '2',          # FM: shifts
     n_shift_floaters = '10',     # FM only (for farm model, will require NULL/NA)
     n_cleaners = '10',          # FM only (for farm model, will require NULL/NA)
-    n_all_floaters = '10',      # FM only (for farm model, will require NULL/NA)
+    n_all_floaters = '11',      # FM only (for farm model, will require NULL/NA)
     #employee_housing = 'Private', 
     #social_distancing_shared_housing = NULL,
     #community_transmission = 'Intermediate',
     #unique_id = 'facility-pass-1',
-    output_per_week = (1022/103) * 784346.67, #technically not exactly the right way to rescale this, but meh
+    output_per_week = 784346.67, #technically not exactly the right way to rescale this, but meh
     hourly_wage = 13.89,
     size = 1000
 
@@ -407,7 +407,7 @@ for(housing in c('shared', 'individual')) {
     }
 }
 
-for(i in 13:16) { #i.e., individual, facility, TRUE, TRUE
+for(i in c(5:8, 13:16, 1:4, 9:12)) {#c(2,4,6,8,10,12,14,16,1,3,5,7,9,11,13,15)) { #prioritizing the ones we're actually using right now
     housing = df[i, 'housing']
     setting = df[i, 'setting']
     vaccinated = df[i, 'vaccinated']
@@ -445,7 +445,7 @@ for(i in 13:16) { #i.e., individual, facility, TRUE, TRUE
         common_parameters,
         setting_parameters,
         list(
-            unique_id = paste0('lca--bobrovitz', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
+            unique_id = paste0('bobrovitz', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
             kConstants = kConstants,
             fraction_recovered = fraction_recovered,
             fraction_fully_vaccinated = fraction_fully_vaccinated,
@@ -458,7 +458,7 @@ for(i in 13:16) { #i.e., individual, facility, TRUE, TRUE
         )
     )
     #do.call(full_run, all_params)
-    double_wrap_num_sims = 100#0
+    double_wrap_num_sims = 1000
     do.call(full_run, all_params)
 }
 

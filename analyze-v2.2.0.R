@@ -77,6 +77,7 @@ work_shifts = function(start_day) {
                  rep(day_off, 2),
                  rep(workday, start_day - 1))
     } else {
+        #cat(start_day, ',')
         week = c(rep(day_off, 8 - start_day),
                  rep(workday, 5),
                  rep(day_off, start_day - 6))
@@ -446,11 +447,16 @@ end_boxplot = function(
         
         fragments = unlist(strsplit(full_output_filenames[i], '/'))
         start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
+        #cat('\n\n', length(start_days), ': ', start_days, '\n', length(run_mask), ': ', run_mask, '\n', length(start_days[run_mask]), ': ', start_days[run_mask], '\n')
+        #print(mask_fn)
+        #cat('\n')
+        start_days = start_days[run_mask]
         if((i == 1) && is.null(mask_fn)) {
             trivial_mask = matrix(TRUE, nrow = dim(full_output)[1], ncol = dim(full_output)[3])
             mask_fn = function(x) trivial_mask
         }
-        mask = mask_fn(start_days)[,run_mask]
+        #browser()
+        mask = mask_fn(start_days)#[,run_mask]
         dimnames(full_output) = list(rep(NA, dim(full_output)[1]), colnames(full_output), rep(NA, dim(full_output)[3])) #kludge
         obtain_value = function(j) { #run index; note difference from approach in combine()
                                      #TBD: create a better function name (and
@@ -488,7 +494,19 @@ end_boxplot = function(
                     final_this = final - final_1
                 }
                 all_outcomes = rbind(all_outcomes, data.frame(intervention = row.names[i], outcome = final_this))
-                this_h = sm.density(final_this, display='none')$h
+                if(all(final_this == final_this[1])) { #i.e., all equal (or none present)
+                    this_h = 0
+                } else {
+                    tryCatch(
+                        {
+                            this_h = sm.density(final_this, display='none')$h
+                        },
+                        error = function(e) {
+                            print(e)
+                            browser()
+                        }
+                    )
+                }
                 hs = c(hs, this_h)
                 means[i - 1] = mean(final_this) #do I actually need na.rm here?
             }
@@ -787,9 +805,9 @@ end_barplot = function(
     }
 }
 
-production_shifts_mask_fn = function(start_days) {
-    sapply(1:double_wrap_num_sims, function(x) production_shifts(start_days[x]))
-}
+#production_shifts_mask_fn = function(start_days) {
+#    sapply(1:double_wrap_num_sims, function(x) production_shifts(start_days[x]))
+#}
 
 "intervention_expenses_function = generate_intervention_expenses_function()
 g = function(data) {
@@ -818,6 +836,17 @@ end_barplot(filename = 'Total-Cost-Fraction-Non-Zero', outcome_fn = g, xlab = 'F
 #end_boxplot('TSIv--areaEqual-h12', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(D) Cumulative Incidence, distribution', function_ = vioplot, areaEqual = TRUE, h = 12)
 #stop('One set to compare for now')
 
+production_shifts_mask_fn = function(start_days) {
+    sapply(start_days, production_shifts)
+}
+
+cleaning_shifts_mask_fn = function(start_days) {
+    sapply(start_days, cleaning_shifts)
+}
+work_shifts_mask_fn = function(start_days) {
+    sapply(start_days, work_shifts)
+}
+
 end_barplot(filename = 'Symptomatic-Fraction-Non-Zero', outcome_fn = symptomatic, xlab = 'Fraction of runs where symptomatic infections > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, main_title = '(C) Fraction of runs > 0', mask_fn = NULL, ys_combiner = function(x) sum(x) > 0)
 end_barplot(filename = 'Unavailable-production-Fraction-Non-Zero', outcome_fn = shiftwise_unavailable, xlab = 'Fraction of runs where worker-shifts missed > 0', summary_fn = mean, xlim = c(0, 1), percent = TRUE, main_title = '(C) Fraction of runs > 0', mask_fn = production_shifts_mask_fn, ys_combiner = function(x) sum(x) > 0)
 
@@ -829,17 +858,6 @@ oneplot('Symptomatic', symptomatic, mean, c(0,0), paste('People Symptomatically 
 oneplot('Symptomatic-incidence', new_symptomatic_infections, mean, c(0,0), paste('Incidence of Symptomatic Infection (in a population of ', N, ' employees)', sep = ''), step_combiner = day_average_all, ys_combiner = day_average_all, main_title = '(A) Mean Incidence at each time point')
 
 #browser()
-
-production_shifts_mask_fn = function(start_days) {
-    sapply(1:double_wrap_num_sims, function(x) production_shifts(start_days[x]))
-}
-
-cleaning_shifts_mask_fn = function(start_days) {
-    sapply(1:double_wrap_num_sims, function(x) cleaning_shifts(start_days[x]))
-}
-work_shifts_mask_fn = function(start_days) {
-    sapply(1:double_wrap_num_sims, function(x) work_shifts(start_days[x]))
-}
 
 if(farm_or_facility == 'facility') {
     if(supervisors > 1) {
@@ -865,8 +883,14 @@ if(farm_or_facility == 'facility') {
 }
 df1 = readRDS(full_output_filenames[1])
 #low_mode_mask = apply(df1[,'new_symptomatic_infections',], 2, sum) <= .15 * N 
+#TBD: 2023-06-25 rework run_mask into a function
 zero_symptomatic_mask = apply(df1[,'new_symptomatic_infections',], 2, sum) == 0
-zero_unavailable_mask = apply(df1[,'qn_absent',], 2, sum) == 0
+baseline_fragments = unlist(strsplit(full_output_filenames[1], '/'))
+sd1 = readRDS(paste0(baseline_fragments[1], '/start_days--', baseline_fragments[2]))
+production_shifts_mask = production_shifts_mask_fn(sd1)
+obtain_baseline_production_shifts_absences = function(j) sum(df1[production_shifts_mask[,j],'qn_absent', j]) #TBD: 2023-06-25 only used here, should perhaps have greater consistency
+zero_unavailable_mask = sapply(1:double_wrap_num_sims, obtain_baseline_production_shifts_absences) == 0
+zero_unavailable_mask
 #TBD: The above should be fixed further, to only apply if number of _production_
 #unavailables is 0.
 #Note: For all three tested large facility models, zero_unavailable_mask == low_mode_mask

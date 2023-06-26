@@ -146,7 +146,7 @@ get_filename = function(housing, setting, vaccinated, recovered, i) {
     )
 
     filename = paste0(
-        'bobrovitz-test--scenario/',
+        'bobrovitz-test--scenario-103/bobrovitz',
         unique_id,
         ifelse(
             vaccinated == TRUE & recovered == TRUE &
@@ -172,7 +172,7 @@ get_filename = function(housing, setting, vaccinated, recovered, i) {
             'initial_V2-73,',
             ''
         ),
-        'n_sims-1000index_i-',
+        'n_sims-100index_i-',
         i,
         '_full-output.rds'
     )
@@ -261,24 +261,26 @@ df$run_number = factor(df$run_number)
 
 #partial resumption: What happens (a) if I cross-validate more, but without any
 #cp, (b) if I do Poisson regression (without any cp)
-png('2023-06-20/unavailable.png', height = 900, width = 1600)
+png('2023-06-26/unavailable.png', height = 900, width = 1600)
 tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Unavailable (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
 
-png('2023-06-20/symptomatic.png', height = 900, width = 1600)
+png('2023-06-26/symptomatic.png', height = 900, width = 1600)
 tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Symptomatic Infections (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-png('2023-06-20/total-cost.png', height = 900, width = 1600)
+png('2023-06-26/total-cost.png', height = 900, width = 1600)
 tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Total Cost (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
+
+stop('Okay for now?')
 
 png('2023-03-12/total-cost-maximal.png', height = 900, width = 1600)
 tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control= rpart.control(minsplit=1, minbucket=1, cp = 0))
