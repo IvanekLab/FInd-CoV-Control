@@ -295,7 +295,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.2.0'
-double_wrap_num_sims = 100
+double_wrap_num_sims = 10#0
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -314,8 +314,7 @@ common_parameters = list(
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'bobrovitz-test--readied-for-sensitivity',   # relative to working directory
-                                                               # nothing actually run here
+    folder_name = 'bobrovitz-test--sensitivity',   # relative to working directory
     analyze_only = FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
@@ -393,7 +392,7 @@ all_params = c(
 )
 do.call(full_run, all_params)"
 
-df = NULL
+"df = NULL
 for(housing in c('shared', 'individual')) {
     for(setting in c('farm', 'facility')) {
         for(vaccinated in c(FALSE, TRUE)) {
@@ -461,7 +460,7 @@ for(i in c(5:8, 13:16, 1:4, 9:12)) {#c(2,4,6,8,10,12,14,16,1,3,5,7,9,11,13,15)) 
     #do.call(full_run, all_params)
     double_wrap_num_sims = 1000
     do.call(full_run, all_params)
-}
+}"
 
 
 "#Test of one-shift functionality
@@ -501,7 +500,7 @@ all_params = c(
         social_distancing_shared_housing = 'Intermediate',
         community_transmission = NULL
     )
-)
+
 do.call(full_run, all_params)
 
 #   Farm, individual, start
@@ -705,7 +704,7 @@ run_67 = function(common_parameters, additional_facility_parameters,
     }
 }
 
-"run_67(common_parameters, additional_facility_parameters,
+run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
        list(unique_id = 'facility',
             fraction_recovered = 0.69,
@@ -719,7 +718,7 @@ run_67 = function(common_parameters, additional_facility_parameters,
        )
 )
 
-run_67(common_parameters, additional_facility_parameters,
+"run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
        list(unique_id = 'facility-start-of-epidemic',
             fraction_recovered = 0,
