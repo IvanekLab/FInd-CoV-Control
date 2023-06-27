@@ -392,7 +392,7 @@ all_params = c(
 )
 do.call(full_run, all_params)"
 
-"df = NULL
+df = NULL
 for(housing in c('shared', 'individual')) {
     for(setting in c('farm', 'facility')) {
         for(vaccinated in c(FALSE, TRUE)) {
@@ -460,9 +460,9 @@ for(i in c(5:8, 13:16, 1:4, 9:12)) {#c(2,4,6,8,10,12,14,16,1,3,5,7,9,11,13,15)) 
     #do.call(full_run, all_params)
     double_wrap_num_sims = 1000
     do.call(full_run, all_params)
-}"
+}
 
-
+stop('And here we are for now.')
 "#Test of one-shift functionality
 double_wrap_num_sims = 100
 do.call(full_run, c(common_parameters, additional_facility_parameters, list(unique_id = 'one-shift-facility-individual-random-start', kConstants = kConstants, crews_per_supervisor = 6, supervisors = 1, n_all_floaters = 12, n_shift_floaters = '20')))
