@@ -104,7 +104,7 @@ make_R_protection_general = function(B_decay, kConstants) {
 #R_protection = B_protection
 #default_B_protection = default_R_protection
 
-make_logisitic_protection = function(a, b, recovered) {
+"make_logisitic_protection = function(a, b, recovered) {
     f = function(t) exp(a + b * t) / (1 + exp(a + b * t))
     f_max = f(30.5) #whatever
     
@@ -124,31 +124,58 @@ make_logisitic_protection = function(a, b, recovered) {
             )
         }
     }
-}
+}"
 
 make_protection_functions = function(V1_protection, V2_protection, B_protection,
-                                     R_protection#,
+                                     R_protection,
                                      #H_R_V1_protection, H_R_V2_protection, H_R_B_protection,
                                      #H_V1_R_protection, H_V2_R_protection, H_B_R_protection,
+                                     kConstants
                                      ) {
     #ignoring R_protection and hardcoding the rest for now
     #leaving V1_protection, V2_protection, and B_protection alone for now
-    R_nsp = make_logisitic_protection(1.70512, -0.05211/30.5, TRUE)
-    H_R_V1_nsp = make_logisitic_protection(3.04736420, 0.04724741/30.5, FALSE)#function(t, prev) prev #crude, but if it works . . .
-    H_V1_R_nsp = make_logisitic_protection(3.04736420, 0.04724741/30.5, TRUE)#function(t, prev) ifelse(t < 61, 1, prev)
-    #make_logisitic_protection(NA, NA, TRUE) #this should be fine; let's find out!
-    H_R_V2_nsp = make_logisitic_protection(3.04736420, 0.04724741/30.5, FALSE)
-    H_V2_R_nsp = make_logisitic_protection(3.04736420, 0.04724741/30.5, TRUE)
-    H_R_B_nsp = make_logisitic_protection(4.0685452, -0.1756493/30.5, FALSE)
-    H_B_R_nsp = make_logisitic_protection(4.0685452, -0.1756493/30.5, TRUE)
+    with(kConstants,
+        {
+        make_logisitic_protection = function(a, b, recovered) {
+            f = function(t) exp(a + b * t) / (1 + exp(a + b * t))
+            f_max = f(hybrid_ramp_time) #whatever
+            
+            if(recovered) {
+                function(t, prev) {
+                    #print(t)
+                    ifelse(t < recovered_complete_protection_time,
+                        1,
+                        f(t)
+                    )
+                }
+            } else {
+                function(t, prev) {
+                    ifelse(t < hybrid_ramp_time,
+                        ((hybrid_ramp_time - t) * prev + t * f_max) / hybrid_ramp_time,
+                        f(t)
+                    )
+                }
+            }
+        }
 
-    R_ip = make_logisitic_protection(1.2100, -0.1937/30.5, TRUE)
-    H_R_V1_ip = make_logisitic_protection(1.176188, -0.125678/30.5, FALSE)#function(t, prev) prev #this should be fine; let's find out!
-    H_V1_R_ip = make_logisitic_protection(1.176188, -0.125678/30.5, TRUE)#make_logisitic_protection(NA, NA, TRUE) #this should be fine; let's find out!
-    H_R_V2_ip = make_logisitic_protection(1.176188, -0.125678/30.5, FALSE)
-    H_V2_R_ip = make_logisitic_protection(1.176188, -0.125678/30.5, TRUE)
-    H_R_B_ip = make_logisitic_protection(1.7006945, -0.3068089/30.5, FALSE)
-    H_B_R_ip = make_logisitic_protection(1.7006945, -0.3068089/30.5, TRUE)
+        R_nsp <<- make_logisitic_protection(R_nsp_a, R_nsp_b, TRUE)
+        H_R_V1_nsp <<- make_logisitic_protection(H_RV12_nsp_a, H_RV12_nsp_b, FALSE)#function(t, prev) prev #crude, but if it works . . .
+        H_V1_R_nsp <<- make_logisitic_protection(H_RV12_nsp_a, H_RV12_nsp_b, TRUE)#function(t, prev) ifelse(t < 61, 1, prev)
+        #make_logisitic_protection(NA, NA, TRUE) #this should be fine; let's find out!
+        H_R_V2_nsp <<- make_logisitic_protection(H_RV12_nsp_a, H_RV12_nsp_b, FALSE)
+        H_V2_R_nsp <<- make_logisitic_protection(H_RV12_nsp_a, H_RV12_nsp_b, TRUE)
+        H_R_B_nsp <<- make_logisitic_protection(H_RB_nsp_a, H_RB_nsp_b, FALSE)
+        H_B_R_nsp <<- make_logisitic_protection(H_RB_nsp_a, H_RB_nsp_b, TRUE)
+    
+        R_ip <<- make_logisitic_protection(R_ip_a, R_ip_b, TRUE)
+        H_R_V1_ip <<- make_logisitic_protection(H_RV12_ip_a, H_RV12_ip_b, FALSE)#function(t, prev) prev #this should be fine; let's find out!
+        H_V1_R_ip <<- make_logisitic_protection(H_RV12_ip_a, H_RV12_ip_b, TRUE)#make_logisitic_protection(NA, NA, TRUE) #this should be fine; let's find out!
+        H_R_V2_ip <<- make_logisitic_protection(H_RV12_ip_a, H_RV12_ip_b, FALSE)
+        H_V2_R_ip <<- make_logisitic_protection(H_RV12_ip_a, H_RV12_ip_b, TRUE)
+        H_R_B_ip <<- make_logisitic_protection(H_RB_ip_a, H_RB_ip_b, FALSE)
+        H_B_R_ip <<- make_logisitic_protection(H_RB_ip_a, H_RB_ip_b, TRUE)
+        }
+    )
 
     net_symptomatic_protection = function(agents, start_time) {
         ais = agents$immune_status
@@ -252,7 +279,8 @@ make_protection_functions_general = function(kConstants) {
         make_V1_protection_general(kConstants),
         make_V2_protection_general(kConstants),
         make_B_protection_general(B_decay, kConstants),
-        make_R_protection_general(B_decay, kConstants)
+        make_R_protection_general(B_decay, kConstants),
+        kConstants
     )
 }
 
@@ -268,7 +296,7 @@ two_level_protection = function(level, duration) {
 }
 
 #For use when comparing results with v1.1.3
-make_one_one_three = function() {
+"make_one_one_three = function() {
     V1_net_symptoms = 1 - .37
     V2_susceptibility = 1 - .65
     V2_net_symptoms = 1 - .88
@@ -329,4 +357,4 @@ make_one_one_three = function() {
     protection_functions
 }
 
-one_one_three_protection_functions = make_one_one_three()
+one_one_three_protection_functions = make_one_one_three()"

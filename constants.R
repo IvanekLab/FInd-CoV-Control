@@ -32,7 +32,21 @@ kConstants = list( #using Google-style notation for now
     B_decay_rate_2 = 0.008970573 / 7,
     SEVERE_MULTIPLIER = 1.2,
     R_question_period = 365, #days
-    time_since_first_V2 = 365 + 61
+    time_since_first_V2 = 365 + 61,
+    R_nsp_a = 1.70512,
+    R_nsp_b = -0.05211/30.5,
+    H_RV12_nsp_a = 3.04736420,
+    H_RV12_nsp_b = 0.04724741/30.5,
+    H_RB_nsp_a = 4.0685452,
+    H_RB_nsp_b = -0.1756493/30.5,
+    R_ip_a = 1.2100,
+    R_ip_b = -0.1937/30.5,
+    H_RV12_ip_a = 1.176188,
+    H_RV12_ip_b = -0.125678/30.5,
+    H_RB_ip_a = 1.7006945,
+    H_RB_ip_b = -0.3068089/30.5,
+    hybrid_ramp_time = 30.5,
+    recovered_complete_protection_time = 61
 )
 
 #variables_to_exclude = list('boosting_interval') #to avoid clash with when we assume vaccination starts (which needs to be updated)

@@ -314,7 +314,8 @@ common_parameters = list(
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'bobrovitz-test--scenario-103',   # relative to working directory
+    folder_name = 'bobrovitz-test--readied-for-sensitivity',   # relative to working directory
+                                                               # nothing actually run here
     analyze_only = FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
@@ -706,7 +707,15 @@ run_67 = function(common_parameters, additional_facility_parameters,
 
 "run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
-       list(unique_id = 'facility'
+       list(unique_id = 'facility',
+            fraction_recovered = 0.69,
+            fraction_fully_vaccinated = 0.71,
+            ffv_last_five_months = 0.09,
+            fraction_boosted_ever = 0.45,
+            fraction_boosted_last_five_months = 0.45,
+            employee_housing = 'Private', 
+            social_distancing_shared_housing = NULL,
+            community_transmission = 'Intermediate'
        )
 )
 
