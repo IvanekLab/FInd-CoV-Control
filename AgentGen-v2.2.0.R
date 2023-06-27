@@ -44,10 +44,12 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
 
     V1_protection = get('V1_protection', protection_functions)
     V2_protection = get('V2_protection', protection_functions)
-    R_protection = get('R_protection', protection_functions)
+    #R_protection = get('R_protection', protection_functions)
     B_protection = get('B_protection', protection_functions)
-    net_symptomatic_protection = get('net_symptomatic_protection',
-                                     protection_functions)
+    H_V2_R_nsp = get('H_V2_R_nsp', protection_functions)
+    H_V2_R_ip = get('H_V2_R_ip', protection_functions)
+    net_protection = get('net_protection', protection_functions)
+    infection_protection = get('infection_protection', protection_functions)
     boosting_interval = get('boosting_interval', kConstants)
     second_shot_interval = get('second_shot_interval', kConstants)
     SEVERE_MULTIPLIER = get('SEVERE_MULTIPLIER', kConstants)
@@ -149,6 +151,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
                          #not updated as they should be when individuals change
                          #immune_status
                          previous_immunity = NA,
+                         previous_infection_immunity = NA,
                          isolated = FALSE, #initially
                          Age_Cat = sample(Age_Categories, N, replace = TRUE,
                                           prob = age_probabilities),
@@ -284,9 +287,11 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     agents$time_V1[index_V2] = agents$time_V2[index_V2] - second_shot_interval
     #again, not perfect, but doesn't actually matter
     #(currently, and probably ever)
-    agents$previous_immunity[index_V2] = V1_protection(
+    pi_ = V1_protection(
         (agents$time_V2[index_V2] - agents$time_V1[index_V2])
     )
+    agents$previous_immunity[index_V2] = pi_
+    agents$previous_infection_immunity[index_V2] = 1 - sqrt(1 - pi_) #TBD: KLUDGE
 
     #index_B = (agents$vax_status == 'V2' &
     #           agents$time_V2 < -152 &
@@ -295,10 +300,12 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     agents$vax_status[index_B] = 'B'
     agents$time_B[index_B] = agents$time_V2[index_B] + boosting_interval #was: pmax(agents$time_V2[index_B] + 152, -152)
     agents$time_last_immunity_event[index_B] = agents$time_B[index_B]
-    agents$previous_immunity[index_B] = V2_protection(
+    pi_ = V2_protection(
         agents$time_B[index_B] - agents$time_V2[index_B],
         agents$previous_immunity[index_V2] #i.e., the *previous* previous imm.
     )
+    agents$previous_immunity[index_B] = pi_
+    agents$previous_infection_immunity[index_B] = 1 - sqrt(1 - pi_) #TBD: KLUDGE
 
     #particularly suboptimal at the moment, given the recent massive peak
     agents$time_R[index_R]= -runif(initial_recovered, 0, R_question_period)
@@ -306,6 +313,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     agents$immune_status[only_R] = 'R'
     agents$time_last_immunity_event[only_R] = agents$time_R[only_R]
     agents$previous_immunity[only_R] = 0
+    agents$previous_infection_immunity[only_R] = 0
 
     # NB: R_V1 and V1_R (without V2 or B) don't need to be addressed, because
     # the current version of the code does not allow anyone to have
@@ -314,7 +322,11 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     R_last = (index_R &
               index_V2 &
               agents$time_R > agents$time_last_immunity_event)
-    agents$previous_immunity[R_last] = net_symptomatic_protection(
+    agents$previous_immunity[R_last] = net_protection(
+            agents[R_last,],
+            agents$time_R[R_last]
+    )
+    agents$previous_infection_immunity[R_last] = infection_protection(
             agents[R_last,],
             agents$time_R[R_last]
     )
@@ -354,7 +366,9 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
               !index_B &
               agents$time_R < agents$time_V1
     )
-    agents$previous_immunity[R_V1_V2] = B_protection(21, 0)
+    pi_ = B_protection(21, 0)
+    agents$previous_immunity[R_V1_V2] = pi_
+    agents$previous_infection_immunity[R_V1_V2] = 1 - sqrt(1 - pi_)
         #0 is often not technically correct, but doesn't matter for any of the
         #immunity functions we're considering
         #TBD-2023-06: Check if this is still true!
@@ -369,12 +383,15 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
               agents$time_R >= agents$time_V1 &
               agents$time_R < agents$time_V2
     )
-    agents$previous_immunity[V1_R_V2] = R_protection(   #TBD-2023-06: This should ideally be changed to a hybrid category
-        (agents$time_V2[V1_R_V2] - agents$time_R[V1_R_V2])
-    )
+    #TBD 2023-06-27: confirm this is right: as there is always stealing here, these will go into H_V2_R, not H_R_V2
+    agents$previous_immunity[V1_R_V2] = 1 #H_R_V2_nsp(agents$time_V2[V1_R_V2] - agents$time_R[V1_R_V2], 1)
+    agents$previous_infection_immunity[V1_R_V2] = 1 
+    #R_protection(   #TBD-2023-06: This should ideally be changed to a hybrid category
+    #    (agents$time_V2[V1_R_V2] - agents$time_R[V1_R_V2])
+    #)
     #agents$time_last_immunity_event[V1_R_V2] #is unchanged
     #TBD-2023-06: Isn't there _always_ stealing here!? But for comparison, we will leave this for now
-    agents$immune_status[V1_R_V2] = 'H_R_V2'
+    agents$immune_status[V1_R_V2] = 'H_V2_R'
 
     V2_R_B = (index_R &
               index_V2 &
@@ -383,12 +400,18 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
               agents$time_R >= agents$time_V2 &
               agents$time_R < agents$time_B
     )
-    agents$previous_immunity[V2_R_B] = R_protection(   #TBD-2023-06: This should ideally be changed to a hybrid category
-        (agents$time_B[V2_R_B] - agents$time_R[V2_R_B])
-    ) 
+    agents$previous_immunity[V2_R_B] = protection_functions$H_V2_R_nsp(agents$time_B[V2_R_B] - agents$time_R[V2_R_B], NA)
+    agents$previous_infection_immunity[V2_R_B] = protection_functions$H_V2_R_ip(agents$time_B[V2_R_B] - agents$time_R[V2_R_B], NA)
+    #R_protection(   #TBD-2023-06: This should ideally be changed to a hybrid category
+    #    (agents$time_B[V2_R_B] - agents$time_R[V2_R_B])
+    #) 
     #TBD-2023-06: Shouldn't we be checking for stealing here!? But for comparison, we will leave this for now
     #print(sum(V2_R_B & !index_B))
-    agents$immune_status[V2_R_B] = 'H_R_B'
+    agents$immune_status[V2_R_B] = ifelse(agents$time_B[V2_R_B] - agents$time_R[V2_R_B] > kConstants$recovered_complete_protection_time,
+        'H_R_B',
+        'H_B_R'
+    )
+    #TBD 2023-06-27: Check whether time_last_immunity_event should sometimes be different due to stealing or not stealing
     #agents$time_last_immunity_event[V2_R_B] #is unchanged
 
     #R_V2_B changes nothing at all

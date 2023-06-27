@@ -144,8 +144,8 @@ update_agents = function(agents, mask, ...) {
 vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                      start_time, end_time, boosting_rate,
                      infection_status_0, immune_status_0, vax_status_0,
-                     isolated_0, immunity_0,
-                     net_symptomatic_protection,
+                     isolated_0, immunity_0, infection_immunity_0,
+                     net_protection, infection_protection,
                      boosting_interval,
                      complete_immunity_duration_R
             ) {
@@ -176,6 +176,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         agents = update_agents(agents = agents,
                                mask = S_to_V1,
                                previous_immunity = immunity_0,
+                               previous_infection_immunity = infection_immunity_0,
                                time_V1 = event_times,
                                time_last_immunity_event = event_times,
                                immune_status = 'V1',
@@ -192,6 +193,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         agents = update_agents(agents = agents,
                                mask = V1_to_V2,
                                previous_immunity = immunity_0,
+                               previous_infection_immunity = infection_immunity_0,
                                time_V2 = event_times,
                                time_last_immunity_event = event_times,
                                immune_status = 'V2',
@@ -213,6 +215,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         agents = update_agents(agents = agents,
                                mask = R_to_H_R_V1 & !stealable,
                                previous_immunity = immunity_0,
+                               previous_infection_immunity = infection_immunity_0,
                                time_last_immunity_event = event_times,
                                immune_status = 'H_R_V1'
         )
@@ -238,6 +241,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         agents = update_agents(agents = agents,
                                mask = x_to_H_R_V2 & !stealable,
                                previous_immunity = immunity_0,
+                               previous_infection_immunity = infection_immunity_0,
                                time_last_immunity_event = event_times,
                                immune_status = 'H_R_V2'
         )
@@ -272,6 +276,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     agents = update_agents(agents = agents,
                            mask = V2_to_B_on_time & !stealable,
                            previous_immunity = immunity_0,
+                           previous_infection_immunity = infection_immunity_0,
                            time_last_immunity_event = event_times,
                            immune_status = 'B'
     )
@@ -292,6 +297,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     agents = update_agents(agents = agents,
                            mask = x_to_H_R_B_on_time & !stealable,
                            previous_immunity = immunity_0,
+                           previous_infection_immunity = infection_immunity_0,
                            time_last_immunity_event = event_times,
                            immune_status = 'H_R_B'
     )
@@ -319,6 +325,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                                mask = V2_to_B_late,
                                time_B = event_times,
                                previous_immunity = immunity_0,
+                               previous_infection_immunity = infection_immunity_0,
                                time_last_immunity_event = event_times,
                                immune_status = 'B',
                                vax_status = 'B'
@@ -335,12 +342,14 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                                mask = x_to_H_R_B_late,
                                time_B = event_times,
                                previous_immunity = immunity_0,
+                               previous_infection_immunity = infection_immunity_0,
                                time_last_immunity_event = event_times,
                                vax_status = 'B'
         )
         agents = update_agents(agents = agents,
                                mask = x_to_H_R_B_late & !stealable,
                                previous_immunity = immunity_0,
+                               previous_infection_immunity = infection_immunity_0,
                                time_last_immunity_event = event_times,
                                immune_status = 'H_R_B'
         )
@@ -357,7 +366,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
 
     # This block is for debugging and should be deleted in production code, to
     # save run time.
-    immunity_1 = net_symptomatic_protection(agents, start_time)
+    immunity_1 = net_protection(agents, start_time)
     #test_mask = immunity_1 < immunity_0
     test_mask = immunity_1 - immunity_0 < -0.001 #to avoid roundoff error issues
     if(any(test_mask)) {
@@ -374,6 +383,23 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         print((immunity_1 - immunity_0)[test_mask])
         stop('And here is the failure.')
     }
+    infection_immunity_1 = infection_protection(agents, start_time)
+    infection_test_mask = infection_immunity_1 - infection_immunity_0 < -0.001 #to avoid roundoff error issues
+    if(any(infection_test_mask)) {
+        print('INFECTION:')
+        print(agents[infection_test_mask,])
+        print('Now is:')
+        print(infection_immunity_1[test_mask])
+        print('Was:')
+        print(infection_status_0[test_mask])
+        print(immune_status_0[test_mask])
+        print(vax_status_0[test_mask])
+        print(isolated_0[test_mask])
+        print(infection_immunity_0[test_mask])
+        print('Difference:')
+        print((infection_immunity_1 - infection_immunity_0)[test_mask])
+        stop('And here is the arguable failure.')
+    }
 
     list(agents = agents,
          doses = sum(any_vaccination)
@@ -384,7 +410,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
 #practice extremely unlikely) < 1 shift duration phases to end in a
 #non-"retroactive" fashion
 progress_infection = function(agents, N, start_time, end_time, symptoms_0,
-                              isolated_0, immunity_0) {
+                              severity_0, isolated_0, immunity_0, infection_immunity_0) {
     # Note that, as currently coded, this function could generate odd results if
     # vaccination can confer stronger immunity than natural recovery *and* an
     # asymptomatic infected gets vaccinated and recovers on the same shift. But
@@ -427,10 +453,10 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
                 end_time - agents$time_IM > agents$duration_IM
     )
 
-    #TBD (eventually): Account for reduced chance of severe disease
+    #TBD (eventually): Get better estimates for this: Account for reduced chance of severe disease
     #conditional on symptomatic disease due to history of vaccination or natural
     #infection
-    severe = sbern(N, agents$p_severe)
+    severe = sbern(N, severity_0 * agents$p_severe)
     IM_to_IS = IM_to_x & severe
     agents$time_IS[IM_to_IS] = agents$time_IM[IM_to_IS] +
         agents$duration_IM[IM_to_IS]
@@ -471,6 +497,7 @@ progress_infection = function(agents, N, start_time, end_time, symptoms_0,
 
     x_to_R = IA_to_R | IM_to_R | IS_to_R | IC_to_R
     agents$previous_immunity[x_to_R] = immunity_0[x_to_R]
+    agents$previous_infection_immunity[x_to_R] = infection_immunity_0[x_to_R]
     #time_R assigned in each specific case above
     agents$time_last_immunity_event[x_to_R] = agents$time_R[x_to_R]
 
@@ -533,10 +560,11 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
     p_trans_IP = get('p_trans_IP', virus_parameters)
     p_trans_IM = get('p_trans_IM', virus_parameters)
     isolation_duration = get('isolation_duration', kConstants)
-    net_symptomatic_protection = get('net_symptomatic_protection',
+    net_protection = get('net_protection',
                                      protection_functions)
     infection_protection = get('infection_protection', protection_functions)
     symptom_protection = get('symptom_protection', protection_functions)
+    severity_protection = get('severity_protection', protection_functions)
 
     #constants
     boosting_interval = get('boosting_interval', kConstants)
@@ -597,16 +625,19 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         immune_status_0 = agents$immune_status
         time_last_immunity_event_0 = agents$time_last_immunity_event
         previous_immunity_0 = agents$previous_immunity
-        immunity_0 = net_symptomatic_protection(agents, start_time)
-        susceptibility_0 = 1 - infection_protection(agents, start_time)
+        previous_infection_immunity_0 = agents$previous_infection_immunity
+        immunity_0 = net_protection(agents, start_time)
+        infection_immunity_0 = infection_protection(agents, start_time)
+        susceptibility_0 = 1 - infection_immunity_0
         symptoms_0 = 1 - symptom_protection(agents, start_time)
+        severity_0 = 1 - severity_protection(agents, start_time)
         vax_status_0 = agents$vax_status
         
         vl = vaccinate(agents, N, vaccination_rate, vaccination_interval,
                        start_time, end_time, boosting_rate,
                        infection_status_0, immune_status_0, vax_status_0,
-                       isolated_0, immunity_0,
-                       net_symptomatic_protection,
+                       isolated_0, immunity_0, infection_immunity_0,
+                       net_protection, infection_protection,
                        boosting_interval,
                        complete_immunity_duration_R
         )
@@ -670,7 +701,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         # calculation of transmission potentials, but that's a task for a later
         # version.
         pil = progress_infection(agents, N, start_time, end_time, symptoms_0,
-                                    isolated_0, immunity_0)
+                                 severity_0, isolated_0, immunity_0, infection_immunity_0)
         agents = pil[['agents']]
         IP_to_IM = pil[['IP_to_IM']]
         IM_to_IS = pil[['IM_to_IS']]

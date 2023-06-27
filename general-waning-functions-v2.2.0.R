@@ -177,36 +177,38 @@ make_protection_functions = function(V1_protection, V2_protection, B_protection,
         }
     )
 
-    net_symptomatic_protection = function(agents, start_time) {
+    #TBD 2023-06-27: Make this less of a horrible kludge
+    net_severity_protection = function(agents, start_time) {
         ais = agents$immune_status
-        t = (start_time - agents$time_last_immunity_event)
+        tryCatch(
+            {t = (start_time - agents$time_last_immunity_event)},
+            error = function(e) {
+                print(e)
+                browser()
+            }
+        )
+        #t = (start_time - agents$time_last_immunity_event)
         t = pmax(t, 0) #TBD (eventually): find a way to not need this kludge
         prev = agents$previous_immunity
         protection = ifelse(ais == 'FS',
             0,
-            ifelse(ais == 'V1',
-                V1_protection(t, prev),
-                ifelse(ais == 'V2',
-                    V2_protection(t, prev),
-                    ifelse(ais == 'B',
-                        B_protection(t, prev),
-                        ifelse(ais == 'R',
-                            R_nsp(t, prev),
-                            ifelse(ais == 'H_R_V1',
-                                H_R_V1_nsp(t, prev),
-                                ifelse(ais == 'H_R_V2', 
-                                    H_R_V2_nsp(t, prev),
-                                    ifelse(ais == 'H_R_B',
-                                        H_R_B_nsp(t, prev),
-                                        ifelse(ais == 'H_V1_R',
-                                            H_V1_R_nsp(t, prev),
-                                            ifelse(ais == 'H_V2_R', 
-                                                H_V2_R_nsp(t, prev),
-                                                ifelse(ais == 'H_B_R',
-                                                    H_B_R_nsp(t, prev),
-                                                    NA
-                                                )
-                                            )
+            ifelse(ais %in% c('V1', 'V2', 'B'),
+                NA, #kludge: this are handled in a different fashion
+                ifelse(ais == 'R',
+                    R_nsp(t, prev),
+                    ifelse(ais == 'H_R_V1',
+                        H_R_V1_nsp(t, prev),
+                        ifelse(ais == 'H_R_V2', 
+                            H_R_V2_nsp(t, prev),
+                            ifelse(ais == 'H_R_B',
+                                H_R_B_nsp(t, prev),
+                                ifelse(ais == 'H_V1_R',
+                                    H_V1_R_nsp(t, prev),
+                                    ifelse(ais == 'H_V2_R', 
+                                        H_V2_R_nsp(t, prev),
+                                        ifelse(ais == 'H_B_R',
+                                            H_B_R_nsp(t, prev),
+                                            NaN
                                         )
                                     )
                                 )
@@ -216,22 +218,28 @@ make_protection_functions = function(V1_protection, V2_protection, B_protection,
                 )
             )
         )
-        if(any(is.na(protection))) {
-            mask = is.na(protection)
+        if(any(is.nan(protection))) {
+            mask = is.nan(protection)
             cat('Problematic agents:\n')
             print(agents[mask,])
-            stop('NAs in net_symptomatic_protection') #debugging
+            stop('NaNs in net_severity_protection') #debugging
         }
         protection
     }
 
-    infection_protection = function(agents, start_time) {
+    RH_infection_protection = function(agents, start_time) {
         ais = agents$immune_status
-        t = (start_time - agents$time_last_immunity_event)
+        tryCatch(
+            {t = (start_time - agents$time_last_immunity_event)},
+            error = function(e) {
+                print(e)
+                browser()
+            }
+        )
         t = pmax(t, 0) #TBD-2023-06: _Why_ do we need this kludge
-        prev = agents$previous_immunity
+        prev = agents$previous_infection_immunity
         ifelse(ais %in% c('FS', 'V1', 'V2', 'B'),
-            1 - sqrt(1 - net_symptomatic_protection(agents, start_time)),
+            NA, #handled differently
             ifelse(ais == 'R',
                 R_ip(t, prev),
                 ifelse(ais == 'H_R_V1',
@@ -257,19 +265,101 @@ make_protection_functions = function(V1_protection, V2_protection, B_protection,
         )   
     }
 
+    RH_symptomseverity_protection = function(agents, start_time) {
+        nsp = net_severity_protection(agents, start_time)
+        ip = RH_infection_protection(agents, start_time)
+        #browser()
+        ifelse(nsp == 1, 1, 1 - (1 - nsp) / (1 - ip))
+    }
+
+    RH_symptom_protection = function(agents, start_time) {
+        ssp = RH_symptomseverity_protection(agents, start_time)
+        fraction_ssp_symptomatic = kConstants$fraction_ssp_symptomatic
+        ifelse(ssp == 1, 1, 1 - (1 - ssp)^fraction_ssp_symptomatic)
+    }
+
+    RH_severity_protection = function(agents, start_time) {
+        ssp = RH_symptomseverity_protection(agents, start_time)
+        fraction_ssp_symptomatic = kConstants$fraction_ssp_symptomatic
+        ifelse(ssp == 1, 1, 1 - (1 - ssp)^(1 -fraction_ssp_symptomatic))
+    }
+
+    net_symptomatic_protection = function(agents, start_time) {
+        ais = agents$immune_status
+        t = (start_time - agents$time_last_immunity_event)
+        t = pmax(t, 0) #TBD (eventually): find a way to not need this kludge
+        prev = agents$previous_immunity
+        protection = ifelse(ais == 'FS',
+            0,
+            ifelse(ais == 'V1',
+                V1_protection(t, prev),
+                ifelse(ais == 'V2',
+                    V2_protection(t, prev),
+                    ifelse(ais == 'B',
+                        B_protection(t, prev),
+                        ifelse(ais %in% c('R', 'H_R_V1', 'H_R_V2', 'H_R_B', 'H_V1_R', 'H_V2_R', 'H_B_R'),
+                            NA, #handled a different way
+                            NaN #just not valid
+                        )
+                    )
+                )
+            )
+        )
+        if(any(is.nan(protection))) {
+            mask = is.na(protection)
+            cat('Problematic agents:\n')
+            print(agents[mask,])
+            stop('NAs in net_symptomatic_protection') #debugging
+        }
+        protection
+    }
+
+    infection_protection = function(agents, start_time) {
+        ais = agents$immune_status
+        #t = (start_time - agents$time_last_immunity_event)
+        #t = pmax(t, 0) #TBD-2023-06: _Why_ do we need this kludge
+        #prev = agents$previous_immunity
+        ifelse(ais %in% c('FS', 'V1', 'V2', 'B'),
+            1 - sqrt(1 - net_symptomatic_protection(agents, start_time)),
+            RH_infection_protection(agents, start_time)
+        )   
+    }
+
     symptom_protection = function(agents, start_time) {
         nsp = net_symptomatic_protection(agents, start_time)
         ip = infection_protection(agents, start_time)
-        ifelse(nsp == 1, 1, 1 - (1 - nsp) / (1 - ip))
+        ifelse(agents$immune_status %in% c('FS', 'V1', 'V2', 'B'),
+            ifelse(nsp == 1, 1, 1 - (1 - nsp) / (1 - ip)),
+            RH_symptom_protection(agents, start_time)
+        )
+    }
+
+    severity_protection = function(agents, start_time) {
+        ifelse(agents$immune_status %in% c('FS', 'V1', 'V2', 'B'),
+            symptom_protection(agents, start_time), #TBD 2023-06-27: make this less kludgey
+            RH_severity_protection(agents, start_time)
+        )
+    }
+
+    net_protection = function(agents, start_time) { #for the purpose of setting previous_immunity
+                                                    #in turn, for the purpose of constructing ramps
+                                                    #not a valid measure of relative protection between the first and second types
+        ifelse(agents$immune_status %in% c('FS', 'V1', 'V2', 'B'),
+            net_symptomatic_protection(agents, start_time),
+            net_severity_protection(agents, start_time)
+        )
     }
 
     list(V1_protection = V1_protection,
          V2_protection = V2_protection,
          B_protection = B_protection,
-         R_protection = R_protection,
-         net_symptomatic_protection = net_symptomatic_protection,
+         #R_protection = R_protection,
+         H_V2_R_nsp = H_V2_R_nsp,
+         H_V2_R_ip = H_V2_R_ip,
+         net_protection = net_protection,
          infection_protection = infection_protection,
-         symptom_protection = symptom_protection
+         symptom_protection = symptom_protection,
+         severity_protection = severity_protection
     )
 }
 

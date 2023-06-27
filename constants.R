@@ -46,7 +46,8 @@ kConstants = list( #using Google-style notation for now
     H_RB_ip_a = 1.7006945,
     H_RB_ip_b = -0.3068089/30.5,
     hybrid_ramp_time = 30.5,
-    recovered_complete_protection_time = 61
+    recovered_complete_protection_time = 61,
+    fraction_ssp_symptomatic = 0.5
 )
 
 #variables_to_exclude = list('boosting_interval') #to avoid clash with when we assume vaccination starts (which needs to be updated)
