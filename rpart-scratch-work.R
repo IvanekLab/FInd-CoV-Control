@@ -146,7 +146,7 @@ get_filename = function(housing, setting, vaccinated, recovered, i) {
     )
 
     filename = paste0(
-        'bobrovitz-test--scenario-103/bobrovitz',
+        'bobrovitz-test--sensitivity/bobrovitz',
         unique_id,
         ifelse(
             vaccinated == TRUE & recovered == TRUE &
@@ -172,7 +172,7 @@ get_filename = function(housing, setting, vaccinated, recovered, i) {
             'initial_V2-73,',
             ''
         ),
-        'n_sims-100index_i-',
+        'n_sims-1000index_i-',
         i,
         '_full-output.rds'
     )
@@ -261,65 +261,35 @@ df$run_number = factor(df$run_number)
 
 #partial resumption: What happens (a) if I cross-validate more, but without any
 #cp, (b) if I do Poisson regression (without any cp)
-png('2023-06-26/unavailable.png', height = 900, width = 1600)
+png('2023-06-28b/unavailable.png', height = 900, width = 1600)
 tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Unavailable (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
 
-png('2023-06-26/symptomatic.png', height = 900, width = 1600)
+png('2023-06-28b/symptomatic.png', height = 900, width = 1600)
 tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Symptomatic Infections (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-png('2023-06-26/total-cost.png', height = 900, width = 1600)
+png('2023-06-28b/total-cost.png', height = 900, width = 1600)
 tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Total Cost (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-stop('Okay for now?')
-
-png('2023-03-12/total-cost-maximal.png', height = 900, width = 1600)
-tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',], control= rpart.control(minsplit=1, minbucket=1, cp = 0))
-plot(tree, main = 'Total Cost (maximal)')
-text(tree, pretty = 1)
-dev.off()
-
-
-#Okay, so with a strict requirement of a difference of 10, we get the following:
-to_prune = function(frame, i, difference = 10) {
-    j = which(row.names(frame) == i)
-    #cat(i, ':', j)
-    if(frame[j,1] == '<leaf>') {
-        i
-    } else {
-        left = to_prune(frame, 2 * i, difference)
-        right = to_prune(frame, 2 * i + 1, difference)
-        if(length(left) * length(right) == 1) {
-            if(abs(frame[which(row.names(frame) == 2 * i), 5] - frame[which(row.names(frame) == 2 * i + 1), 5]) >= difference) {
-                c(left, right)
-            } else {
-                i
-            }
-        } else {
-            c(left, right)
-        }
-    }
-}
-
-
-png('2023-06-20/production-loss.png', height = 900, width = 1600)
+png('2023-06-28b/production-loss.png', height = 900, width = 1600)
 tree = rpart(production_loss ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Production Loss (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-
-png('2023-06-20/intervention-expenses.png', height = 900, width = 1600)
+png('2023-06-28b/intervention-expenses.png', height = 900, width = 1600)
 tree = rpart(intervention_expenses ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Intervention Expenses (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
+
+
