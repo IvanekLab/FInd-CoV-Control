@@ -261,32 +261,32 @@ df$run_number = factor(df$run_number)
 
 #partial resumption: What happens (a) if I cross-validate more, but without any
 #cp, (b) if I do Poisson regression (without any cp)
-png('2023-06-28b/unavailable.png', height = 900, width = 1600)
+png('figures-2023-07-03/unavailable.png', height = 900, width = 1600)
 tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Unavailable (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
 
-png('2023-06-28b/symptomatic.png', height = 900, width = 1600)
+png('figures-2023-07-03/symptomatic.png', height = 900, width = 1600)
 tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Symptomatic Infections (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-png('2023-06-28b/total-cost.png', height = 900, width = 1600)
+png('figures-2023-07-03/total-cost.png', height = 900, width = 1600)
 tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Total Cost (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-png('2023-06-28b/production-loss.png', height = 900, width = 1600)
+png('figures-2023-07-03/production-loss.png', height = 900, width = 1600)
 tree = rpart(production_loss ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Production Loss (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-png('2023-06-28b/intervention-expenses.png', height = 900, width = 1600)
+png('figures-2023-07-03/intervention-expenses.png', height = 900, width = 1600)
 tree = rpart(intervention_expenses ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Intervention Expenses (default)')
 text(tree, pretty = 1, cex = 2)

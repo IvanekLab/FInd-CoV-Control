@@ -308,13 +308,13 @@ double_wrap_num_sims = 100
 #git diff --no-index --word-diff --ignore-all-space a.txt b.txt
 common_parameters = list(
     workers_per_crew = '10',                    # FM: workers per line
-    crews_per_supervisor = 49,                   # FM: / lines per shift
+    crews_per_supervisor = 3,                   # FM: / lines per shift
     days = '90',
     social_distancing_work = 'Intermediate',
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'bobrovitz-test--effects-split',   # relative to working directory
+    folder_name = 'bobrovitz-test--sensitivity-x100',   # relative to working directory
     analyze_only = FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
@@ -330,12 +330,12 @@ additional_facility_parameters = list(
     supervisors = '2',          # FM: shifts
     n_shift_floaters = '10',     # FM only (for farm model, will require NULL/NA)
     n_cleaners = '10',          # FM only (for farm model, will require NULL/NA)
-    n_all_floaters = '10',      # FM only (for farm model, will require NULL/NA)
+    n_all_floaters = '11',      # FM only (for farm model, will require NULL/NA)
     #employee_housing = 'Private', 
     #social_distancing_shared_housing = NULL,
     #community_transmission = 'Intermediate',
     #unique_id = 'facility-pass-1',
-    output_per_week = (1022/103) * 784346.67, #technically not exactly the right way to rescale this, but meh
+    output_per_week = 784346.67, #technically not exactly the right way to rescale this, but meh
     hourly_wage = 13.89,
     size = 1000
 
@@ -407,7 +407,7 @@ for(housing in c('shared', 'individual')) {
     }
 }
 
-for(i in 8) { #i.e., individual, facility, TRUE, TRUE
+"for(i in 8) { #i.e., individual, facility, TRUE, TRUE
     housing = df[i, 'housing']
     setting = df[i, 'setting']
     vaccinated = df[i, 'vaccinated']
@@ -460,7 +460,7 @@ for(i in 8) { #i.e., individual, facility, TRUE, TRUE
     #do.call(full_run, all_params)
     double_wrap_num_sims = 100
     do.call(full_run, all_params)
-}
+}"
 
 
 "#Test of one-shift functionality
@@ -704,9 +704,9 @@ run_67 = function(common_parameters, additional_facility_parameters,
     }
 }
 
-"run_67(common_parameters, additional_facility_parameters,
+run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
-       list(unique_id = 'facility'
+       list(unique_id = 'facility',
             fraction_recovered = 0.69,
             fraction_fully_vaccinated = 0.71,
             ffv_last_five_months = 0.09,
@@ -719,6 +719,20 @@ run_67 = function(common_parameters, additional_facility_parameters,
 )
 
 run_67(common_parameters, additional_facility_parameters,
+       additional_farm_parameters, kConstants, 'facility',
+       list(unique_id = 'farmlike-facility',
+            fraction_recovered = 0.69,
+            fraction_fully_vaccinated = 0.71,
+            ffv_last_five_months = 0.09,
+            fraction_boosted_ever = 0.45,
+            fraction_boosted_last_five_months = 0.45,
+            employee_housing = 'Shared', 
+            social_distancing_shared_housing = 'Intermediate',
+            community_transmission = NULL
+       )
+)
+
+"run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
        list(unique_id = 'facility-start-of-epidemic',
             fraction_recovered = 0,
