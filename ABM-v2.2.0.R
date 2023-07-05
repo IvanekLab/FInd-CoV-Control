@@ -738,11 +738,13 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         agents$time_R[NI_to_E] = potential_times_E[NI_to_E]
         agents$time_last_immunity_event[NI_to_E] = potential_times_E[NI_to_E]
 
-        if(ii_remaining > 0) {
+        #making this unconditional for comparability. I think this is fine
+        #if(ii_remaining > 0) {
             foi_contributions_ii = contacts * (infectiousness * initial_infecteds)
             force_of_infection_ii = colSums(foi_contributions_ii)
             p_iii_given_infection = force_of_infection_ii / force_of_infection
             iii_given_infection = sbern(N, p_iii_given_infection)
+        if(ii_remaining > 0) {
             iii = sum(NI_to_E & iii_given_infection)
             if(iii > sum(NI_to_E)) {
                 browser()

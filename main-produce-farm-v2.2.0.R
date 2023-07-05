@@ -316,6 +316,10 @@ for (i in 1:num_sims) {
     schedule = rep(week, ceiling(days/7))[1:(3 * days)]
 
     floater_randomizers = runif(N, 0, 1)
+    #print(paste0('Test floater_randomizers: ', floater_randomizers[1], '\t', floater_randomizers[N]))
+    if(i %in% 1:2) {
+        cat('intervention:', index_i, 'run i:', i, 'After floater_randomizers; Test value:', runif(1, 0, 1), '\n')
+    }
     on_ps_1_randomized = floater_randomizers <= on_ps_1
     on_ps_2_randomized = on_ps_1 < floater_randomizers &
                          floater_randomizers <= on_ps_1 + on_ps_2
@@ -341,6 +345,9 @@ for (i in 1:num_sims) {
                            fraction_boosted_last_five_months,
                        protection_functions = protection_functions,
                        kConstants = kConstants)
+    if(i %in% 1:2) {
+        cat('intervention:', index_i, 'run i:', i, 'After AgentGen; Test value:', runif(1, 0, 1), '\n')
+    }
     model <- ABM(agents, contacts_list = contacts_list,
                  lambda_list = lambda_list, schedule = schedule,
                  virus_parameters, testing_parameters,

@@ -54,6 +54,12 @@ random_functions_and_counter = function() {
         qgamma(X, shape=shape, scale = scale)
     }
 
+    slnorm = function(N, meanlog, sdlog) {
+        X = runif(N, 0, 1)
+        runif_0_1_calls_counter <<- runif_0_1_calls_counter + N
+        qlnorm(X, meanlog, sdlog)
+    }
+
     print_rand_state = function(s) {
         cat('\n\n', s, '\nseed:', set_seed, '\ncalls:', runif_0_1_calls_counter,
             '\ncurrent state, abbreviated:', .Random.seed[1:3], '\n\n')
@@ -64,6 +70,7 @@ random_functions_and_counter = function() {
          sunif = sunif,
          sbern = sbern,
          sgamma = sgamma,
+         slnorm = slnorm,
          print_rand_state = print_rand_state
     )
 }
@@ -74,6 +81,8 @@ if(!exists('SAFE_RANDOM_FUNCTIONS_INITIALIZED')) {
     sunif = rfac_l[['sunif']]
     sbern = rfac_l[['sbern']]
     sgamma = rfac_l[['sgamma']]
+    slnorm = rfac_l[['slnorm']]
+    sbinom = rfac_l[['sbinom']]
     print_rand_state = rfac_l[['print_rand_state']]
     SAFE_RANDOM_FUNCTIONS_INITIALIZED = TRUE
 }

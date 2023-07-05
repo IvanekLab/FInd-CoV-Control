@@ -98,7 +98,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #stop('Pause here to confirm.')
 
     duration_IP = sgamma(N, shape=duration_IP_shape, scale=duration_IP_scale)
-    duration_E = pmax(rlnorm(N, mulog, sdlog) - duration_IP, 0) 
+    duration_E = pmax(slnorm(N, mulog, sdlog) - duration_IP, 0) 
     #Moghadas et al., 2020 & need for a non-negative duration
     #Create a population of susceptibles 
     agents <- data.frame(ID = 1:N,          #Unique ID number,
@@ -236,7 +236,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
         TRUE,
         ifelse(index_V2_older,
             FALSE,
-            rbinom(N, 1, fraction_boosted_ever)
+            sbern(N, fraction_boosted_ever)
         )
     )
 
@@ -248,10 +248,10 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #since neither of these is affected by the other factors, it can be left
     #here for now
     agents$infection_status[index_E]= "E"
-    agents$time_E[index_E]= -runif(E0, 0, agents$duration_E[index_E])
+    agents$time_E[index_E]= -sunif(E0, 0, agents$duration_E[index_E])
 
     agents$infection_status[index_IM]= "IM"
-    agents$time_IM[index_IM]= -runif(IM0, 0, agents$duration_IM[index_IM])
+    agents$time_IM[index_IM]= -sunif(IM0, 0, agents$duration_IM[index_IM])
     # These next two lines shouldn't matter, but seem harmless, and like a good
     # way to avoid the possibility of weird errors.
     agents$time_IP[index_IM] = (agents$time_IM[index_IM] -
@@ -267,10 +267,10 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
 
     #Using uniform distributions for now; may change later.
     #TBD (eventually): better distributions
-    agents$time_V2[index_V2_last_five_months] = runif(
+    agents$time_V2[index_V2_last_five_months] = sunif(
         initial_V2_last_five_months, -boosting_interval, 0
     )
-    agents$time_V2[index_V2_older] = runif(
+    agents$time_V2[index_V2_older] = sunif(
         initial_V2 - initial_V2_last_five_months,
         -(time_since_first_V2),#fully vax starts in mid-december 2020
         -boosting_interval 
@@ -279,8 +279,8 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     #Adjusting timing of vaccinations to match boosting timing.
     #Ideally, this would be handled in a more sophisticated fashion, but
     #this will do for now.
-    agents$time_V2[index_B_older] = runif(n_boosted_older, -(time_since_first_V2), -(2*boosting_interval+1)) #TBD: Extend start date 2022-11-07
-    agents$time_V2[index_B_last_five_months] = runif(n_boosted_last_five_months,
+    agents$time_V2[index_B_older] = sunif(n_boosted_older, -(time_since_first_V2), -(2*boosting_interval+1)) #TBD: Extend start date 2022-11-07
+    agents$time_V2[index_B_last_five_months] = sunif(n_boosted_last_five_months,
                                                      -2*boosting_interval, -boosting_interval)
 
     agents$time_last_immunity_event[index_V2] = agents$time_V2[index_V2]
@@ -308,7 +308,7 @@ AgentGen <- function (N, E0 = 1, IA0 = 0, IP0 = 0, IM0 = 0,
     agents$previous_infection_immunity[index_B] = 1 - sqrt(1 - pi_) #TBD: KLUDGE
 
     #particularly suboptimal at the moment, given the recent massive peak
-    agents$time_R[index_R]= -runif(initial_recovered, 0, R_question_period)
+    agents$time_R[index_R]= -sunif(initial_recovered, 0, R_question_period)
     only_R = index_R & !index_V2
     agents$immune_status[only_R] = 'R'
     agents$time_last_immunity_event[only_R] = agents$time_R[only_R]
