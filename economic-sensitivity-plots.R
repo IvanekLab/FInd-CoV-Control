@@ -1636,9 +1636,9 @@ max_difference = function(dd, s) {
     )
 }
 
-differences = sapply(names(kConstants), function(s) max_difference(dd, s))
-o = order(differences)
-cat(sapply(1:length(o), function(i) paste0(names(kConstants)[o][i], ':\t', differences[o][i])), sep = '\n')
+#differences = sapply(names(kConstants), function(s) max_difference(dd, s))
+#o = order(differences)
+#cat(sapply(1:length(o), function(i) paste0(names(kConstants)[o][i], ':\t', differences[o][i])), sep = '\n')
 #...
 #duration_IM_mean:       2.02835820895522
 #duration_IM_shape:      2.05597579425114
@@ -1735,30 +1735,37 @@ cat(sapply(1:length(oo), function(i) paste0(names(kConstants)[oo][i], ':\t', old
 cat(sapply(1:5, function(i) paste0(dd[[1]][[i]][['symptomatic_infections']], '\t', dd[[1]][[generate_name(i, 'V2_decay_rate', 0.5)]][['symptomatic_infections']], '\t', dd[[1]][[generate_name(i, 'V2_decay_rate', 1.5)]][['symptomatic_infections']])), sep='\n')
 #16.83   15.53   17.04
 #15.39   14.34   15.59
-# 1.82    1.01    1.92
+# 1.82    1.01    1.92                                          #1.90099
 #11.99    8.57   12.36
 #14.78   12.69   14.97
 
+cat(sapply(1:5, function(i) paste0(dd_old[[1]][[i]][['symptomatic_infections']], '\t', dd_old[[1]][[generate_name(i, 'V2_decay_rate', 0.5)]][['symptomatic_infections']], '\t', dd_old[[1]][[generate_name(i, 'V2_decay_rate', 1.5)]][['symptomatic_infections']])), sep='\n')
+#35.83   35.15   35.82
+#34.79   34.02   34.82
+#5.58    5.33    6.23                                           #1.168856 virus testing at p = 0.3
+#30.28   29.34   30.89
+#33.52   32.77   33.66
+
 cat(sapply(1:5, function(i) paste0(dd[[1]][[i]][['shifts_unavailable']], '\t', dd[[1]][[generate_name(i, 'V2_decay_rate', 0.5)]][['shifts_unavailable']], '\t', dd[[1]][[generate_name(i, 'V2_decay_rate', 1.5)]][['shifts_unavailable']])), sep='\n')
-#11.47              6.96333333333333        11.52
-#27.4066666666667   22.3633333333333        27.9533333333333
+#11.47              6.96333333333333        11.52               #1.65438
+#27.4066666666667   22.3633333333333        27.9533333333333    
 #25.2733333333333   17.39                   26.2833333333333
-# 9.06               4.33                    9.48
+# 9.06               4.33                    9.48               #2.189376 in 40% R0 reduction
 # 9.93               4.99333333333333        9.78
 #So _reducing_ V2_decay_rate can have a big impact on unavailability, especially in the absence of testing. This might be chance? What does the equivalent look like for dd_old? (It also could be a systemic effect, due to r_eff being kinda marginal to begin with . . . hard to say.
 cat(sapply(1:5, function(i) paste0(dd_old[[1]][[i]][['shifts_unavailable']], '\t', dd_old[[1]][[generate_name(i, 'V2_decay_rate', 0.5)]][['shifts_unavailable']], '\t', dd_old[[1]][[generate_name(i, 'V2_decay_rate', 1.5)]][['shifts_unavailable']])), sep='\n')
 #29.6833333333333   28.5366666666667        30.2
 #70.65              67.6966666666667        70.7833333333333
-#59.48              57.42                   64.9966666666667
-#25.94              25.0966666666667        25.8366666666667
+#59.48              57.42                   64.9966666666667    #1.131952
+#25.94              25.0966666666667        25.8366666666667    #1.033603
 #28.8466666666667   27.3433333333333        28.97
 
 #Let's take a moment to make sure we haven't somehow greatly increased the number of V2 . . .
 
 #okay, so nothing surprising here . . .
 
-"l_r_eff = panelwise_r_eff_sensitivity_fn(
-    'sensitivity-r0s',
+l_r_eff = panelwise_r_eff_sensitivity_fn(
+    'bobrovitz-test--sensitivity-r0s',
     c('farmlike-facility'#,
       # 'facility-no-vax',
       # 'facility-no-recovered',
@@ -1790,7 +1797,75 @@ cat(sapply(1:5, function(i) paste0(dd_old[[1]][[i]][['shifts_unavailable']], '\t
 #print(names(kConstants)[v >= cutoff])
 
 dd_l = l_r_eff$dd
-saveRDS(dd_l, 'saved_dd-r_eff.RDS')"
+saveRDS(dd_l, 'saved_dd-r_eff.RDS')
+
+cat(sapply(1:5, function(i) paste0(dd_l[[1]][[i]][['r_eff']], '\t', dd_l[[1]][[generate_name(i, 'V2_decay_rate', 0.5)]][['r_eff']], '\t', dd_l[[1]][[generate_name(i, 'V2_decay_rate', 1.5)]][['r_eff']])), sep='\n')
+#2.75    1.88    2.59
+#2.43    1.73    2.3
+#0.94    0.81    0.95
+#2.13    1.45    2.01   #1.468966
+#2.71    1.87    2.55
+
+#and to compare ...
+dd_l_old = readRDS('saved_dd_17-shared-r_eff.RDS')
+cat(sapply(1:5, function(i) paste0(dd_l_old[[1]][[i]][['r_eff']], '\t', dd_l_old[[1]][[generate_name(i, 'V2_decay_rate', 0.5)]][['r_eff']], '\t', dd_l_old[[1]][[generate_name(i, 'V2_decay_rate', 1.5)]][['r_eff']])), sep='\n')
+#4.48    4.03    4.55
+#4.18    3.73    4.25
+#1.35    1.2     1.37
+#3.35    3.03    3.37
+#4.47    4.03    4.54
+
+#Okay, broadly speaking, this seems reasonable. Tentatively. We're just seeing a more marginal system be more likely to tip over the edge.#Here's a thought: What is the general trend comparing maxima for the same variable?
+#Pause a moment and _notice_: Even at baseline, R_eff is < 1 for p = 0.3 testing! This is an important change that likely explains some of what we are seeing.
+
+max_difference_r_eff = function(dd, s) {
+    max(sapply(1:5, function(i) max_difference_(dd, s, i, 'r_eff')))
+}
+
+r_eff_differences = sapply(names(kConstants), function(s) max_difference_r_eff(dd_l, s))
+
+combined_differences = pmax(differences, r_eff_differences)
+o_combined = order(combined_differences)
+
+r_eff_old_differences = sapply(names(kConstants), function(s) max_difference_r_eff(dd_l_old, s))
+old_combined_differences = pmax(old_differences, r_eff_old_differences)
+oo_combined = order(old_combined_differences, combined_differences)
+cat(sapply(1:length(oo_combined), function(i) paste0(names(kConstants)[oo_combined][i], ':\t', old_combined_differences[oo_combined][i], '\t', combined_differences[oo_combined][i])), sep = '\n')
+#somewhat confusing results
+
+#now, practical question: What are our top sensitivity variables?
+cat(sapply(1:length(o_combined), function(i) paste0(names(kConstants)[o_combined][i], ':\t', combined_differences[o_combined][i])), sep = '\n')
+
+#mu:     2.06159169550173
+#R_question_period:      2.06818181818182
+#duration_IM_shape:      2.17391304347826
+#H_RB_nsp_a:     2.18840579710145
+#V2_decay_rate:  2.18937644341801
+#duration_IP_mean:       2.22479462285288
+#duration_IA_mean:       2.2595399188092
+#fraction_ssp_symptomatic:       2.47796143250689
+#duration_IS_mean:       2.50054171180932
+#SEVERE_MULTIPLIER:      2.55302366345311
+#duration_IM_mean:       2.63333333333333
+
+#Reordering for presentation
+
+#duration_IM_mean:       2.63333333333333
+#duration_IS_mean:       2.50054171180932
+#duration_IA_mean:       2.2595399188092
+#duration_IP_mean:       2.22479462285288
+#mu:                     2.06159169550173        #this is essentially a proxy for duration_E_mean, probably
+                                                #is this a case of longer -> higher probability of detection?
+                                                #no, because we don't detect then. So why?
+                                                #specifically x-1.5 gives a reduced fraction of any symptomatic under p = 0.3 testing. why?
+#duration_IM_shape:      2.17391304347826
+
+#SEVERE_MULTIPLIER:      2.55302366345311
+
+#fraction_ssp_symptomatic:       2.47796143250689
+#V2_decay_rate:  2.18937644341801
+#H_RB_nsp_a:     2.18840579710145
+#R_question_period:      2.06818181818182
 
 
 #stop('Good enough for the moment.')
@@ -1850,12 +1925,14 @@ custom_linear_panel = function(outcome_name, ylab, dd, kConstants,
     }
 }
 
-png('2023-07-03/master-summary.png', height = 200*9, width = 200*4)
+png('figures-2023-07-03/master-summary.png', height = 200*11, width = 200*4)
 #layout(matrix(1:45, ncol = 5, byrow = TRUE))
-layout(matrix(1:36, ncol = 4, byrow = TRUE))
+layout(matrix(1:44, ncol = 4, byrow = TRUE))
+parameters = c('duration_IM_mean', 'duration_IS_mean', 'duration_IA_mean', 'duration_IP_mean', 'mu', 'duration_IM_shape', 'SEVERE_MULTIPLIER', 'fraction_ssp_symptomatic', 'V2_decay_rate', 'H_RB_nsp_a', 'R_question_period')
 #parameters = c('SEVERE_MULTIPLIER', 'duration_IM_mean', 'p_trans_IM', 'B_magnitude_2', 'duration_IS_mean', 'isolation_duration', 'R_question_period', 'duration_IP_mean', 'B_magnitude_1')
-parameters = c('SEVERE_MULTIPLIER', 'duration_IM_mean', 'duration_IS_mean', 'duration_IP_mean', 'p_trans_IM', 'B_magnitude_2', 'B_magnitude_1', 'isolation_duration', 'R_question_period')
-for(i in 1:9) {
+#parameters = c('SEVERE_MULTIPLIER', 'duration_IM_mean', 'duration_IS_mean', 'duration_IP_mean', 'p_trans_IM', 'B_magnitude_2', 'B_magnitude_1', 'isolation_duration', 'R_question_period')
+
+for(i in 1:11) {
     parameter = parameters[i]
     custom_linear_panel('symptomatic_infections', 'Symptomatic Infections', l$dd, kConstants, c(0.5, 1, 1.5), 'farmlike-facility', parameter, c(0,40), 1)
     custom_linear_panel('shifts_unavailable', 'Worker-Shifts Unavailable', l$dd, kConstants, c(0.5, 1, 1.5), 'farmlike-facility', parameter, c(0,110), 1)

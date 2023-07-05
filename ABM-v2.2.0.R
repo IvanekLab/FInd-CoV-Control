@@ -149,7 +149,7 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
                      boosting_interval,
                      complete_immunity_duration_R
             ) {
-
+    
     #some of the assignments below could be condensed, but I'm trying to be
     #systematic about things
     
@@ -369,6 +369,16 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
     immunity_1 = net_protection(agents, start_time)
     #test_mask = immunity_1 < immunity_0
     test_mask = immunity_1 - immunity_0 < -0.001 #to avoid roundoff error issues
+    #print(test_mask)
+    #print(immunity_1 - immunity_0)
+    #print('zero')
+    #print(immunity_0)
+    #print('one')
+    #print(immunity_1)
+    "if(any(is.na(test_mask))) {
+        print('Problem in vaccinate()')
+        browser()
+    }"
     if(any(test_mask)) {
         print(agents[test_mask,])
         print('Now is:')
@@ -400,7 +410,6 @@ vaccinate = function(agents, N, vaccination_rate, vaccination_interval,
         print((infection_immunity_1 - infection_immunity_0)[test_mask])
         stop('And here is the arguable failure.')
     }
-
     list(agents = agents,
          doses = sum(any_vaccination)
     )
@@ -665,13 +674,42 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         #non-negligible.
         #(In fact, none in the current version, except for all-shift floaters.)
 
+        "fail_flag = ifelse(is.na(agents$immune_status),
+            TRUE,
+            is.na(agents$previous_immunity) & agents$immune_status != 'FS'
+        )
+        if(any(fail_flag)) {
+            print('Problem before transmission.')
+            browser()
+        }"
+
+
         NI_to_E_community = (
             agents$infection_status == 'NI' &
             sbern(N, 1 - exp(-lambda * susceptibility_0)) &
             !isolated_0 
         )
-        agents$infection_status[NI_to_E_community] = 'E'
+        agents$infection_status[NI_to_E_community] = 'NI'
+        agents$immune_status[NI_to_E_community] = ifelse(agents$vax_status[NI_to_E_community] %in% c('NV', 'R'),
+            'R',
+            ifelse(agents$vax_status[NI_to_E_community] %in% c('V1', 'V2', 'B'),
+                paste0('H_', agents$vax_status[NI_to_E_community], '_R'),
+                'NA'
+            )
+        )
+        agents$previous_immunity[NI_to_E_community] = immunity_0[NI_to_E_community] #not technically right, but doesn't actually matter
+        "fail_flag = ifelse(is.na(agents$immune_status),
+            TRUE,
+            is.na(agents$previous_immunity) & agents$immune_status != 'FS'
+        )
+        if(any(fail_flag)) {
+            print('Problem in community transmission.')
+            browser()
+        }"
         agents$time_E[NI_to_E_community] = potential_times_E[NI_to_E_community]
+        agents$time_R[NI_to_E_community] = potential_times_E[NI_to_E_community]
+        agents$time_last_immunity_event[NI_to_E_community] = potential_times_E[NI_to_E_community]
+        
 
 
         NI_to_E = (
@@ -679,8 +717,26 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
             sbern(N, p_infection) &
             !isolated_0
         )
-        agents$infection_status[NI_to_E] = 'E'
-        agents$time_E[NI_to_E] = potential_times_E[NI_to_E] 
+        agents$infection_status[NI_to_E] = 'NI'
+        agents$immune_status[NI_to_E] = ifelse(agents$vax_status[NI_to_E] %in% c('NV', 'R'),
+            'R',
+            ifelse(agents$vax_status[NI_to_E] %in% c('V1', 'V2', 'B'),
+                paste0('H_', agents$vax_status[NI_to_E], '_R'),
+                'NA'
+            )
+        )
+        agents$previous_immunity[NI_to_E] = immunity_0[NI_to_E]
+        "fail_flag = ifelse(is.na(agents$immune_status),
+            TRUE,
+            is.na(agents$previous_immunity) & agents$immune_status != 'FS'
+        )
+        if(any(fail_flag)) {
+            print('Problem in internal transmission.')
+            browser()
+        }"
+        agents$time_E[NI_to_E] = potential_times_E[NI_to_E]
+        agents$time_R[NI_to_E] = potential_times_E[NI_to_E]
+        agents$time_last_immunity_event[NI_to_E] = potential_times_E[NI_to_E]
 
         if(ii_remaining > 0) {
             foi_contributions_ii = contacts * (infectiousness * initial_infecteds)

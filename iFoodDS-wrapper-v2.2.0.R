@@ -309,12 +309,12 @@ double_wrap_num_sims = 100
 common_parameters = list(
     workers_per_crew = '10',                    # FM: workers per line
     crews_per_supervisor = 3,                   # FM: / lines per shift
-    days = '90',
+    days = '30',
     social_distancing_work = 'Intermediate',
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'bobrovitz-test--sensitivity-x100',   # relative to working directory
+    folder_name = 'bobrovitz-test--sensitivity-r0s',   # relative to working directory
     analyze_only = FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
@@ -704,7 +704,7 @@ run_67 = function(common_parameters, additional_facility_parameters,
     }
 }
 
-run_67(common_parameters, additional_facility_parameters,
+"run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
        list(unique_id = 'facility',
             fraction_recovered = 0.69,
@@ -716,7 +716,7 @@ run_67(common_parameters, additional_facility_parameters,
             social_distancing_shared_housing = NULL,
             community_transmission = 'Intermediate'
        )
-)
+)"
 
 run_67(common_parameters, additional_facility_parameters,
        additional_farm_parameters, kConstants, 'facility',
