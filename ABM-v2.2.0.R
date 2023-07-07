@@ -689,15 +689,15 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
             sbern(N, 1 - exp(-lambda * susceptibility_0)) &
             !isolated_0 
         )
-        agents$infection_status[NI_to_E_community] = 'NI'
-        agents$immune_status[NI_to_E_community] = ifelse(agents$vax_status[NI_to_E_community] %in% c('NV', 'R'),
+        agents$infection_status[NI_to_E_community] = 'E'
+        "agents$immune_status[NI_to_E_community] = ifelse(agents$vax_status[NI_to_E_community] %in% c('NV', 'R'),
             'R',
             ifelse(agents$vax_status[NI_to_E_community] %in% c('V1', 'V2', 'B'),
                 paste0('H_', agents$vax_status[NI_to_E_community], '_R'),
                 'NA'
             )
         )
-        agents$previous_immunity[NI_to_E_community] = immunity_0[NI_to_E_community] #not technically right, but doesn't actually matter
+        agents$previous_immunity[NI_to_E_community] = immunity_0[NI_to_E_community]" #not technically right, but doesn't actually matter
         "fail_flag = ifelse(is.na(agents$immune_status),
             TRUE,
             is.na(agents$previous_immunity) & agents$immune_status != 'FS'
@@ -707,8 +707,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
             browser()
         }"
         agents$time_E[NI_to_E_community] = potential_times_E[NI_to_E_community]
-        agents$time_R[NI_to_E_community] = potential_times_E[NI_to_E_community]
-        agents$time_last_immunity_event[NI_to_E_community] = potential_times_E[NI_to_E_community]
+        #agents$time_R[NI_to_E_community] = potential_times_E[NI_to_E_community]
+        #agents$time_last_immunity_event[NI_to_E_community] = potential_times_E[NI_to_E_community]
         
 
 
@@ -717,15 +717,15 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
             sbern(N, p_infection) &
             !isolated_0
         )
-        agents$infection_status[NI_to_E] = 'NI'
-        agents$immune_status[NI_to_E] = ifelse(agents$vax_status[NI_to_E] %in% c('NV', 'R'),
+        agents$infection_status[NI_to_E] = 'E'
+        "agents$immune_status[NI_to_E] = ifelse(agents$vax_status[NI_to_E] %in% c('NV', 'R'),
             'R',
             ifelse(agents$vax_status[NI_to_E] %in% c('V1', 'V2', 'B'),
                 paste0('H_', agents$vax_status[NI_to_E], '_R'),
                 'NA'
             )
         )
-        agents$previous_immunity[NI_to_E] = immunity_0[NI_to_E]
+        agents$previous_immunity[NI_to_E] = immunity_0[NI_to_E]"
         "fail_flag = ifelse(is.na(agents$immune_status),
             TRUE,
             is.na(agents$previous_immunity) & agents$immune_status != 'FS'
@@ -735,8 +735,8 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
             browser()
         }"
         agents$time_E[NI_to_E] = potential_times_E[NI_to_E]
-        agents$time_R[NI_to_E] = potential_times_E[NI_to_E]
-        agents$time_last_immunity_event[NI_to_E] = potential_times_E[NI_to_E]
+        #agents$time_R[NI_to_E] = potential_times_E[NI_to_E]
+        #agents$time_last_immunity_event[NI_to_E] = potential_times_E[NI_to_E]
 
         #making this unconditional for comparability. I think this is fine
         #if(ii_remaining > 0) {
