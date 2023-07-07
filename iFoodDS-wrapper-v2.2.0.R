@@ -295,7 +295,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.2.0'
-double_wrap_num_sims = 100
+double_wrap_num_sims = 1000
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -314,7 +314,7 @@ common_parameters = list(
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'bobrovitz-test--sensitivity--safer',   # relative to working directory
+    folder_name = 'bobrovitz-test--scenario--safer',   # relative to working directory
     analyze_only = FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
@@ -394,7 +394,7 @@ do.call(full_run, all_params)"
 
 df = NULL
 for(housing in c('shared', 'individual')) {
-    for(setting in c('farm', 'facility')) {
+    for(setting in 'facility') {#c('farm', 'facility')) {
         for(vaccinated in c(FALSE, TRUE)) {
             for(recovered in c(FALSE, TRUE)) {
                 if(is.null(df)) {
@@ -407,7 +407,7 @@ for(housing in c('shared', 'individual')) {
     }
 }
 
-"for(i in 8) { #i.e., individual, facility, TRUE, TRUE
+for(i in 1:8) { 
     housing = df[i, 'housing']
     setting = df[i, 'setting']
     vaccinated = df[i, 'vaccinated']
@@ -445,7 +445,7 @@ for(housing in c('shared', 'individual')) {
         common_parameters,
         setting_parameters,
         list(
-            unique_id = paste0('lca--bobrovitz', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
+            unique_id = paste0('bobrovitz', setting, '-', housing, '-vaccinated_', vaccinated, '-recovered_', recovered),
             kConstants = kConstants,
             fraction_recovered = fraction_recovered,
             fraction_fully_vaccinated = fraction_fully_vaccinated,
@@ -458,9 +458,9 @@ for(housing in c('shared', 'individual')) {
         )
     )
     #do.call(full_run, all_params)
-    double_wrap_num_sims = 100
+    #double_wrap_num_sims = 100
     do.call(full_run, all_params)
-}"
+}
 
 
 "#Test of one-shift functionality
@@ -631,6 +631,8 @@ all_params = c(
     )
 )
 do.call(full_run, all_params)"
+
+stop('Scenario now, not sensitivity.')
 
 run_67 = function(common_parameters, additional_facility_parameters,
                   additional_farm_parameters, kConstants, farm_or_facility,
