@@ -606,8 +606,8 @@ make_paneled_plot = function(filename, outcome_name, ylab, dd, kConstants,
     #print(outcome_name)
     filename; outcome_name; ylab; dd; kConstants; sensitivity_multipliers; max_j#; selection_mode
     png(filename, height = 200*5, width = 200*7)
-    layout(matrix(c(1:29, 34, 30:34), ncol = 7))
-
+    #layout(matrix(c(1:29, 34, 30:34), ncol = 7))
+    layout(matrix(c(1:49), ncol = 7))
     #figuring out bounds:
     greatest_positive_difference = 0
     greatest_negative_difference = 0
@@ -1048,17 +1048,17 @@ panelwise_interesting_sensitivity_fn = function(
                      output_per_shifts, hourly_wages, eConstants)
     }
     #dd <<- dd
-    l_si = make_paneled_plot('figures-2023-07-03/shared-summary-sensitivity-plots-si.png',
+    l_si = make_paneled_plot('figures-2023-07-07/shared-summary-sensitivity-plots-si.png',
                              'symptomatic_infections',
                              'Symptomatic infections (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'figures-2023-07-03/shared-sensitivity-symptomatic-infections.csv', ######
+                             'figures-2023-07-07/shared-sensitivity-symptomatic-infections.csv', ######
                              unique_ids) ######
-    l_su = make_paneled_plot('figures-2023-07-03/shared-summary-sensitivity-plots-su.png',
+    l_su = make_paneled_plot('figures-2023-07-07/shared-summary-sensitivity-plots-su.png',
                              'shifts_unavailable', 
                              'Shifts unavailable (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                             'figures-2023-07-03/shared-sensitivity-shifts-unavailable.csv', ######
+                             'figures-2023-07-07/shared-sensitivity-shifts-unavailable.csv', ######
                              unique_ids) ######
 #    l_tc = make_one_parameter_paneled_plots('v16-summary-sensitivity-plots-tc.png',
 #                             'total_cost',
@@ -1066,11 +1066,11 @@ panelwise_interesting_sensitivity_fn = function(
 #                             kConstants, sensitivity_multipliers, max_j,
 #                             'v16-sensitivity-total-cost.csv', ######
 #                             unique_ids) ######
-    l_tc = make_paneled_plot('figures-2023-07-03/summary-sensitivity-plots-tc.png',
+    l_tc = make_paneled_plot('figures-2023-07-07/summary-sensitivity-plots-tc.png',
                              'total_cost',
                              'Total cost (multiplier)', dd,
                              kConstants, sensitivity_multipliers, max_j,
-                            'figures-2023-07-03/sensitivity-total-cost.csv', ######
+                            'figures-2023-07-07/sensitivity-total-cost.csv', ######
                              unique_ids) ######
 
 
@@ -1111,7 +1111,7 @@ panelwise_r_eff_sensitivity_fn = function(
                      output_per_shifts, hourly_wages, eConstants)
     }
     #dd <<- dd
-    l_r_eff = make_paneled_plot('figures-2023-07-03/shared-summary-sensitivity-plots-r_eff.png',
+    l_r_eff = make_paneled_plot('figures-2023-07-07/shared-summary-sensitivity-plots-r_eff.png',
                              'r_eff',
                              'Effective reproduction number (internal)', dd,
                              kConstants, sensitivity_multipliers, max_j,
@@ -1515,7 +1515,7 @@ production_shifts_mask_fn = function(start_days) {
 }
 
 #start_days = readRDS(paste0(fragments[1], '/start_days--', fragments[2]))
-start_days = readRDS('bobrovitz-test--sensitivity-x100/start_days--farmlike-facility_community-0,work_R0-6,dormitory_R0-2,E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-1_full-output.rds')
+start_days = readRDS('bobrovitz-test--sensitivity--safer/start_days--farmlike-facility_community-0,work_R0-6,dormitory_R0-2,E0-1,initial_recovered-71,initial_V2-73,n_sims-100index_i-1_full-output.rds')
 
 masks = list(production_shifts_mask_fn(start_days)) #note that this is now a list of 270 x 100 matrices, not 
 #masks = list(facility_production_mask)#rep(list(farm_production_mask, facility_production_mask), 8)
@@ -1533,7 +1533,7 @@ hourly_wages = rep(16.57, 4)
 #eConstants
 
 l = panelwise_interesting_sensitivity_fn(
-    'bobrovitz-test--sensitivity-x100',
+    'bobrovitz-test--sensitivity--safer',
     c('farmlike-facility'#,
       # 'facility-no-vax',
       # 'facility-no-recovered',
@@ -1567,7 +1567,7 @@ l = panelwise_interesting_sensitivity_fn(
 #print(names(kConstants)[v >= cutoff])
 
 dd = l$dd
-saveRDS(dd, 'figures-2023-07-03/saved_dd.RDS')
+saveRDS(dd, 'figures-2023-07-07/saved_dd.RDS')
 
 discordant = which(
     names(dd[[1]])[6:485] != c(
@@ -1713,7 +1713,7 @@ cat(sapply(1:length(o), function(i) paste0(names(kConstants)[o][i], ':\t', diffe
 #values of sensitivities that were > 2 before bobrovitz, but aren't now
 
 #for comparison with older results
-dd_old = readRDS('saved_dd_17-shared.RDS')
+"dd_old = readRDS('saved_dd_17-shared.RDS')
 old_differences = sapply(names(kConstants), function(s) max_difference(dd_old, s))
 oo = order(old_differences)
 cat(sapply(1:length(oo), function(i) paste0(names(kConstants)[oo][i], ':\t', old_differences[oo][i])), sep = '\n')
@@ -1758,14 +1758,14 @@ cat(sapply(1:5, function(i) paste0(dd_old[[1]][[i]][['shifts_unavailable']], '\t
 #70.65              67.6966666666667        70.7833333333333
 #59.48              57.42                   64.9966666666667    #1.131952
 #25.94              25.0966666666667        25.8366666666667    #1.033603
-#28.8466666666667   27.3433333333333        28.97
+#28.8466666666667   27.3433333333333        28.97"
 
 #Let's take a moment to make sure we haven't somehow greatly increased the number of V2 . . .
 
 #okay, so nothing surprising here . . .
 
 l_r_eff = panelwise_r_eff_sensitivity_fn(
-    'bobrovitz-test--sensitivity-r0s',
+    'bobrovitz-test--sensitivity-r0s--safer',
     c('farmlike-facility'#,
       # 'facility-no-vax',
       # 'facility-no-recovered',
@@ -1797,9 +1797,9 @@ l_r_eff = panelwise_r_eff_sensitivity_fn(
 #print(names(kConstants)[v >= cutoff])
 
 dd_l = l_r_eff$dd
-saveRDS(dd_l, 'saved_dd-r_eff.RDS')
+saveRDS(dd_l, 'figures-2023-07-07/saved_dd-r_eff.RDS')
 
-cat(sapply(1:5, function(i) paste0(dd_l[[1]][[i]][['r_eff']], '\t', dd_l[[1]][[generate_name(i, 'V2_decay_rate', 0.5)]][['r_eff']], '\t', dd_l[[1]][[generate_name(i, 'V2_decay_rate', 1.5)]][['r_eff']])), sep='\n')
+"cat(sapply(1:5, function(i) paste0(dd_l[[1]][[i]][['r_eff']], '\t', dd_l[[1]][[generate_name(i, 'V2_decay_rate', 0.5)]][['r_eff']], '\t', dd_l[[1]][[generate_name(i, 'V2_decay_rate', 1.5)]][['r_eff']])), sep='\n')
 #2.75    1.88    2.59
 #2.43    1.73    2.3
 #0.94    0.81    0.95
@@ -1808,7 +1808,7 @@ cat(sapply(1:5, function(i) paste0(dd_l[[1]][[i]][['r_eff']], '\t', dd_l[[1]][[g
 
 #and to compare ...
 dd_l_old = readRDS('saved_dd_17-shared-r_eff.RDS')
-cat(sapply(1:5, function(i) paste0(dd_l_old[[1]][[i]][['r_eff']], '\t', dd_l_old[[1]][[generate_name(i, 'V2_decay_rate', 0.5)]][['r_eff']], '\t', dd_l_old[[1]][[generate_name(i, 'V2_decay_rate', 1.5)]][['r_eff']])), sep='\n')
+cat(sapply(1:5, function(i) paste0(dd_l_old[[1]][[i]][['r_eff']], '\t', dd_l_old[[1]][[generate_name(i, 'V2_decay_rate', 0.5)]][['r_eff']], '\t', dd_l_old[[1]][[generate_name(i, 'V2_decay_rate', 1.5)]][['r_eff']])), sep='\n')"
 #4.48    4.03    4.55
 #4.18    3.73    4.25
 #1.35    1.2     1.37
@@ -1827,14 +1827,23 @@ r_eff_differences = sapply(names(kConstants), function(s) max_difference_r_eff(d
 combined_differences = pmax(differences, r_eff_differences)
 o_combined = order(combined_differences)
 
-r_eff_old_differences = sapply(names(kConstants), function(s) max_difference_r_eff(dd_l_old, s))
+"r_eff_old_differences = sapply(names(kConstants), function(s) max_difference_r_eff(dd_l_old, s))
 old_combined_differences = pmax(old_differences, r_eff_old_differences)
 oo_combined = order(old_combined_differences, combined_differences)
-cat(sapply(1:length(oo_combined), function(i) paste0(names(kConstants)[oo_combined][i], ':\t', old_combined_differences[oo_combined][i], '\t', combined_differences[oo_combined][i])), sep = '\n')
+cat(sapply(1:length(oo_combined), function(i) paste0(names(kConstants)[oo_combined][i], ':\t', old_combined_differences[oo_combined][i], '\t', combined_differences[oo_combined][i])), sep = '\n')"
 #somewhat confusing results
+
+print('And combined:')
 
 #now, practical question: What are our top sensitivity variables?
 cat(sapply(1:length(o_combined), function(i) paste0(names(kConstants)[o_combined][i], ':\t', combined_differences[o_combined][i])), sep = '\n')
+#below is old; now we have:
+#fraction_ssp_symptomatic:       2.21001757469244
+#p_trans_IM:     2.47552447552448
+#duration_IS_mean:       2.90022675736961
+#duration_IM_mean:       3.09848484848485
+#SEVERE_MULTIPLIER:      3.36772486772487
+
 
 #mu:     2.06159169550173
 #R_question_period:      2.06818181818182
@@ -1925,14 +1934,16 @@ custom_linear_panel = function(outcome_name, ylab, dd, kConstants,
     }
 }
 
-png('figures-2023-07-03/master-summary.png', height = 200*11, width = 200*4)
+png('figures-2023-07-07/master-summary.png', height = 200*5, width = 200*4)
 #layout(matrix(1:45, ncol = 5, byrow = TRUE))
-layout(matrix(1:44, ncol = 4, byrow = TRUE))
-parameters = c('duration_IM_mean', 'duration_IS_mean', 'duration_IA_mean', 'duration_IP_mean', 'mu', 'duration_IM_shape', 'SEVERE_MULTIPLIER', 'fraction_ssp_symptomatic', 'V2_decay_rate', 'H_RB_nsp_a', 'R_question_period')
+#layout(matrix(1:44, ncol = 4, byrow = TRUE))
+layout(matrix(1:20, ncol = 4, byrow = TRUE))
+parameters = c('SEVERE_MULTIPLIER', 'duration_IM_mean', 'duration_IS_mean', 'p_trans_IM',  'fraction_ssp_symptomatic')
+#parameters = c('duration_IM_mean', 'duration_IS_mean', 'duration_IA_mean', 'duration_IP_mean', 'mu', 'duration_IM_shape', 'SEVERE_MULTIPLIER', 'fraction_ssp_symptomatic', 'V2_decay_rate', 'H_RB_nsp_a', 'R_question_period')
 #parameters = c('SEVERE_MULTIPLIER', 'duration_IM_mean', 'p_trans_IM', 'B_magnitude_2', 'duration_IS_mean', 'isolation_duration', 'R_question_period', 'duration_IP_mean', 'B_magnitude_1')
 #parameters = c('SEVERE_MULTIPLIER', 'duration_IM_mean', 'duration_IS_mean', 'duration_IP_mean', 'p_trans_IM', 'B_magnitude_2', 'B_magnitude_1', 'isolation_duration', 'R_question_period')
 
-for(i in 1:11) {
+for(i in 1:5) {
     parameter = parameters[i]
     custom_linear_panel('symptomatic_infections', 'Symptomatic Infections', l$dd, kConstants, c(0.5, 1, 1.5), 'farmlike-facility', parameter, c(0,40), 1)
     custom_linear_panel('shifts_unavailable', 'Worker-Shifts Unavailable', l$dd, kConstants, c(0.5, 1, 1.5), 'farmlike-facility', parameter, c(0,110), 1)

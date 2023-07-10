@@ -146,7 +146,7 @@ get_filename = function(housing, setting, vaccinated, recovered, i) {
     )
 
     filename = paste0(
-        'bobrovitz-test--sensitivity/bobrovitz',
+        'bobrovitz-test--scenario--safer/bobrovitz',
         unique_id,
         ifelse(
             vaccinated == TRUE & recovered == TRUE &
@@ -181,7 +181,7 @@ get_filename = function(housing, setting, vaccinated, recovered, i) {
 
 df = NULL
 for(housing in c('shared', 'individual')) {
-    for(setting in c('farm', 'facility')) {
+    for(setting in 'facility') {
         for(vaccinated in c(FALSE, TRUE)) {
             for(recovered in c(FALSE, TRUE)) {
                 cat('\n', housing, setting, vaccinated, recovered, '\n\n')
@@ -261,32 +261,32 @@ df$run_number = factor(df$run_number)
 
 #partial resumption: What happens (a) if I cross-validate more, but without any
 #cp, (b) if I do Poisson regression (without any cp)
-png('figures-2023-07-03/unavailable.png', height = 900, width = 1600)
+png('figures-2023-07-07/unavailable.png', height = 900, width = 1600)
 tree = rpart(worker_shifts_unavailable ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Unavailable (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
 
-png('figures-2023-07-03/symptomatic.png', height = 900, width = 1600)
+png('figures-2023-07-07/symptomatic.png', height = 900, width = 1600)
 tree = rpart(symptomatic_infections ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Symptomatic Infections (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-png('figures-2023-07-03/total-cost.png', height = 900, width = 1600)
+png('figures-2023-07-07/total-cost.png', height = 900, width = 1600)
 tree = rpart(total_cost ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Total Cost (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-png('figures-2023-07-03/production-loss.png', height = 900, width = 1600)
+png('figures-2023-07-07/production-loss.png', height = 900, width = 1600)
 tree = rpart(production_loss ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Production Loss (default)')
 text(tree, pretty = 1, cex = 2)
 dev.off()
 
-png('figures-2023-07-03/intervention-expenses.png', height = 900, width = 1600)
+png('figures-2023-07-07/intervention-expenses.png', height = 900, width = 1600)
 tree = rpart(intervention_expenses ~ setting + housing + vaccinated + recovered + boosting + temperature_screening + vax + virus_test + r0_reduction, data = df[df[,'setting'] == 'facility',])
 plot(tree, main = 'Intervention Expenses (default)')
 text(tree, pretty = 1, cex = 2)
