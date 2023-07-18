@@ -34,6 +34,37 @@ for(filename in filenames) {
 print(plot_grid(plotlist = l, nrow = 2))
 dev.off()
 
+filenames = c(
+    'bobrovitz-test--scenario--safer/bobrovitzfacility-shared-vaccinated_TRUE-recovered_TRUE_Symptomatic-incidence_2.2.0.png',
+    'bobrovitz-test--scenario--safer/bobrovitzfacility-shared-vaccinated_TRUE-recovered_TRUE_Symptomatic_2.2.0.png',
+    'bobrovitz-test--scenario--safer/bobrovitzfacility-shared-vaccinated_TRUE-recovered_TRUE_Symptomatic-Fraction-Non-Zero_2.2.0.png',
+
+    'bobrovitz-test--scenario--safer/bobrovitzfacility-shared-vaccinated_TRUE-recovered_TRUE_Total-Symptomatic-Infections-violin_2.2.0.png',
+
+
+
+    'bobrovitz-test--scenario--safer/bobrovitzfacility-shared-vaccinated_TRUE-recovered_TRUE_non-zero-pairwise-differences-Total-Symptomatic-Infections-violin_2.2.0.png',
+    'bobrovitz-test--scenario--safer/bobrovitzfacility-shared-vaccinated_TRUE-recovered_TRUE_non-zero-pairwise-percent-differences-Total-Symptomatic-Infections-violin--cut_2.2.0.png'
+
+
+)
+
+png('figures-2023-07-10/figure-2-2023-07-17--cut.png', width = 3000, height = 2000)
+l = NULL
+for(filename in filenames) {
+    this_image = readPNG(filename)
+    this_plot = ggplot() + annotation_custom(
+        grid::rasterGrob(
+            this_image,
+            width = unit(1, 'npc'),
+            height = unit(1, 'npc')
+        )
+    )
+    l = c(l, list(this_plot))
+}
+print(plot_grid(plotlist = l, nrow = 2))
+dev.off()
+
 #stop('Got the first plot!')
 
 filenames = c(
