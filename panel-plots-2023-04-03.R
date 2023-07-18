@@ -18,7 +18,7 @@ filenames = c(
 
 )
 
-png('figures-2023-07-10/figure-2-2023-07-03.png', width = 3000, height = 2000)
+png('figures-2023-07-10/figure-2-2023-07-17.png', width = 3000, height = 2000)
 l = NULL
 for(filename in filenames) {
     this_image = readPNG(filename)
@@ -48,7 +48,7 @@ filenames = c(
 
 
 
-png('figures-2023-07-10/figure-3a-2023-07-03.png', width = 3000, height = 2000)
+png('figures-2023-07-10/figure-3-2023-07-17.png', width = 3000, height = 2000)
 l = NULL
 for(filename in filenames) {
     if(is.na(filename)) {
@@ -74,7 +74,7 @@ filenames = c(
     'bobrovitz-test--scenario--safer/bobrovitzfacility-shared-vaccinated_TRUE-recovered_TRUE_Total-Cost-violin_2.2.0.png'
 )
 
-png('figures-2023-07-10/figure-3b-2023-07-03.png', width = 3000, height = 1000)
+png('figures-2023-07-10/figure-4-2023-07-17.png', width = 3000, height = 1000)
 l = NULL
 for(filename in filenames) {
     this_image = readPNG(filename)

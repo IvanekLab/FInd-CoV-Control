@@ -83,16 +83,17 @@ double_wrapped_fn = function(kConstants, protection_functions) {
         stop('Row names does not have the right length')
     }
 
-    c4 = c('black', 'blue3', 'lightblue1', 'red2', 'gray80', 'darkgreen',
+    #c4 = c('black', 'blue3', 'lightblue1', 'red2', 'gray80', 'darkgreen',
+    #       'yellow2')
+    c4 = c('black', 'blue3', 'red2', 'lightblue1', 'darkgreen', 'gray80',
            'yellow2')
-
-    colors = c(c4[1],
-               c4[2],
-               c4[3], c4[3], c4[3],
-               c4[4], c4[4],
-               c4[5], c4[5], c4[5],
-               c4[6], c4[6],
-               c4[7]
+    colors = c(c4[1],#
+               c4[2],#
+               c4[3], c4[3], c4[3],#red2 [was: colors[4]]
+               c4[4], c4[4],# -> lightblue1
+               c4[5], c4[5], c4[5],#darkgreen [was: colors[6]
+               c4[6], c4[6],# ->gray80
+               c4[7]#
     )
 
     ltys = c(1,

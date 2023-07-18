@@ -315,7 +315,7 @@ common_parameters = list(
     n_mild = '0',
     working_directory = '.',
     folder_name = 'bobrovitz-test--scenario--safer',   # relative to working directory
-    analyze_only = FALSE,
+    analyze_only = TRUE, #FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
     #fraction_fully_vaccinated = 0.71,
@@ -407,7 +407,7 @@ for(housing in c('shared', 'individual')) {
     }
 }
 
-for(i in 1:8) { 
+for(i in 4) { 
     housing = df[i, 'housing']
     setting = df[i, 'setting']
     vaccinated = df[i, 'vaccinated']
