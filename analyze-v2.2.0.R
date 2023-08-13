@@ -417,7 +417,8 @@ end_boxplot = function(
                        run_mask = TRUE,
                        percent_differences = FALSE,
                        areaEqual = FALSE,
-                       h = 12 #NULL
+                       h = 12, #NULL
+                       outlier_kludge = FALSE
                        ) {
     png(paste(subdirectory, unique_id, '_', filename, '_', VERSION, '.png', sep = ''), height = 1000, width = 1000)
     if(sum(run_mask) == 0) { #can't do anything meaningful with no runs!
@@ -499,7 +500,14 @@ end_boxplot = function(
                 } else {
                     tryCatch(
                         {
-                            this_h = sm.density(final_this, display='none')$h
+                            if(outlier_kludge) {
+                                min_final_this_index = which(final_this == min(final_this))[1]
+                                max_final_this_index = which(final_this == max(final_this))[1]
+                                trimmed_final_this = final_this[-c(min_final_this_index, max_final_this_index)]
+                                this_h = sm.density(trimmed_final_this, display='none')$h
+                            } else {
+                                this_h = sm.density(final_this, display='none')$h
+                            }
                         },
                         error = function(e) {
                             print(e)
@@ -900,6 +908,8 @@ zero_unavailable_mask
 end_boxplot('non-zero-pairwise-percent-differences-Total-Symptomatic-Infections-violin', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(F) P. F. Change, Non-Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_symptomatic_mask, percent_differences = TRUE)
 
 end_boxplot('non-zero-pairwise-percent-differences-Total-Symptomatic-Infections-violin--cut', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(F) P. F. Change, Non-Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_symptomatic_mask, percent_differences = TRUE, xlim = c(-1, 1))
+
+end_boxplot('non-zero-pairwise-percent-differences-Total-Symptomatic-Infections-violin--cut-and-trimmed', new_symptomatic_infections, xlab = paste('Total Symptomatic Infections (among', N, 'total workers)'), average = FALSE, main_title = '(F) P. F. Change, Non-Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_symptomatic_mask, percent_differences = TRUE, xlim = c(-1, 1), outlier_kludge = TRUE)
 
 #end_boxplot('non-zero-pairwise-percent-differences-Total-Symptomatic-Infections-prevalence-violin', symptomatic, xlab = paste('Total Worker-Days Symptomatically Infected (among', N, 'total workers)'), average = FALSE, ys_combiner = day_average_all, main_title = '(H) P. F. Change, Non-Zero Baseline Runs', function_ = vioplot, pairwise_differences = TRUE, run_mask = !zero_mask, percent_differences = TRUE)
 
