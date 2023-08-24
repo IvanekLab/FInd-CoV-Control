@@ -295,7 +295,7 @@ full_run = function(
 
 FIXED_SEED = TRUE
 VERSION = '2.2.0'
-double_wrap_num_sims = 1000
+double_wrap_num_sims = 100
 
 #note that several of these parameters are not actually used (no longer true?)
 #separating into one variable per line for comments and diffing
@@ -314,8 +314,8 @@ common_parameters = list(
     n_no_symptoms = '1',                        #i.e., exposed 
     n_mild = '0',
     working_directory = '.',
-    folder_name = 'bobrovitz-test--scenario--safer',   # relative to working directory
-    analyze_only = TRUE, #FALSE,
+    folder_name = 'bobrovitz-test--boosted-magnitude-1.5-test',   # relative to working directory
+    analyze_only = FALSE,
     PARALLEL = TRUE,
     #fraction_recovered = 0.69,
     #fraction_fully_vaccinated = 0.71,
@@ -440,6 +440,8 @@ for(i in 4) {
     } else {
         fraction_recovered = 0
     }
+
+    kConstants[['B_magnitude_1']] = 1.5 * kConstants[['B_magnitude_1']]
 
     all_params = c(
         common_parameters,

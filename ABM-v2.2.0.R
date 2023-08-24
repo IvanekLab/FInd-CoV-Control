@@ -662,7 +662,7 @@ ABM <- function(agents, contacts_list, lambda_list, schedule,
         foi_contributions = contacts * infectiousness
         force_of_infection = colSums(foi_contributions)
         p_infection = 1 - exp(-force_of_infection * susceptibility_0)
-
+        browser()
         potential_times_E = sunif(N, start_time, end_time)
 
         #For simplicity, we'll do community transmission first, i.e.,
